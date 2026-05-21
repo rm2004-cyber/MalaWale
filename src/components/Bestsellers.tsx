@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, type Variants } from "framer-motion";
 
 // ─── Product Interface (mirrors src/utils/service.ts) ────────────────────────
 export interface Product {
@@ -176,7 +176,7 @@ interface ProductCardProps {
   index: number;
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 32 },
   visible: (i: number) => ({
     opacity: 1,
@@ -184,7 +184,7 @@ const cardVariants = {
     transition: {
       delay: i * 0.08,
       duration: 0.55,
-      ease: "easeOut",
+      ease: "easeOut" as const,
     },
   }),
 };

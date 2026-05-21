@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence, type Variants } from "framer-motion";
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 export interface CollectionItem {
@@ -117,7 +117,7 @@ interface CircleItemProps {
   onClick?: (item: CollectionItem) => void;
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 28, scale: 0.92 },
   visible: (i: number) => ({
     opacity: 1,
@@ -126,7 +126,7 @@ const itemVariants = {
     transition: {
       delay: i * 0.07,
       duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94],
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
     },
   }),
 };

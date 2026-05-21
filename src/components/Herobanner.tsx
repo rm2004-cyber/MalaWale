@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 
 // ─── Type Definitions ────────────────────────────────────────────────────────
 
@@ -247,49 +247,49 @@ const textContainer = {
   },
 };
 
-const tagVariant = {
+const tagVariant: Variants = {
   hidden: { opacity: 0, y: -16, scale: 0.92 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
   exit: { opacity: 0, y: -10, transition: { duration: 0.25 } },
 };
 
-const titleVariant = {
+const titleVariant: Variants = {
   hidden: { opacity: 0, y: 40 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
   exit: { opacity: 0, y: -20, transition: { duration: 0.3 } },
 };
 
-const subtitleVariant = {
+const subtitleVariant: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
   exit: { opacity: 0, y: -10, transition: { duration: 0.25 } },
 };
 
-const ctaVariant = {
+const ctaVariant: Variants = {
   hidden: { opacity: 0, scale: 0.88, y: 16 },
   show: {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 };
 
-const imageVariants = {
+const imageVariants: Variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "8%" : "-8%",
     opacity: 0,
@@ -299,13 +299,13 @@ const imageVariants = {
     x: 0,
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
   exit: (direction: number) => ({
     x: direction > 0 ? "-6%" : "6%",
     opacity: 0,
     scale: 0.98,
-    transition: { duration: 0.55, ease: [0.36, 0, 0.66, 0] },
+    transition: { duration: 0.55, ease: [0.36, 0, 0.66, 0] as [number, number, number, number] },
   }),
 };
 
