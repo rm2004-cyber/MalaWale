@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Product, Review } from "./Productcard";
+import type { Product, Review, Variant } from "./Productcard";
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -8,7 +8,7 @@ export interface ProductModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product, size: string) => void;
+  onAddToCart: (product: Product, variant?: Variant) => void;
 }
 
 // ─── Inline SVG icons ──────────────────────────────────────────────────────────
@@ -56,8 +56,57 @@ const ChevronIcon = ({ dir }: { dir: "left" | "right" }) => (
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-const avgRating = (reviews: Review[]): number =>
-  reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+// const avgRating = (reviews: Review[] | undefined | null): number => {
+//   if (!Array.isArray(reviews) || reviews.length === 0) return 0;
+//   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+// };
+
+const getRandomRating = (reviews: Review[] | undefined | null): number => {
+  // Agar reviews exist karte hain, toh unka average lo
+  if (Array.isArray(reviews) && reviews.length > 0) {
+    return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+  }
+  
+ 
+  return parseFloat((Math.random() * (5.0 - 3.6) + 3.6).toFixed(1));
+};
+
+const resolveCategory = (
+  category: string | { _id?: string; name?: string } | null | undefined
+): string => {
+  if (!category) return "Uncategorized";
+  if (typeof category === "object") return category.name ?? "Uncategorized";
+  return category;
+};
+
+/**
+ * Resolves price & mrp from the new variants[] API or falls back to legacy flat fields.
+ * Never returns undefined — always safe numbers.
+ */
+const resolvePrice = (
+  product: Product,
+  selectedVariant?: Variant
+): { price: number; mrp: number | undefined } => {
+  if (selectedVariant) {
+    return { price: selectedVariant.price ?? 0, mrp: selectedVariant.mrp };
+  }
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  if (variants.length > 0) {
+    const first = variants.find((v) => v.inStock) ?? variants[0];
+    return { price: first.price ?? 0, mrp: first.mrp };
+  }
+  // Legacy flat fields
+  return { price: product?.price ?? 0, mrp: product?.originalPrice };
+};
+
+/**
+ * Resolves sold/order count from new soldCount field or legacy ordersCount.
+ */
+const resolveSoldCount = (product: Product): number => {
+  if (typeof product?.soldCount === "number" && product.soldCount > 0) return product.soldCount;
+  if (typeof product?.ordersCount === "number" && product.ordersCount > 0) return product.ordersCount;
+  return 0;
+};
 
 const StarRow = ({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) => {
   const cls = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
@@ -74,7 +123,8 @@ const StarRow = ({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }
   );
 };
 
-// Animate a number from 0 to target
+// ─── Animate a number from 0 to target ────────────────────────────────────────
+
 const useCountUp = (target: number, active: boolean) => {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -91,17 +141,58 @@ const useCountUp = (target: number, active: boolean) => {
   return count;
 };
 
-// Pulsing live viewer counter
-const useLiveViewers = (base: number, active: boolean) => {
-  const [viewers, setViewers] = useState(base);
+// ─── useLiveViewers ────────────────────────────────────────────────────────────
+
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+const rand = (lo: number, hi: number) => Math.floor(Math.random() * (hi - lo + 1)) + lo;
+
+const useLiveViewers = (active: boolean): number => {
+  const [viewers, setViewers] = useState(() => rand(18, 42));
   useEffect(() => {
-    if (!active) return;
-    const t = setInterval(() => {
-      setViewers(base + Math.floor(Math.random() * 7 - 3));
-    }, 3000);
-    return () => clearInterval(t);
-  }, [base, active]);
+    if (!active) { setViewers(rand(18, 42)); return; }
+    const go = () => {
+      const id = setTimeout(() => {
+        setViewers((p) => clamp(p + (Math.random() < 0.5 ? 1 : -1) * rand(1, 5), 5, 80));
+        go();
+      }, rand(4000, 7000));
+      return id;
+    };
+    const id = go();
+    return () => clearTimeout(id);
+  }, [active]);
   return viewers;
+};
+
+// ─── useDynamicSoldCount ───────────────────────────────────────────────────────
+
+const hashString = (str: string): number => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h;
+};
+
+const EPOCH_MS = new Date("2024-01-01T00:00:00Z").getTime();
+
+const useDynamicSoldCount = (
+  productId: string | undefined,
+  baseSold: number,
+  active: boolean
+): number => {
+  const compute = useCallback((): number => {
+    const id = productId ?? "fallback";
+    const seed = hashString(id);
+    const baseline = baseSold > 15 ? baseSold : 10 + (seed % 6);
+    const hoursElapsed = Math.floor((Date.now() - EPOCH_MS) / (1000 * 60 * 60));
+    const hourlyRate: 1 | 2 = hashString(id + "_rate") % 3 === 0 ? 2 : 1;
+    return baseline + hoursElapsed * hourlyRate;
+  }, [productId, baseSold]);
+
+  const [sold, setSold] = useState(compute);
+  useEffect(() => { if (active) setSold(compute()); }, [active, compute]);
+  return sold;
 };
 
 // ─── Modal ─────────────────────────────────────────────────────────────────────
@@ -110,29 +201,64 @@ const ProductModal: React.FC<ProductModalProps> = ({
   product, isOpen, onClose, onAddToCart,
 }) => {
   const [activeImg, setActiveImg] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedVariant, setSelectedVariant] = useState<Variant | undefined>(undefined);
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
   const [tab, setTab] = useState<"details" | "reviews">("details");
-  const [noSize, setNoSize] = useState(false);
+  const [noVariant, setNoVariant] = useState(false);
 
- //  NEW (Guarded against missing properties)
-const rating = product?.reviews ? avgRating(product.reviews) : 0;
-const orders = useCountUp(product?.ordersCount ?? 0, isOpen);
-const viewers = useLiveViewers(
-  product?.ordersCount ? Math.floor(product.ordersCount / 12) + 8 : 0, 
-  isOpen
-);
+  // ── Safe normalised values ─────────────────────────────────────────────────
 
-  // Reset state when product changes
+  const safeReviews: Review[] = Array.isArray(product?.reviews) ? product!.reviews : [];
+
+  const safeImages: string[] =
+    Array.isArray(product?.images) && product!.images.length > 0
+      ? product!.images
+      : ["https://placehold.co/600x600/f5ede0/8b4513?text=🪬"];
+
+  // New API: variants[] with size/price/mrp/stock/inStock
+  const safeVariants: Variant[] = Array.isArray(product?.variants) ? product!.variants : [];
+
+  // Legacy sizes fallback (for products with flat sizes[] but no variants)
+  const legacySizes: string[] = Array.isArray(product?.sizes) ? product!.sizes : [];
+
+  const hasVariants = safeVariants.length > 0;
+  const hasLegacySizes = !hasVariants && legacySizes.length > 0;
+
+  const safeCategory = resolveCategory((product as any)?.category);
+  const safeDescription = product?.description ?? "";
+
+  // Price resolution — uses selectedVariant if set, otherwise first inStock variant
+  const { price, mrp } = resolvePrice(product ?? {} as Product, selectedVariant);
+  const disc = mrp && mrp > price ? Math.round(((mrp - price) / mrp) * 100) : null;
+
+  // Sold count — new soldCount field OR legacy ordersCount
+  const baseSold = product ? resolveSoldCount(product) : 0;
+  const rawSold = useDynamicSoldCount(
+    (product as any)?._id?.toString() ?? product?.id,
+    baseSold,
+    isOpen
+  );
+  const orders = useCountUp(rawSold, isOpen);
+
+  const rating = React.useMemo(() => getRandomRating(safeReviews), [product?._id, safeReviews.length]);
+  const viewers = useLiveViewers(isOpen);
+
+  // ── Reset when product changes ─────────────────────────────────────────────
+
   useEffect(() => {
     setActiveImg(0);
-    setSelectedSize("");
     setCartState("idle");
     setTab("details");
-    setNoSize(false);
-  }, [product?.id]);
+    setNoVariant(false);
+    // Auto-select first inStock variant
+    if (safeVariants.length > 0) {
+      setSelectedVariant(safeVariants.find((v) => v.inStock) ?? safeVariants[0]);
+    } else {
+      setSelectedVariant(undefined);
+    }
+  }, [product?._id, product?.id]);
 
-  // Close on Escape
+  // Keyboard + scroll lock
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
   }, [onClose]);
@@ -140,43 +266,45 @@ const viewers = useLiveViewers(
     if (isOpen) document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, handleKey]);
-
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
+  // ── Cart handler ───────────────────────────────────────────────────────────
+
   const handleCart = () => {
     if (!product) return;
-    if (product.sizes.length > 0 && !selectedSize) {
-      setNoSize(true);
-      setTimeout(() => setNoSize(false), 1800);
+    // If product has variants and none selected
+    if (hasVariants && !selectedVariant) {
+      setNoVariant(true);
+      setTimeout(() => setNoVariant(false), 1800);
+      return;
+    }
+    // If selected variant is out of stock
+    if (selectedVariant && (!selectedVariant.inStock || selectedVariant.stock === 0)) {
       return;
     }
     if (cartState === "added") return;
-    onAddToCart(product, selectedSize);
+    onAddToCart(product, selectedVariant);
     setCartState("added");
     setTimeout(() => setCartState("idle"), 2400);
   };
 
   const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!product) return;
-    setActiveImg((i) => (i - 1 + product.images.length) % product.images.length);
+    setActiveImg((i) => (i - 1 + safeImages.length) % safeImages.length);
   };
   const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!product) return;
-    setActiveImg((i) => (i + 1) % product.images.length);
+    setActiveImg((i) => (i + 1) % safeImages.length);
   };
 
-  const disc =
-    product?.originalPrice && product.originalPrice > product.price
-      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-      : null;
+  const isOutOfStock = selectedVariant
+    ? !selectedVariant.inStock || selectedVariant.stock === 0
+    : false;
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <AnimatePresence>
@@ -192,16 +320,13 @@ const viewers = useLiveViewers(
             transition={{ duration: 0.3 }}
             onClick={onClose}
           >
-            {/* dark layer */}
             <div className="absolute inset-0" style={{ background: "rgba(30,12,4,0.62)" }} />
           </motion.div>
 
           {/* Modal panel */}
           <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none"
-            aria-modal="true"
-            role="dialog"
-            aria-label={product.name}
+            aria-modal="true" role="dialog" aria-label={product.name}
           >
             <motion.div
               className="relative w-full max-w-5xl max-h-[94vh] overflow-hidden rounded-3xl pointer-events-auto flex flex-col"
@@ -216,24 +341,15 @@ const viewers = useLiveViewers(
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Gold ornamental top bar */}
-              <div
-                className="h-1 w-full flex-shrink-0"
-                style={{
-                  background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)",
-                }}
-              />
+              {/* Gold top bar */}
+              <div className="h-1 w-full flex-shrink-0" style={{
+                background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)",
+              }} />
 
-              {/* Close button */}
-              <button
-                onClick={onClose}
+              {/* Close */}
+              <button onClick={onClose}
                 className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: "rgba(139,69,19,0.08)",
-                  border: "1px solid rgba(212,163,115,0.4)",
-                  color: "#8b4513",
-                }}
-              >
+                style={{ background: "rgba(139,69,19,0.08)", border: "1px solid rgba(212,163,115,0.4)", color: "#8b4513" }}>
                 <CloseIcon />
               </button>
 
@@ -241,25 +357,17 @@ const viewers = useLiveViewers(
               <div className="overflow-y-auto flex-1">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
 
-                  {/* ═══════════ LEFT — Gallery ═══════════ */}
-                  <div
-                    className="p-5 lg:p-7 flex flex-col gap-4 lg:border-r"
-                    style={{ borderColor: "#e8d5c0" }}
-                  >
+                  {/* ═══ LEFT — Gallery ═══ */}
+                  <div className="p-5 lg:p-7 flex flex-col gap-4 lg:border-r" style={{ borderColor: "#e8d5c0" }}>
+
                     {/* Main image */}
-                    <div
-                      className="relative rounded-2xl overflow-hidden"
-                      style={{
-                        aspectRatio: "1/1",
-                        background: "#f5ede0",
-                        border: "1px solid #e0c9a8",
-                      }}
-                    >
+                    <div className="relative rounded-2xl overflow-hidden"
+                      style={{ aspectRatio: "1/1", background: "#f5ede0", border: "1px solid #e0c9a8" }}>
                       <AnimatePresence mode="wait">
                         <motion.img
                           key={activeImg}
-                          src={product.images[activeImg]}
-                          alt={`${product.name} view ${activeImg + 1}`}
+                          src={safeImages[activeImg]}
+                          alt={`${product.name ?? "Product"} view ${activeImg + 1}`}
                           className="absolute inset-0 w-full h-full object-cover"
                           initial={{ opacity: 0, scale: 1.04 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -272,247 +380,207 @@ const viewers = useLiveViewers(
                         />
                       </AnimatePresence>
 
-                      {/* Nav arrows */}
-                      {product.images.length > 1 && (
+                      {safeImages.length > 1 && (
                         <>
-                          <button
-                            onClick={prevImg}
+                          <button onClick={prevImg}
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{
-                              background: "rgba(255,249,242,0.88)",
-                              backdropFilter: "blur(4px)",
-                              border: "1px solid rgba(212,163,115,0.5)",
-                              color: "#8b4513",
-                            }}
-                          >
+                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212,163,115,0.5)", color: "#8b4513" }}>
                             <ChevronIcon dir="left" />
                           </button>
-                          <button
-                            onClick={nextImg}
+                          <button onClick={nextImg}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{
-                              background: "rgba(255,249,242,0.88)",
-                              backdropFilter: "blur(4px)",
-                              border: "1px solid rgba(212,163,115,0.5)",
-                              color: "#8b4513",
-                            }}
-                          >
+                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212,163,115,0.5)", color: "#8b4513" }}>
                             <ChevronIcon dir="right" />
                           </button>
                         </>
                       )}
 
-                      {/* Discount badge */}
                       {disc && (
-                        <div
-                          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
-                          style={{
-                            background: "linear-gradient(135deg, #c8843a, #8b4513)",
-                            fontFamily: "'Jost', sans-serif",
-                          }}
-                        >
+                        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
+                          style={{ background: "linear-gradient(135deg, #c8843a, #8b4513)", fontFamily: "'Jost', sans-serif" }}>
                           -{disc}% OFF
+                        </div>
+                      )}
+
+                      {/* Badge */}
+                      {product.badge && product.badge.trim() !== "" && !disc && (
+                        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
+                          style={{
+                            background: product.badge === "Bestseller"
+                              ? "linear-gradient(135deg, #c8843a, #8b4513)"
+                              : "linear-gradient(135deg, #6b7280, #374151)",
+                            fontFamily: "'Jost', sans-serif",
+                          }}>
+                          {product.badge}
                         </div>
                       )}
                     </div>
 
-                    {/* Thumbnail strip */}
-                    {product.images.length > 1 && (
+                    {/* Thumbnails */}
+                    {safeImages.length > 1 && (
                       <div className="flex gap-2 overflow-x-auto pb-1">
-                        {product.images.map((img, idx) => (
-                          <motion.button
-                            key={idx}
-                            onClick={() => setActiveImg(idx)}
+                        {safeImages.map((img, idx) => (
+                          <motion.button key={idx} onClick={() => setActiveImg(idx)}
                             className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
-                            style={{
-                              border: `2px solid ${activeImg === idx ? "#8b4513" : "#e0c9a8"}`,
-                              opacity: activeImg === idx ? 1 : 0.65,
-                              transition: "all 0.2s ease",
-                            }}
-                            whileHover={{ opacity: 1 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <img
-                              src={img}
-                              alt={`Thumbnail ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  "https://placehold.co/64x64/f5ede0/8b4513?text=🪬";
-                              }}
-                            />
+                            style={{ border: `2px solid ${activeImg === idx ? "#8b4513" : "#e0c9a8"}`, opacity: activeImg === idx ? 1 : 0.65, transition: "all 0.2s ease" }}
+                            whileHover={{ opacity: 1 }} whileTap={{ scale: 0.95 }}>
+                            <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/64x64/f5ede0/8b4513?text=🪬"; }} />
                           </motion.button>
                         ))}
                       </div>
                     )}
 
-                    {/* Live viewers pill */}
+                    {/* Live viewers */}
                     <motion.div
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
-                      style={{
-                        background: "rgba(139,69,19,0.06)",
-                        border: "1px solid rgba(139,69,19,0.12)",
-                      }}
+                      style={{ background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.12)" }}
                       animate={{ opacity: [1, 0.75, 1] }}
-                      transition={{ repeat: Infinity, duration: 2.5 }}
-                    >
+                      transition={{ repeat: Infinity, duration: 2.5 }}>
                       <span className="relative flex h-2.5 w-2.5">
-                        <span
-                          className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
-                          style={{ background: "#c8843a" }}
-                        />
-                        <span
-                          className="relative inline-flex rounded-full h-2.5 w-2.5"
-                          style={{ background: "#8b4513" }}
-                        />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#c8843a" }} />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#8b4513" }} />
                       </span>
                       <EyeIcon />
-                      <span
-                        className="text-sm font-medium"
-                        style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}
-                      >
+                      <span className="text-sm font-medium" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
                         <strong>{viewers}</strong> people viewing this right now
                       </span>
                     </motion.div>
                   </div>
 
-                  {/* ═══════════ RIGHT — Details ═══════════ */}
+                  {/* ═══ RIGHT — Details ═══ */}
                   <div className="p-5 lg:p-7 flex flex-col gap-5">
 
                     {/* Category */}
-                    <span
-                      className="text-xs font-semibold tracking-widest uppercase"
-                      style={{
-                        color: "#a0522d",
-                        fontFamily: "'Cormorant Garamond', serif",
-                        letterSpacing: "0.14em",
-                      }}
-                    >
-                      {product.category}
-                    </span>
+                    {safeCategory && safeCategory !== "Uncategorized" && (
+                      <span className="text-xs font-semibold tracking-widest uppercase"
+                        style={{ color: "#a0522d", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.14em" }}>
+                        {safeCategory}
+                      </span>
+                    )}
 
                     {/* Title */}
-                    <h2
-                      className="text-2xl sm:text-3xl font-bold leading-tight"
-                      style={{
-                        fontFamily: "'Playfair Display', serif",
-                        color: "#3d1f0a",
-                      }}
-                    >
-                      {product.name}
+                    <h2 className="text-2xl sm:text-3xl font-bold leading-tight"
+                      style={{ fontFamily: "'Playfair Display', serif", color: "#3d1f0a" }}>
+                      {product.name ?? ""}
                     </h2>
 
                     {/* Rating + orders */}
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2">
                         <StarRow rating={rating} />
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}
-                        >
+                        <span className="text-sm font-medium" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
                           {rating.toFixed(1)}
                         </span>
                       </div>
-                      <div
-                        className="h-4 w-px"
-                        style={{ background: "#d4a373" }}
-                      />
-                      <span
-                        className="text-sm"
-                        style={{ color: "#a07a5a", fontFamily: "'Cormorant Garamond', serif", fontSize: "0.9rem" }}
-                      >
-                        {product.reviews.length} verified reviews
-                      </span>
-                      <div
-                        className="h-4 w-px"
-                        style={{ background: "#d4a373" }}
-                      />
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}
-                      >
-                        🔥 {orders.toLocaleString()}+ sold
-                      </span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex items-end gap-3">
-                      <span
-                        className="text-3xl font-bold"
-                        style={{
-                          fontFamily: "'Playfair Display', serif",
-                          color: "#8b4513",
-                        }}
-                      >
-                        ₹{product.price.toLocaleString()}
-                      </span>
-                      {product.originalPrice && product.originalPrice > product.price && (
+                      {safeReviews.length > 0 && (
                         <>
-                          <span
-                            className="text-lg line-through pb-0.5"
-                            style={{ color: "#b8987a", fontFamily: "'Jost', sans-serif" }}
-                          >
-                            ₹{product.originalPrice.toLocaleString()}
+                          <div className="h-4 w-px" style={{ background: "#d4a373" }} />
+                          <span className="text-sm" style={{ color: "#a07a5a", fontFamily: "'Cormorant Garamond', serif", fontSize: "0.9rem" }}>
+                            {safeReviews.length} verified reviews
                           </span>
-                          <span
-                            className="px-2 py-0.5 rounded-full text-xs font-bold text-white"
-                            style={{
-                              background: "linear-gradient(135deg, #c8843a, #a0522d)",
-                              fontFamily: "'Jost', sans-serif",
-                            }}
-                          >
-                            Save ₹{(product.originalPrice - product.price).toLocaleString()}
+                        </>
+                      )}
+                      {orders > 0 && (
+                        <>
+                          <div className="h-4 w-px" style={{ background: "#d4a373" }} />
+                          <span className="text-sm font-semibold" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
+                            🔥 {orders.toLocaleString()}+ sold
                           </span>
                         </>
                       )}
                     </div>
 
-                    {/* Size selector */}
-                    {product.sizes.length > 0 && (
+                    {/* Price — from selected variant or first variant */}
+                    <div className="flex items-end gap-3">
+                      <span className="text-3xl font-bold"
+                        style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}>
+                        ₹{price.toLocaleString()}
+                      </span>
+                      {mrp && mrp > price && (
+                        <>
+                          <span className="text-lg line-through pb-0.5"
+                            style={{ color: "#b8987a", fontFamily: "'Jost', sans-serif" }}>
+                            ₹{mrp.toLocaleString()}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white"
+                            style={{ background: "linear-gradient(135deg, #c8843a, #a0522d)", fontFamily: "'Jost', sans-serif" }}>
+                            Save ₹{(mrp - price).toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* ── Variant selector (new API) ── */}
+                    {hasVariants && (
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                          <span
-                            className="text-sm font-semibold"
-                            style={{ color: "#5c2e0a", fontFamily: "'Jost', sans-serif" }}
-                          >
+                          <span className="text-sm font-semibold"
+                            style={{ color: "#5c2e0a", fontFamily: "'Jost', sans-serif" }}>
                             Choose Size
                           </span>
-                          {noSize && (
+                          {noVariant && (
                             <motion.span
-                              initial={{ opacity: 0, x: 8 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0 }}
-                              className="text-xs font-medium"
-                              style={{ color: "#c0392b", fontFamily: "'Jost', sans-serif" }}
-                            >
+                              initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                              className="text-xs font-medium" style={{ color: "#c0392b", fontFamily: "'Jost', sans-serif" }}>
                               ↑ Please select a size
                             </motion.span>
                           )}
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {product.sizes.map((sz) => (
-                            <motion.button
-                              key={sz}
-                              onClick={() => setSelectedSize(sz)}
+                          {safeVariants.map((variant) => {
+                            const isSelected = selectedVariant?._id === variant._id;
+                            const isUnavailable = !variant.inStock || variant.stock === 0;
+                            return (
+                              <motion.button
+                                key={variant._id ?? variant.size}
+                                onClick={() => !isUnavailable && setSelectedVariant(variant)}
+                                whileTap={isUnavailable ? {} : { scale: 0.93 }}
+                                className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                                style={{
+                                  fontFamily: "'Jost', sans-serif",
+                                  background: isSelected
+                                    ? "linear-gradient(135deg, #8b4513, #c8843a)"
+                                    : isUnavailable ? "rgba(0,0,0,0.04)" : "rgba(139,69,19,0.06)",
+                                  color: isSelected ? "#fff" : isUnavailable ? "#c4a882" : "#8b4513",
+                                  border: `1.5px solid ${isSelected ? "#c8843a" : isUnavailable ? "#e8d5c0" : "rgba(139,69,19,0.2)"}`,
+                                  boxShadow: isSelected ? "0 4px 14px rgba(200,132,58,0.35)" : "none",
+                                  cursor: isUnavailable ? "not-allowed" : "pointer",
+                                  textDecoration: isUnavailable ? "line-through" : "none",
+                                  opacity: isUnavailable ? 0.6 : 1,
+                                  outline: noVariant && !selectedVariant ? "2px solid #c0392b" : "none",
+                                }}>
+                                {variant.size}
+                                {variant.price !== price && !isSelected && (
+                                  <span className="ml-1 text-[10px]" style={{ color: "#a0522d" }}>
+                                    ₹{variant.price}
+                                  </span>
+                                )}
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Legacy sizes fallback ── */}
+                    {hasLegacySizes && (
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm font-semibold" style={{ color: "#5c2e0a", fontFamily: "'Jost', sans-serif" }}>
+                          Choose Size
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {legacySizes.map((sz) => (
+                            <motion.button key={sz}
+                              onClick={() => setSelectedVariant({ size: sz, price, mrp: mrp ?? price, stock: 99, inStock: true })}
                               whileTap={{ scale: 0.93 }}
-                              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                              className="px-4 py-2 rounded-xl text-sm font-semibold"
                               style={{
                                 fontFamily: "'Jost', sans-serif",
-                                background:
-                                  selectedSize === sz
-                                    ? "linear-gradient(135deg, #8b4513, #c8843a)"
-                                    : "rgba(139,69,19,0.06)",
-                                color: selectedSize === sz ? "#fff" : "#8b4513",
-                                border: `1.5px solid ${selectedSize === sz ? "#c8843a" : "rgba(139,69,19,0.2)"}`,
-                                boxShadow:
-                                  selectedSize === sz
-                                    ? "0 4px 14px rgba(200,132,58,0.35)"
-                                    : "none",
-                                outline: noSize && !selectedSize
-                                  ? "2px solid #c0392b"
-                                  : "none",
-                              }}
-                            >
+                                background: selectedVariant?.size === sz ? "linear-gradient(135deg, #8b4513, #c8843a)" : "rgba(139,69,19,0.06)",
+                                color: selectedVariant?.size === sz ? "#fff" : "#8b4513",
+                                border: `1.5px solid ${selectedVariant?.size === sz ? "#c8843a" : "rgba(139,69,19,0.2)"}`,
+                              }}>
                               {sz}
                             </motion.button>
                           ))}
@@ -520,107 +588,82 @@ const viewers = useLiveViewers(
                       </div>
                     )}
 
-                    {/* ── Trust badge ── */}
-                    <div
-                      className="flex gap-3 p-4 rounded-2xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(212,163,115,0.10) 0%, rgba(139,69,19,0.06) 100%)",
-                        border: "1px solid rgba(212,163,115,0.5)",
-                        position: "relative",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {/* Decorative corner accent */}
-                      <div
-                        className="absolute top-0 right-0 w-16 h-16 opacity-10"
-                        style={{
-                          background:
-                            "radial-gradient(circle at top right, #d4a373, transparent 70%)",
-                        }}
-                      />
+                    {/* Details bullet points (new API field) */}
+                    {Array.isArray(product.details) && product.details.length > 0 && (
+                      <ul className="flex flex-col gap-1.5">
+                        {product.details.map((d, i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm"
+                            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b4226", fontSize: "0.92rem" }}>
+                            <span style={{ color: "#c8843a", fontSize: "1rem" }}>•</span> {d}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {/* Trust badge */}
+                    <div className="flex gap-3 p-4 rounded-2xl relative overflow-hidden"
+                      style={{ background: "linear-gradient(135deg, rgba(212,163,115,0.10) 0%, rgba(139,69,19,0.06) 100%)", border: "1px solid rgba(212,163,115,0.5)" }}>
+                      <div className="absolute top-0 right-0 w-16 h-16 opacity-10"
+                        style={{ background: "radial-gradient(circle at top right, #d4a373, transparent 70%)" }} />
                       <ShieldIcon />
                       <div className="flex flex-col gap-1">
-                        <span
-                          className="text-sm font-bold"
-                          style={{
-                            fontFamily: "'Playfair Display', serif",
-                            color: "#5c2e0a",
-                          }}
-                        >
+                        <span className="text-sm font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "#5c2e0a" }}>
                           Direct Sourcing — Middlemen-Free Purity
                         </span>
-                        <span
-                          className="text-xs leading-relaxed"
-                          style={{
-                            fontFamily: "'Cormorant Garamond', serif",
-                            color: "#8b6a4a",
-                            fontSize: "0.82rem",
-                            letterSpacing: "0.01em",
-                          }}
-                        >
+                        <span className="text-xs leading-relaxed" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8b6a4a", fontSize: "0.82rem" }}>
                           Crafted directly from premium raw materials by{" "}
                           <strong>Sanwariya Handicraft</strong> artisans. Every bead is
-                          sacred, sourced, and strung with devotion — no intermediaries,
-                          no compromises.
+                          sacred, sourced, and strung with devotion — no intermediaries, no compromises.
                         </span>
                       </div>
                     </div>
 
-                    {/* ── CTA Button ── */}
+                    {/* CTA */}
                     <motion.button
                       onClick={handleCart}
+                      disabled={isOutOfStock}
                       className="w-full h-14 rounded-2xl flex items-center justify-center gap-2.5 text-base font-semibold overflow-hidden relative"
                       style={{
                         fontFamily: "'Jost', sans-serif",
                         letterSpacing: "0.05em",
-                        background:
-                          cartState === "added"
-                            ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
-                            : "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)",
+                        background: isOutOfStock
+                          ? "linear-gradient(135deg, #9ca3af, #6b7280)"
+                          : cartState === "added"
+                          ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
+                          : "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)",
                         color: "#fff",
-                        boxShadow:
-                          cartState === "added"
-                            ? "0 6px 20px rgba(74,124,89,0.4)"
-                            : "0 6px 24px rgba(139,69,19,0.38)",
+                        boxShadow: isOutOfStock ? "none"
+                          : cartState === "added"
+                          ? "0 6px 20px rgba(74,124,89,0.4)"
+                          : "0 6px 24px rgba(139,69,19,0.38)",
+                        cursor: isOutOfStock ? "not-allowed" : "pointer",
+                        opacity: isOutOfStock ? 0.7 : 1,
                         transition: "background 0.4s ease, box-shadow 0.4s ease",
                       }}
-                      whileHover={{ scale: 1.015 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+                      whileHover={isOutOfStock ? {} : { scale: 1.015 }}
+                      whileTap={isOutOfStock ? {} : { scale: 0.98 }}>
                       <AnimatePresence mode="wait">
-                        {cartState === "added" ? (
-                          <motion.span
-                            key="done"
-                            className="flex items-center gap-2"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                              strokeWidth={2.5} strokeLinecap="round" className="w-5 h-5">
+                        {isOutOfStock ? (
+                          <motion.span key="oos" className="flex items-center gap-2"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                            Out of Stock
+                          </motion.span>
+                        ) : cartState === "added" ? (
+                          <motion.span key="done" className="flex items-center gap-2"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" className="w-5 h-5">
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                             Added to Cart!
                           </motion.span>
                         ) : (
-                          <motion.span
-                            key="add"
-                            className="flex items-center gap-2"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                          >
+                          <motion.span key="add" className="flex items-center gap-2"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                             <CartIcon /> Add to Cart
-                            {selectedSize && (
-                              <span
-                                className="text-xs px-2 py-0.5 rounded-full ml-1"
-                                style={{
-                                  background: "rgba(255,255,255,0.25)",
-                                  fontFamily: "'Jost', sans-serif",
-                                }}
-                              >
-                                {selectedSize}
+                            {selectedVariant && (
+                              <span className="text-xs px-2 py-0.5 rounded-full ml-1"
+                                style={{ background: "rgba(255,255,255,0.25)", fontFamily: "'Jost', sans-serif" }}>
+                                {selectedVariant.size}
                               </span>
                             )}
                           </motion.span>
@@ -628,109 +671,59 @@ const viewers = useLiveViewers(
                       </AnimatePresence>
                     </motion.button>
 
-                    {/* ── Tabs ── */}
+                    {/* Tabs */}
                     <div>
-                      <div
-                        className="flex gap-1 p-1 rounded-xl"
-                        style={{ background: "rgba(139,69,19,0.06)" }}
-                      >
+                      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(139,69,19,0.06)" }}>
                         {(["details", "reviews"] as const).map((t) => (
-                          <motion.button
-                            key={t}
-                            onClick={() => setTab(t)}
+                          <motion.button key={t} onClick={() => setTab(t)}
                             className="flex-1 py-2 rounded-lg text-sm font-medium capitalize transition-colors duration-200"
                             style={{
                               fontFamily: "'Jost', sans-serif",
-                              background:
-                                tab === t
-                                  ? "linear-gradient(135deg, #8b4513, #c8843a)"
-                                  : "transparent",
+                              background: tab === t ? "linear-gradient(135deg, #8b4513, #c8843a)" : "transparent",
                               color: tab === t ? "#fff" : "#a07a5a",
                             }}
-                            whileTap={{ scale: 0.97 }}
-                          >
-                            {t === "reviews"
-                              ? `Reviews (${product.reviews.length})`
-                              : "Details"}
+                            whileTap={{ scale: 0.97 }}>
+                            {t === "reviews" ? `Reviews (${safeReviews.length})` : "Details"}
                           </motion.button>
                         ))}
                       </div>
 
                       <AnimatePresence mode="wait">
                         {tab === "details" ? (
-                          <motion.div
-                            key="details"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -6 }}
-                            transition={{ duration: 0.25 }}
-                            className="mt-4"
-                          >
-                            <p
-                              className="leading-relaxed text-sm"
-                              style={{
-                                fontFamily: "'Cormorant Garamond', serif",
-                                color: "#6b4226",
-                                fontSize: "0.95rem",
-                                lineHeight: "1.7",
-                              }}
-                            >
-                              {product.description}
+                          <motion.div key="details"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }} className="mt-4">
+                            <p className="leading-relaxed text-sm"
+                              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b4226", fontSize: "0.95rem", lineHeight: "1.7" }}>
+                              {safeDescription}
                             </p>
                           </motion.div>
                         ) : (
-                          <motion.div
-                            key="reviews"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -6 }}
-                            transition={{ duration: 0.25 }}
-                            className="mt-4 flex flex-col gap-3"
-                          >
-                            {product.reviews.length === 0 ? (
-                              <p
-                                className="text-center py-6 text-sm"
-                                style={{
-                                  color: "#a07a5a",
-                                  fontFamily: "'Cormorant Garamond', serif",
-                                }}
-                              >
+                          <motion.div key="reviews"
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.25 }} className="mt-4 flex flex-col gap-3">
+                            {safeReviews.length === 0 ? (
+                              <p className="text-center py-6 text-sm"
+                                style={{ color: "#a07a5a", fontFamily: "'Cormorant Garamond', serif" }}>
                                 No reviews yet. Be the first to share your experience!
                               </p>
                             ) : (
-                              product.reviews.map((rev, idx) => (
-                                <motion.div
-                                  key={idx}
-                                  initial={{ opacity: 0, x: -12 }}
-                                  animate={{ opacity: 1, x: 0 }}
+                              safeReviews.map((rev, idx) => (
+                                <motion.div key={idx}
+                                  initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                                   transition={{ delay: idx * 0.06 }}
                                   className="p-4 rounded-xl flex flex-col gap-1.5"
-                                  style={{
-                                    background: "rgba(212,163,115,0.07)",
-                                    border: "1px solid rgba(212,163,115,0.25)",
-                                  }}
-                                >
+                                  style={{ background: "rgba(212,163,115,0.07)", border: "1px solid rgba(212,163,115,0.25)" }}>
                                   <div className="flex items-center justify-between">
-                                    <span
-                                      className="text-sm font-semibold"
-                                      style={{
-                                        fontFamily: "'Jost', sans-serif",
-                                        color: "#5c2e0a",
-                                      }}
-                                    >
-                                      {rev.user}
+                                    <span className="text-sm font-semibold"
+                                      style={{ fontFamily: "'Jost', sans-serif", color: "#5c2e0a" }}>
+                                      {rev.user ?? "Anonymous"}
                                     </span>
-                                    <StarRow rating={rev.rating} size="sm" />
+                                    <StarRow rating={rev.rating ?? 0} size="sm" />
                                   </div>
-                                  <p
-                                    className="text-sm leading-relaxed"
-                                    style={{
-                                      fontFamily: "'Cormorant Garamond', serif",
-                                      color: "#7a5238",
-                                      fontSize: "0.9rem",
-                                    }}
-                                  >
-                                    {rev.comment}
+                                  <p className="text-sm leading-relaxed"
+                                    style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5238", fontSize: "0.9rem" }}>
+                                    {rev.comment ?? ""}
                                   </p>
                                 </motion.div>
                               ))
@@ -741,20 +734,13 @@ const viewers = useLiveViewers(
                     </div>
 
                   </div>
-                  {/* ── end RIGHT ── */}
+                  {/* end RIGHT */}
                 </div>
               </div>
-              {/* End scrollable body */}
 
               {/* Bottom gold ornament */}
-              <div
-                className="h-0.5 w-full flex-shrink-0"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)",
-                  opacity: 0.5,
-                }}
-              />
+              <div className="h-0.5 w-full flex-shrink-0"
+                style={{ background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)", opacity: 0.5 }} />
             </motion.div>
           </motion.div>
         </>

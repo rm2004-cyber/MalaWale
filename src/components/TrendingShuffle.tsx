@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { Product as ShopProduct } from "./Productcard";
+import { productService } from "../utils/service";
 
 // ─── Trending item type ───────────────────────────────────────────────────────
 interface TrendingProduct {
@@ -22,113 +23,6 @@ interface TrendingProduct {
 
 type TrendingItem = TrendingProduct | ShopProduct;
 
-const STATIC_PRODUCTS: TrendingProduct[] = [
-  {
-    id: 1,
-    title: "Rudraksha Mala 108 Beads",
-    images: [
-      "https://picsum.photos/seed/rudraksha1/500/500",
-      "https://picsum.photos/seed/rudraksha2/500/500",
-    ],
-    price: 799,
-    originalPrice: 1299,
-    discount: 38,
-    isNew: true,
-    category: "Malas",
-  },
-  {
-    id: 2,
-    title: "Crystal Quartz Bracelet",
-    images: [
-      "https://picsum.photos/seed/crystal1/500/500",
-      "https://picsum.photos/seed/crystal2/500/500",
-    ],
-    price: 549,
-    originalPrice: 899,
-    discount: 39,
-    isNew: false,
-    category: "Bracelets",
-  },
-  {
-    id: 3,
-    title: "Sandalwood Prayer Mala",
-    images: [
-      "https://picsum.photos/seed/sandal1/500/500",
-      "https://picsum.photos/seed/sandal2/500/500",
-    ],
-    price: 1099,
-    originalPrice: 1799,
-    discount: 39,
-    isNew: true,
-    category: "Malas",
-  },
-  {
-    id: 4,
-    title: "Tulsi Mala Sacred Beads",
-    images: [
-      "https://picsum.photos/seed/tulsi1/500/500",
-      "https://picsum.photos/seed/tulsi2/500/500",
-    ],
-    price: 349,
-    originalPrice: 599,
-    discount: 42,
-    isNew: false,
-    category: "Malas",
-  },
-  {
-    id: 5,
-    title: "Amethyst Healing Mala",
-    images: [
-      "https://picsum.photos/seed/amethyst1/500/500",
-      "https://picsum.photos/seed/amethyst2/500/500",
-    ],
-    price: 1499,
-    originalPrice: 2399,
-    discount: 37,
-    isNew: true,
-    category: "Healing",
-  },
-  {
-    id: 6,
-    title: "Sphatik Rosary Crystal",
-    images: [
-      "https://picsum.photos/seed/sphatik1/500/500",
-      "https://picsum.photos/seed/sphatik2/500/500",
-    ],
-    price: 899,
-    originalPrice: 1499,
-    discount: 40,
-    isNew: false,
-    category: "Crystal",
-  },
-  {
-    id: 7,
-    title: "Panchmukhi Rudraksha",
-    images: [
-      "https://picsum.photos/seed/panch1/500/500",
-      "https://picsum.photos/seed/panch2/500/500",
-    ],
-    price: 1999,
-    originalPrice: 2999,
-    discount: 33,
-    isNew: true,
-    category: "Rudraksha",
-  },
-  {
-    id: 8,
-    title: "Lapis Lazuli Mala 108",
-    images: [
-      "https://picsum.photos/seed/lapis1/500/500",
-      "https://picsum.photos/seed/lapis2/500/500",
-    ],
-    price: 1299,
-    originalPrice: 2099,
-    discount: 38,
-    isNew: false,
-    category: "Crystal",
-  },
-];
-
 // ─── Shuffle Utility ──────────────────────────────────────────────────────────
 function shuffleArray<T>(arr: T[]): T[] {
   const copy = [...arr];
@@ -144,7 +38,10 @@ const defaultReviews = [
 ];
 
 function isShopProduct(product: TrendingItem): product is ShopProduct {
-  return (product as ShopProduct).name !== undefined && (product as ShopProduct).sizes !== undefined;
+  return (
+    (product as ShopProduct).name !== undefined &&
+    (product as ShopProduct).sizes !== undefined
+  );
 }
 
 function toModalProduct(product: TrendingItem): ShopProduct {
@@ -183,7 +80,12 @@ interface ProductCardProps {
   onAddToCart?: (product: ShopProduct) => void;
 }
 
-function ProductCard({ product, index, onViewDetails, onAddToCart }: ProductCardProps) {
+function ProductCard({
+  product,
+  index,
+  onViewDetails,
+  onAddToCart,
+}: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(product.images[0]);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -414,18 +316,225 @@ function ProductCard({ product, index, onViewDetails, onAddToCart }: ProductCard
 
 // ─── Main TrendingShuffle Component ──────────────────────────────────────────
 export default function TrendingShuffle({
-  products = STATIC_PRODUCTS,
+  products,
   onViewDetails,
   onAddToCart,
 }: TrendingShuffleProps) {
   const [displayProducts, setDisplayProducts] = useState<TrendingItem[]>([]);
   const [shuffleKey, setShuffleKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchedProducts, setFetchedProducts] = useState<TrendingItem[]>([]);
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
 
+  // ── Fetch live data from MongoDB via productService on mount ──
   useEffect(() => {
-    setDisplayProducts(shuffleArray(products).slice(0, 8));
-  }, [products, shuffleKey]);
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      // If a products prop was explicitly passed, respect it and skip the fetch
+      if (products && products.length > 0) {
+        setFetchedProducts(products);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await productService.getAllProducts();
+
+        if (!isMounted) return;
+
+        // Handle both common API envelope shapes:
+        // { data: { products: [...] } }  or  { data: { data: [...] } }
+        const raw: unknown[] =
+          response?.data?.products ??
+          response?.data?.data ??
+          [];
+
+        // ── MongoDB key normalisation ──────────────────────────────────────
+        //
+        // MongoDB populate() can replace scalar fields with full subdocument
+        // objects, e.g. category: { _id, name, image, ... } instead of "Malas".
+        // Every field extraction below goes through typed helper functions that
+        // safely unwrap either a plain primitive OR a populated object.
+
+        /** Safely extract a plain string from a value that may be a string,
+         *  a populated MongoDB subdocument { name, title, ... }, or undefined. */
+        const extractString = (
+          val: unknown,
+          subKeys: string[] = ["name", "title", "label"]
+        ): string | undefined => {
+          if (typeof val === "string" && val.trim() !== "") return val.trim();
+          if (val && typeof val === "object") {
+            const obj = val as Record<string, unknown>;
+            for (const key of subKeys) {
+              if (typeof obj[key] === "string" && (obj[key] as string).trim() !== "") {
+                return (obj[key] as string).trim();
+              }
+            }
+          }
+          return undefined;
+        };
+
+        /** Safely extract a number from a value that may be a number,
+         *  a numeric string, or a populated subdocument with a numeric field. */
+        const extractNumber = (
+          val: unknown,
+          subKeys: string[] = ["value", "amount", "price"]
+        ): number | undefined => {
+          if (typeof val === "number" && !isNaN(val)) return val;
+          if (typeof val === "string") {
+            const n = parseFloat(val);
+            if (!isNaN(n)) return n;
+          }
+          if (val && typeof val === "object") {
+            const obj = val as Record<string, unknown>;
+            for (const key of subKeys) {
+              if (typeof obj[key] === "number") return obj[key] as number;
+            }
+          }
+          return undefined;
+        };
+
+        /** Safely extract an image URL string from a value that may be a plain
+         *  string URL, an object with a `url`/`src`/`image` key, or undefined. */
+        const extractImageUrl = (val: unknown): string | undefined => {
+          if (typeof val === "string" && val.trim() !== "") return val.trim();
+          if (val && typeof val === "object") {
+            const obj = val as Record<string, unknown>;
+            for (const key of ["url", "src", "image", "path"]) {
+              if (typeof obj[key] === "string") return (obj[key] as string).trim();
+            }
+          }
+          return undefined;
+        };
+
+        const PLACEHOLDER = "https://placehold.co/500x500/f5ede4/c8843a?text=🪬";
+
+        const normalised: TrendingProduct[] = raw.map((item) => {
+          const r = item as Record<string, unknown>;
+
+          // ── Identity ──────────────────────────────────────────────────────
+          const id =
+            extractString(r._id, []) ||
+            extractString(r.id, []) ||
+            String(Math.random());
+
+          // ── Title ─────────────────────────────────────────────────────────
+          const displayTitle =
+            extractString(r.name) ||
+            extractString(r.title) ||
+            "Unnamed Item";
+
+          // ── Images ────────────────────────────────────────────────────────
+          // r.images may be: string[], object[], or a single populated object
+          const rawImages = Array.isArray(r.images) ? r.images : [];
+          const allImages: string[] = rawImages
+            .map((img) => extractImageUrl(img))
+            .filter((url): url is string => !!url);
+
+          // Single-image fallback: r.image field or placeholder
+          if (allImages.length === 0) {
+            const single = extractImageUrl(r.image) ?? PLACEHOLDER;
+            allImages.push(single);
+          }
+
+          // ── Pricing ───────────────────────────────────────────────────────
+          const variants = Array.isArray(r.variants)
+            ? (r.variants as Record<string, unknown>[])
+            : [];
+          const v0 = variants[0] ?? {};
+
+          const price: number =
+            extractNumber(v0.price) ??
+            extractNumber(r.price) ??
+            0;
+
+          const originalPrice: number =
+            extractNumber(v0.mrp) ??
+            extractNumber(r.originalPrice) ??
+            extractNumber(r.mrp) ??
+            price;
+
+          const discountPct =
+            originalPrice > price
+              ? Math.round(((originalPrice - price) / originalPrice) * 100)
+              : 0;
+
+          // ── Category ─────────────────────────────────────────────────────
+          // Frequently a populated object: { _id, name, image, ... }
+          const category =
+            extractString(r.category, ["name", "title", "label"]) ??
+            undefined;
+
+          // ── Misc scalar fields ────────────────────────────────────────────
+          const slug = extractString(r.slug, []) ?? undefined;
+          const description = extractString(r.description, ["text", "body"]) ?? undefined;
+          const isNew = typeof r.isNew === "boolean" ? r.isNew : false;
+          const rating = extractNumber(r.rating, ["value", "average"]) ?? undefined;
+          const ordersCount = extractNumber(r.ordersCount, ["count", "total"]) ?? undefined;
+
+          const sizes = Array.isArray(r.sizes)
+            ? (r.sizes as unknown[]).map((s) => extractString(s) ?? String(s)).filter(Boolean)
+            : undefined;
+
+          const reviews = Array.isArray(r.reviews)
+            ? (r.reviews as unknown[]).map((rv) => {
+                const o = (rv ?? {}) as Record<string, unknown>;
+                return {
+                  user: extractString(o.user, ["name", "username"]) ?? "Customer",
+                  rating: extractNumber(o.rating) ?? 4,
+                  comment: extractString(o.comment, ["text", "body"]) ?? "",
+                };
+              })
+            : undefined;
+
+          return {
+            id,
+            title: displayTitle,
+            slug,
+            images: allImages,
+            price,
+            originalPrice,
+            discount: discountPct,
+            isNew,
+            category,
+            rating,
+            description,
+            sizes,
+            ordersCount,
+            reviews,
+          };
+        });
+
+        setFetchedProducts(normalised);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error("[TrendingShuffle] Failed to fetch products:", error);
+        // On error: render a clean empty state — no hardcoded fallback data
+        setFetchedProducts([]);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Re-shuffle whenever fetchedProducts or shuffleKey changes ──
+  useEffect(() => {
+    if (fetchedProducts.length > 0) {
+      setDisplayProducts(shuffleArray(fetchedProducts).slice(0, 8));
+    } else {
+      setDisplayProducts([]);
+    }
+  }, [fetchedProducts, shuffleKey]);
 
   const handleReshuffle = () => setShuffleKey((k) => k + 1);
 
@@ -526,26 +635,83 @@ export default function TrendingShuffle({
           </motion.button>
         </div>
 
-        {/* ── Product Grid ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={shuffleKey}
-            variants={containerVariants}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6"
-          >
-            {displayProducts.map((product, idx) => (
-              <ProductCard
-                key={`${product.id}-${shuffleKey}`}
-                product={product}
-                index={idx}
-                onViewDetails={onViewDetails}
-                onAddToCart={onAddToCart}
-              />
+        {/* ── Loading Skeleton ── */}
+        {isLoading && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-3">
+                <div
+                  className="rounded-2xl animate-pulse"
+                  style={{
+                    aspectRatio: "1 / 1",
+                    background:
+                      "linear-gradient(90deg, #f5ede4 25%, #eddccc 50%, #f5ede4 75%)",
+                    backgroundSize: "200% 100%",
+                  }}
+                />
+                <div className="px-0.5 flex flex-col gap-2">
+                  <div
+                    className="h-2.5 w-16 rounded animate-pulse"
+                    style={{ backgroundColor: "#e8d5c0" }}
+                  />
+                  <div
+                    className="h-3.5 w-full rounded animate-pulse"
+                    style={{ backgroundColor: "#e8d5c0" }}
+                  />
+                  <div
+                    className="h-3 w-20 rounded animate-pulse"
+                    style={{ backgroundColor: "#e8d5c0" }}
+                  />
+                </div>
+              </div>
             ))}
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        )}
+
+        {/* ── Empty State ── */}
+        {!isLoading && displayProducts.length === 0 && (
+          <div
+            className="flex flex-col items-center justify-center py-20 gap-3"
+            style={{ color: "#c8843a", opacity: 0.6 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-10 h-10">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <p
+              className="text-sm"
+              style={{ fontFamily: "'Jost', sans-serif" }}
+            >
+              No products available at the moment.
+            </p>
+          </div>
+        )}
+
+        {/* ── Product Grid ── */}
+        {!isLoading && displayProducts.length > 0 && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={shuffleKey}
+              variants={containerVariants}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6"
+            >
+              {displayProducts.map((product, idx) => {
+                const raw = product as Record<string, unknown>;
+                const keyId = (raw._id as string) || (raw.id as string) || String(idx);
+                return (
+                  <ProductCard
+                    key={`${keyId}-${shuffleKey}`}
+                    product={product}
+                    index={idx}
+                    onViewDetails={onViewDetails}
+                    onAddToCart={onAddToCart}
+                  />
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        )}
 
         {/* ── Mobile Explore Button ── */}
         <div className="flex justify-center mt-10 sm:hidden">

@@ -1,13 +1,15 @@
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+"use client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useState, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import { authService } from "../utils/service";
+import { toast } from "react-hot-toast";
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
 }
 
-type AuthMethod = "gmail" | "phone";
 type PhasePhone = "input" | "otp";
 
 interface FormError {
@@ -15,115 +17,16 @@ interface FormError {
   message: string;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const VALID_EMAIL = "admin@malawale.com";
-const VALID_PASSWORD = "mala2026";
-const VALID_OTP = "123456";
-
-// ─── Spiritual Watermark SVG ─────────────────────────────────────────────────
+let errorCounter = 0;
 
 const OmWatermark = () => (
-  <svg
-    viewBox="0 0 200 200"
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-full h-full"
-    aria-hidden="true"
-  >
-    {/* Decorative lotus petals */}
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" aria-hidden="true">
     {Array.from({ length: 8 }).map((_, i) => (
-      <ellipse
-        key={i}
-        cx="100"
-        cy="100"
-        rx="12"
-        ry="38"
-        fill="#8b4513"
-        transform={`rotate(${i * 45} 100 100)`}
-        opacity="0.6"
-      />
+      <ellipse key={i} cx="100" cy="100" rx="12" ry="38" fill="#8b4513" transform={`rotate(${i * 45} 100 100)`} opacity="0.6" />
     ))}
-    {/* OM symbol approximated with paths */}
-    <text
-      x="100"
-      y="118"
-      textAnchor="middle"
-      fontFamily="serif"
-      fontSize="72"
-      fill="#8b4513"
-      fontWeight="bold"
-    >
-      ॐ
-    </text>
-    {/* Outer decorative ring */}
+    <text x="100" y="118" textAnchor="middle" fontFamily="serif" fontSize="72" fill="#8b4513" fontWeight="bold">ॐ</text>
     <circle cx="100" cy="100" r="92" fill="none" stroke="#c8843a" strokeWidth="1.5" strokeDasharray="4 6" />
     <circle cx="100" cy="100" r="98" fill="none" stroke="#8b4513" strokeWidth="0.8" opacity="0.5" />
-  </svg>
-);
-
-// ─── Toggle Pill ──────────────────────────────────────────────────────────────
-
-interface ToggleProps {
-  method: AuthMethod;
-  onChange: (m: AuthMethod) => void;
-}
-
-const AuthToggle = ({ method, onChange }: ToggleProps) => (
-  <div className="relative flex items-center rounded-2xl bg-orange-50 border border-orange-100 p-1 gap-1">
-    {(["gmail", "phone"] as AuthMethod[]).map((m) => {
-      const active = method === m;
-      return (
-        <button
-          key={m}
-          type="button"
-          onClick={() => onChange(m)}
-          className="relative flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-colors duration-200 z-10"
-          style={{
-            fontFamily: "'Jost', sans-serif",
-            color: active ? "#fff" : "#8b4513",
-          }}
-        >
-          {active && (
-            <motion.div
-              layoutId="auth-pill"
-              className="absolute inset-0 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)" }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-          )}
-          <span className="relative z-10">
-            {m === "gmail" ? (
-              <>
-                <span className="inline-flex items-center gap-1.5">
-                  <GmailIcon active={active} />
-                  Gmail
-                </span>
-              </>
-            ) : (
-              <span className="inline-flex items-center gap-1.5">
-                <PhoneIcon active={active} />
-                Phone / OTP
-              </span>
-            )}
-          </span>
-        </button>
-      );
-    })}
-  </div>
-);
-
-// ─── Micro-icons ──────────────────────────────────────────────────────────────
-
-const GmailIcon = ({ active }: { active: boolean }) => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={active ? "#fff" : "#c8843a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="3" />
-    <path d="m2 7 10 7 10-7" />
-  </svg>
-);
-
-const PhoneIcon = ({ active }: { active: boolean }) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={active ? "#fff" : "#c8843a"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
   </svg>
 );
 
@@ -134,24 +37,6 @@ const LockIcon = () => (
   </svg>
 );
 
-const EyeIcon = ({ show }: { show: boolean }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {show ? (
-      <>
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-        <line x1="1" y1="1" x2="23" y2="23" />
-      </>
-    ) : (
-      <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
-    )}
-  </svg>
-);
-
-// ─── Input Field ──────────────────────────────────────────────────────────────
-
 interface InputFieldProps {
   label: string;
   type?: string;
@@ -160,7 +45,6 @@ interface InputFieldProps {
   placeholder?: string;
   maxLength?: number;
   prefix?: string;
-  rightSlot?: React.ReactNode;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   autoComplete?: string;
   disabled?: boolean;
@@ -174,7 +58,6 @@ const InputField = ({
   placeholder,
   maxLength,
   prefix,
-  rightSlot,
   inputMode,
   autoComplete,
   disabled = false,
@@ -183,10 +66,7 @@ const InputField = ({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label
-        className="text-xs font-semibold uppercase tracking-widest"
-        style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}
-      >
+      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}>
         {label}
       </label>
       <div
@@ -197,10 +77,7 @@ const InputField = ({
         }}
       >
         {prefix && (
-          <span
-            className="pl-4 pr-2 text-sm font-semibold select-none"
-            style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
-          >
+          <span className="pl-4 pr-2 text-sm font-semibold select-none" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}>
             {prefix}
           </span>
         )}
@@ -218,13 +95,10 @@ const InputField = ({
           className="flex-1 py-3.5 px-4 text-sm bg-transparent outline-none disabled:opacity-50"
           style={{ fontFamily: "'Jost', sans-serif", color: "#3d1a05" }}
         />
-        {rightSlot && <div className="pr-4">{rightSlot}</div>}
       </div>
     </div>
   );
 };
-
-// ─── OTP Boxes ────────────────────────────────────────────────────────────────
 
 interface OtpInputProps {
   value: string;
@@ -234,21 +108,12 @@ interface OtpInputProps {
 const OtpInput = ({ value, onChange }: OtpInputProps) => {
   const digits = value.padEnd(6, " ").split("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
-    onChange(raw);
-  };
-
   return (
     <div className="flex flex-col gap-1.5">
-      <label
-        className="text-xs font-semibold uppercase tracking-widest"
-        style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}
-      >
+      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}>
         Enter 6-Digit OTP
       </label>
       <div className="relative">
-        {/* Visual digit boxes */}
         <div className="flex gap-2 pointer-events-none select-none" aria-hidden>
           {digits.map((d, i) => (
             <div
@@ -266,13 +131,12 @@ const OtpInput = ({ value, onChange }: OtpInputProps) => {
             </div>
           ))}
         </div>
-        {/* Transparent real input overlaid */}
         <input
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
           value={value}
-          onChange={handleChange}
+          onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
           maxLength={6}
           className="absolute inset-0 w-full h-full opacity-0 cursor-text"
           aria-label="OTP input"
@@ -285,8 +149,6 @@ const OtpInput = ({ value, onChange }: OtpInputProps) => {
     </div>
   );
 };
-
-// ─── Primary Button ───────────────────────────────────────────────────────────
 
 interface PrimaryButtonProps {
   label: string;
@@ -310,18 +172,16 @@ const PrimaryButton = ({ label, loading = false, onClick, disabled = false }: Pr
       letterSpacing: "0.04em",
     }}
   >
-    {loading ? (
+    {loading && (
       <motion.span
         className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full"
         animate={{ rotate: 360 }}
         transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
       />
-    ) : null}
+    )}
     {label}
   </motion.button>
 );
-
-// ─── Error Badge ──────────────────────────────────────────────────────────────
 
 const ErrorBadge = ({ message }: { message: string }) => (
   <motion.div
@@ -348,252 +208,144 @@ const ErrorBadge = ({ message }: { message: string }) => (
   </motion.div>
 );
 
-// ─── Gmail Login Form ─────────────────────────────────────────────────────────
-
-interface GmailFormProps {
-  onSuccess: () => void;
-  onError: (msg: string) => void;
-}
-
-const GmailForm = ({ onSuccess, onError }: GmailFormProps) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = useCallback(() => {
-    if (!email.trim()) { onError("Please enter your admin email address."); return; }
-    if (!password) { onError("Password is required."); return; }
-
-    setLoading(true);
-    // Simulate async auth check
-    setTimeout(() => {
-      setLoading(false);
-      if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-        onSuccess();
-      } else {
-        onError("Invalid credentials. Please check your email and password.");
-      }
-    }, 1100);
-  }, [email, password, onSuccess, onError]);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <InputField
-        label="Admin Email"
-        type="email"
-        value={email}
-        onChange={setEmail}
-        placeholder="admin@malawale.com"
-        autoComplete="email"
-      />
-      <InputField
-        label="Password"
-        type={showPw ? "text" : "password"}
-        value={password}
-        onChange={setPassword}
-        placeholder="Enter secure password"
-        autoComplete="current-password"
-        rightSlot={
-          <button
-            type="button"
-            onClick={() => setShowPw((p) => !p)}
-            className="text-orange-300 hover:text-orange-500 transition-colors"
-            tabIndex={-1}
-          >
-            <EyeIcon show={showPw} />
-          </button>
-        }
-      />
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          className="text-xs hover:underline transition-opacity opacity-60 hover:opacity-100"
-          style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
-        >
-          Forgot password?
-        </button>
-      </div>
-      <PrimaryButton label="Sign In Securely" loading={loading} onClick={handleLogin} />
-    </div>
-  );
-};
-
-// ─── Phone OTP Form ───────────────────────────────────────────────────────────
-
-interface PhoneFormProps {
-  onSuccess: () => void;
-  onError: (msg: string) => void;
-}
-
-const PhoneForm = ({ onSuccess, onError }: PhoneFormProps) => {
+export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
+  const { sendOtp, verifyOtp } = useAuth(); 
   const [phase, setPhase] = useState<PhasePhone>("input");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
-
-  const startResendTimer = () => {
-    setResendTimer(30);
-    const interval = setInterval(() => {
-      setResendTimer((t) => {
-        if (t <= 1) { clearInterval(interval); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-  };
-
-  const handleSendOtp = useCallback(() => {
-    const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length !== 10) { onError("Please enter a valid 10-digit mobile number."); return; }
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setOtpSent(true);
-      setPhase("otp");
-      startResendTimer();
-    }, 900);
-  }, [phone, onError]);
-
-  const handleVerifyOtp = useCallback(() => {
-    if (otp.length !== 6) { onError("Please enter the complete 6-digit OTP."); return; }
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (otp === VALID_OTP) {
-        onSuccess();
-      } else {
-        onError("Incorrect OTP. Please try again or request a new one.");
-      }
-    }, 1000);
-  }, [otp, onSuccess, onError]);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <AnimatePresence mode="wait">
-        {phase === "input" ? (
-          <motion.div
-            key="phone-input"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
-            className="flex flex-col gap-4"
-          >
-            <InputField
-              label="Mobile Number"
-              type="tel"
-              value={phone}
-              onChange={(v) => setPhone(v.replace(/\D/g, "").slice(0, 10))}
-              placeholder="Enter 10-digit number"
-              prefix="+91"
-              inputMode="numeric"
-              maxLength={10}
-              autoComplete="tel"
-            />
-            <PrimaryButton
-              label={loading ? "Sending OTP…" : "Send OTP"}
-              loading={loading}
-              onClick={handleSendOtp}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="otp-input"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
-            className="flex flex-col gap-4"
-          >
-            {/* Sent confirmation */}
-            {otpSent && (
-              <div
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs"
-                style={{ background: "rgba(139,69,19,0.07)", fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7z" />
-                </svg>
-                OTP sent to +91 {phone}
-              </div>
-            )}
-            <OtpInput value={otp} onChange={setOtp} />
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                disabled={resendTimer > 0}
-                onClick={() => {
-                  setOtp("");
-                  setPhase("input");
-                  setOtpSent(false);
-                }}
-                className="text-xs hover:underline disabled:opacity-40 transition-opacity"
-                style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
-              >
-                ← Change number
-              </button>
-              <button
-                type="button"
-                disabled={resendTimer > 0}
-                onClick={handleSendOtp}
-                className="text-xs hover:underline disabled:opacity-40 transition-opacity"
-                style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a" }}
-              >
-                {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
-              </button>
-            </div>
-            <PrimaryButton
-              label={loading ? "Verifying…" : "Verify & Enter"}
-              loading={loading}
-              onClick={handleVerifyOtp}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-let errorCounter = 0;
-
-export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
-  const [method, setMethod] = useState<AuthMethod>("gmail");
   const [error, setError] = useState<FormError | null>(null);
 
   const triggerError = useCallback((message: string) => {
     errorCounter += 1;
     setError({ id: errorCounter, message });
-    // Auto-clear after 5s
     const id = errorCounter;
     setTimeout(() => {
       setError((prev) => (prev?.id === id ? null : prev));
     }, 5000);
   }, []);
 
-  const handleMethodChange = (m: AuthMethod) => {
-    setError(null);
-    setMethod(m);
+  const startResendTimer = () => {
+    setResendTimer(30);
+    const interval = setInterval(() => {
+      setResendTimer((t) => {
+        if (t <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
   };
 
+  // 🧹 Safe structural cleanup node logic to prevent duplicate registration crash
+  const cleanRecaptchaContext = () => {
+    const globalVerifier = (window as any).recaptchaVerifier;
+    if (globalVerifier) {
+      try {
+        globalVerifier.clear();
+        (window as any).recaptchaVerifier = null;
+      } catch (e) {
+        console.warn("reCAPTCHA contextual clearance bypass:", e);
+      }
+    }
+    const anchor = document.getElementById("admin-recaptcha-anchor");
+    if (anchor) anchor.innerHTML = "";
+  };
+
+  // Clear reCAPTCHA instance on unmount
+  useEffect(() => {
+    return () => cleanRecaptchaContext();
+  }, []);
+
+  const handleSendOtp = async () => {
+    const cleaned = phone.replace(/\D/g, "");
+    if (cleaned.length !== 10) {
+      triggerError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    // 🔥 Flush active instance before triggering a new registration call
+    cleanRecaptchaContext();
+
+    try {
+      const res = await sendOtp(cleaned, "admin-recaptcha-anchor");
+      if (res.success) {
+        toast.success("Security token triggered successfully! 📿");
+        setPhase("otp");
+        startResendTimer();
+      } else {
+        triggerError(res.error || "Failed to trigger security OTP loop.");
+        cleanRecaptchaContext();
+      }
+    } catch (err: any) {
+      triggerError(err?.message || "Internal network failure context.");
+      cleanRecaptchaContext();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      triggerError("Please enter the complete 6-digit OTP.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Verify token context from live Firebase core setup instance
+      const res = await verifyOtp(otp);
+      
+      if (res.success) {
+        const idToken = res.token || localStorage.getItem("token");
+
+        // 2. Transmit token grid parameters to synchronized cluster endpoint node
+        const apiResponse = await authService.firebaseLogin({
+          token: idToken,
+          phone: `+91${phone.replace(/\D/g, "")}`
+        });
+
+        if (apiResponse && apiResponse.data && apiResponse.data.success) {
+          const loggedUser = apiResponse.data.user; // Actual dynamic document layer payload mapping
+          
+          // Gatekeeper lock protection mapping validator checks
+          if (loggedUser?.role !== "admin") {
+            triggerError("Access Forbidden: Your credentials are not authorized on the Admin Portal.");
+            cleanRecaptchaContext();
+            return;
+          }
+
+          toast.success("Welcome, Sanwariya Administrator! 🙏");
+          
+          // 🔥 FIXED LOGIC: Passing real backend user data object back to Admindashboard hierarchy state layer
+          onLoginSuccess(loggedUser); 
+        } else {
+          triggerError(apiResponse?.data?.message || "Database synchronization failed.");
+        }
+      } else {
+        triggerError(res.error || "Makhanchor! Galat OTP daala hai.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      triggerError("Authorization failed. Ensure your account role is set to admin.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
-      {/* Google Fonts */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Jost:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
       `}</style>
 
-      <div
-        className="min-h-screen w-full flex items-center justify-center px-4 py-10 relative overflow-hidden"
-        style={{ background: "#fff9f2" }}
-      >
-        {/* ── Watermark ──────────────────────────────────────────── */}
+      <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 relative overflow-hidden" style={{ background: "#fff9f2" }}>
         <div
           className="pointer-events-none select-none absolute"
           style={{
@@ -608,7 +360,6 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <OmWatermark />
         </div>
 
-        {/* ── Ambient gradient blobs ──────────────────────────────── */}
         <div
           className="pointer-events-none absolute top-0 left-0 w-72 h-72 rounded-full"
           style={{
@@ -624,7 +375,6 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           }}
         />
 
-        {/* ── Card ───────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -632,10 +382,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           className="relative z-10 max-w-md w-full bg-white rounded-3xl p-8 border border-orange-100 shadow-xl"
           style={{ boxShadow: "0 8px 48px rgba(139,69,19,0.13), 0 2px 12px rgba(139,69,19,0.07)" }}
         >
-
-          {/* ── Brand Header ───────────────────────────────────────── */}
           <div className="flex flex-col items-center mb-7">
-            {/* Logo mark */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -646,79 +393,113 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               <span style={{ fontSize: 32, lineHeight: 1, color: "#fff9f2" }}>ॐ</span>
             </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.45 }}
-              className="text-2xl font-bold tracking-[0.15em] uppercase"
-              style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}
-            >
+            <h1 className="text-2xl font-bold tracking-[0.15em] uppercase" style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}>
               Mala Wale
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="text-xs tracking-widest uppercase mt-1 font-medium"
-              style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a", opacity: 0.75 }}
-            >
+            <p className="text-xs tracking-widest uppercase mt-1 font-medium" style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a", opacity: 0.75 }}>
               By Sanwariya Handicraft · Admin Portal
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="mt-4 h-px w-24 rounded-full"
-              style={{ background: "linear-gradient(90deg, transparent, #d4a373, transparent)" }}
-            />
+            <div className="mt-4 h-px w-24 rounded-full" style={{ background: "linear-gradient(90deg, transparent, #d4a373, transparent)" }} />
           </div>
 
-          {/* ── Error Banner ────────────────────────────────────────── */}
           <div className="mb-4 min-h-0">
             <AnimatePresence mode="wait">
               {error && <ErrorBadge key={error.id} message={error.message} />}
             </AnimatePresence>
           </div>
 
-          {/* ── Auth Method Toggle ──────────────────────────────────── */}
-          <div className="mb-6">
-            <AuthToggle method={method} onChange={handleMethodChange} />
+          <div className="flex flex-col gap-4">
+            <AnimatePresence mode="wait">
+              {phase === "input" ? (
+                <motion.div
+                  key="phone-input"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  className="flex flex-col gap-4"
+                >
+                  <InputField
+                    label="Authorized Mobile Number"
+                    type="tel"
+                    value={phone}
+                    onChange={(v) => setPhone(v.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="Enter 10-digit admin number"
+                    prefix="+91"
+                    inputMode="numeric"
+                    maxLength={10}
+                    autoComplete="tel"
+                  />
+                  
+                  {/* 🔥 Target container node for reCAPTCHA widget binding safely */}
+                  <div id="admin-recaptcha-anchor" className="flex justify-center my-1" />
+
+                  <PrimaryButton
+                    label={loading ? "Verifying Security Grid…" : "Send Access OTP"}
+                    loading={loading}
+                    onClick={handleSendOtp}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="otp-input"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  className="flex flex-col gap-4"
+                >
+                  <div
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs"
+                    style={{ background: "rgba(139,69,19,0.07)", fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7z" />
+                    </svg>
+                    Secure passkey transmitted to +91 {phone}
+                  </div>
+                  
+                  <OtpInput value={otp} onChange={setOtp} />
+                  
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      disabled={resendTimer > 0}
+                      onClick={() => {
+                        setOtp("");
+                        cleanRecaptchaContext();
+                        setPhase("input");
+                      }}
+                      className="text-xs hover:underline disabled:opacity-40 transition-opacity"
+                      style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={resendTimer > 0}
+                      onClick={handleSendOtp}
+                      className="text-xs hover:underline disabled:opacity-40 transition-opacity"
+                      style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a" }}
+                    >
+                      {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
+                    </button>
+                  </div>
+                  <PrimaryButton
+                    label={loading ? "Authorizing Identity…" : "Verify & Open Gateway"}
+                    loading={loading}
+                    onClick={handleVerifyOtp}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* ── Form Area ──────────────────────────────────────────── */}
-          <AnimatePresence mode="wait">
-            {method === "gmail" ? (
-              <motion.div
-                key="gmail-form"
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 18 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-              >
-                <GmailForm onSuccess={onLoginSuccess} onError={triggerError} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="phone-form"
-                initial={{ opacity: 0, x: 18 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -18 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-              >
-                <PhoneForm onSuccess={onLoginSuccess} onError={triggerError} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Security Footer ─────────────────────────────────────── */}
           <div className="mt-7 pt-5 border-t border-orange-50 flex items-center justify-center gap-2">
             <LockIcon />
-            <p
-              className="text-xs text-center opacity-50"
-              style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
-            >
+            <p className="text-xs text-center opacity-50" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}>
               Secured admin gateway · Unauthorized access is prohibited
             </p>
           </div>

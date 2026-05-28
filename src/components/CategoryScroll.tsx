@@ -12,6 +12,7 @@ import {
   useReducedMotion,
   type Variants,
 } from "framer-motion";
+import { categoryService } from "../utils/service";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -168,14 +169,16 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
   const [sparkleKey, setSparkleKey] = useState(0);
   const shouldReduce = useReducedMotion();
 
-  const handleClick = useCallback(() => {
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     onClick(item.id);
     if (!shouldReduce) {
       setSparkleKey((k) => k + 1);
       setShowSparkle(true);
       setTimeout(() => setShowSparkle(false), 850);
     }
-  }, [item.id, onClick, shouldReduce]);
+  };
 
   return (
     <motion.li
@@ -185,12 +188,12 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
     >
       <motion.button
         onClick={handleClick}
+        onTouchEnd={handleClick}
         aria-pressed={isActive}
         aria-label={`Filter by ${item.name}`}
         whileTap={{ scale: 0.95 }}
         className="relative cursor-pointer outline-none focus-visible:ring-2"
         style={{
-          // Padding scales slightly so it feels right at all sizes
           padding: "8px 18px",
           borderRadius: 100,
           fontFamily: "'Jost', sans-serif",
@@ -199,7 +202,6 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
           letterSpacing: isActive ? "0.06em" : "0.03em",
           whiteSpace: "nowrap",
           border: "none",
-          // Colors handled via motion.button animated styles
           color: isActive ? "#fff9f2" : "#6b3e1e",
           background: "transparent",
           transition: "color 0.25s",
@@ -208,6 +210,7 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
           gap: 6,
           userSelect: "none",
           WebkitTapHighlightColor: "transparent",
+          zIndex: 10,
         }}
       >
         {/* ── Shared-layout background pill ─────────────────────────── */}
@@ -227,7 +230,7 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
           />
         )}
 
-        {/* ── Inactive pill border (always rendered, fades out when active) ── */}
+        {/* ── Inactive pill border ── */}
         {!isActive && (
           <motion.span
             className="absolute inset-0"
@@ -248,7 +251,7 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
           />
         )}
 
-        {/* ── Rudraksha icon (always shown on active, decorative) ─────── */}
+        {/* ── Rudraksha icon ─────── */}
         <AnimatePresence>
           {isActive && (
             <motion.span
@@ -305,6 +308,10 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
   const [selected, setSelected] = useState('all');
   const currentSelected = selectedProp ?? selected;
 
+  const [categoriesList, setCategoriesList] = useState<CategoryItem[]>([
+    { id: 'all', name: 'All Products' }
+  ]);
+
   const handleSelect = useCallback(
     (id: string) => {
       if (selectedProp === undefined) {
@@ -319,32 +326,81 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
   const isDragging = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
+  const dragThresholdMet = useRef(false);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
 
-  // ── Mouse drag-scroll ───────────────────────────────────────────────────
+  // ── Data Fetching Lifecycle ─────────────────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryService.getCategories();
+        
+        if (response?.data?.categories && Array.isArray(response.data.categories) && response.data.categories.length > 0) {
+          const mappedCategories: CategoryItem[] = response.data.categories.map((cat: any) => ({
+            id: cat.id || cat._id,
+            name: cat.name,
+          }));
+
+          if (isMounted) {
+            setCategoriesList([
+              { id: 'all', name: 'All Products' },
+              ...mappedCategories
+            ]);
+          }
+        } else {
+          if (isMounted) {
+            setCategoriesList(categories);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to dynamically resolve CategoryScroll items from DB context:", error);
+        if (isMounted) {
+          setCategoriesList(categories);
+        }
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // ── Mouse drag-scroll fixes (prevents mouse capture from blocking clicks) ──
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     const el = scrollRef.current;
     if (!el) return;
     isDragging.current = true;
+    dragThresholdMet.current = false;
     startX.current = e.clientX - el.offsetLeft;
     scrollLeft.current = el.scrollLeft;
-    el.setPointerCapture(e.pointerId);
-    el.style.cursor = "grabbing";
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!isDragging.current || !scrollRef.current) return;
-    e.preventDefault();
     const x = e.clientX - scrollRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.2;
-    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    
+    if (Math.abs(walk) > 5) {
+      dragThresholdMet.current = true;
+      if (scrollRef.current.pointerId === undefined) {
+        scrollRef.current.setPointerCapture(e.pointerId);
+      }
+      scrollRef.current.style.cursor = "grabbing";
+      scrollRef.current.scrollLeft = scrollLeft.current - walk;
+    }
   };
 
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
     isDragging.current = false;
     if (scrollRef.current) {
-      scrollRef.current.releasePointerCapture(e.pointerId);
+      try {
+        scrollRef.current.releasePointerCapture(e.pointerId);
+      } catch (err) {}
       scrollRef.current.style.cursor = "grab";
     }
   };
@@ -363,9 +419,9 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
     updateFades();
     el.addEventListener("scroll", updateFades, { passive: true });
     return () => el.removeEventListener("scroll", updateFades);
-  }, [updateFades]);
+  }, [updateFades, categoriesList]);
 
-  // ── Auto-scroll to keep active pill visible ──────────────────────────────
+  // ── Auto-scroll ─────────────────────────────────────────────────────────
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -374,7 +430,7 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
     const { offsetLeft, offsetWidth } = activeBtn;
     const targetScroll = offsetLeft - el.offsetWidth / 2 + offsetWidth / 2;
     el.scrollTo({ left: targetScroll, behavior: "smooth" });
-  }, [selected]);
+  }, [currentSelected]);
 
   return (
     <section
@@ -386,7 +442,6 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
         position: "relative",
       }}
     >
-      {/* ── Decorative top rule ─────────────────────────────────────── */}
       <div
         aria-hidden="true"
         style={{
@@ -403,7 +458,6 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
         }}
       />
 
-      {/* ── Left fade mask ──────────────────────────────────────────── */}
       <AnimatePresence>
         {showLeftFade && (
           <motion.div
@@ -426,7 +480,6 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ── Right fade mask ─────────────────────────────────────────── */}
       <AnimatePresence>
         {showRightFade && (
           <motion.div
@@ -449,7 +502,6 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ── Scrollable track ────────────────────────────────────────── */}
       <div
         ref={scrollRef}
         onPointerDown={onPointerDown}
@@ -466,26 +518,25 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
           padding: "12px 24px",
           position: "relative",
           zIndex: 1,
-        //   display: "flex",
-         justifyContent: categories.length <= 5 ? "center" : "flex-start",
+          justifyContent: categoriesList.length <= 5 ? "center" : "flex-start",
         }}
         className="[&::-webkit-scrollbar]:hidden"
       >
-   <motion.ul
-  variants={listVariants}
-  initial="hidden"
-  animate="show"
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    margin: "0 auto",
-    padding: 0,
-    width: "max-content",
-  }}
-  role="list"
->
-          {categories.map((cat, i) => (
+        <motion.ul
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            margin: "0 auto",
+            padding: 0,
+            width: "max-content",
+          }}
+          role="list"
+        >
+          {categoriesList.map((cat, i) => (
             <CategoryPill
               key={cat.id}
               item={cat}
@@ -497,7 +548,6 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
         </motion.ul>
       </div>
 
-      {/* ── Decorative bottom rule ──────────────────────────────────── */}
       <div
         aria-hidden="true"
         style={{
