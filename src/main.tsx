@@ -16,11 +16,13 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const socketInstance = io("https://malawale.onrender.com", {
-      transports: ["polling", "websocket"],
-      autoConnect: true
-    });
+useEffect(() => {
+
+  const socketInstance = io("/", {
+    transports: ["websocket"], 
+    upgrade: false, 
+    autoConnect: true
+  });
 
     setSocket(socketInstance);
 
