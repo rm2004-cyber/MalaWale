@@ -8,7 +8,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // 🔥 Apne backend ka live URL yahan bitha de
-    const socketInstance = io("http://localhost:5000", {
+    const socketInstance = io("https://malawale.onrender.com", {
       transports: ["websocket"],
       autoConnect: true,
     });

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-  ? 'http://localhost:5000/api' 
+  ? 'https://malawale.onrender.com/api' 
   : '/api'; 
 
 const api = axios.create({

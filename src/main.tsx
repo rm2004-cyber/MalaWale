@@ -17,7 +17,7 @@ function SocketProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
   useEffect(() => {
-    const socketInstance = io("http://localhost:5000", {
+    const socketInstance = io("https://malawale.onrender.com", {
       transports: ["polling", "websocket"],
       autoConnect: true
     });

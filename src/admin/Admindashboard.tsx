@@ -155,7 +155,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchLiveMetricsStats();
-    const socket = io("http://localhost:5000", { transports: ["polling", "websocket"], autoConnect: true });
+    const socket = io("https://malawale.onrender.com", { transports: ["polling", "websocket"], autoConnect: true });
     socket.on("liveViewersUpdate", (data: { count: number }) => {
       if (typeof data?.count === "number") setLiveViewers(data.count);
     });
