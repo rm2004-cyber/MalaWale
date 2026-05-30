@@ -6,11 +6,11 @@ exports.createCoupon = async (req, res) => {
   try {
     const couponData = req.body;
     const existing = await Coupon.findOne({ code: couponData.code.toUpperCase() });
-    if (existing) return res.status(400).json({ success: false, message: "Ye coupon code pehle se bana hua hai!" });
+    if (existing) return res.status(400).json({ success: false, message: "This coupon code already exists." });
 
     const newCoupon = new Coupon(couponData);
     await newCoupon.save();
-    res.status(201).json({ success: true, coupon: newCoupon, message: "Coupon successfully ban gaya! 🎟️" });
+    res.status(201).json({ success: true, coupon: newCoupon, message: "Coupon successfully created." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Create Coupon Error", error: error.message });
   }
@@ -31,8 +31,8 @@ exports.deleteCoupon = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Coupon.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ success: false, message: "Coupon nahi mila!" });
-    res.status(200).json({ success: true, message: "Coupon delete ho gaya! 🗑️" });
+    if (!deleted) return res.status(404).json({ success: false, message: "Coupon not found." });
+    res.status(200).json({ success: true, message: "Coupon successfully deleted." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Delete Coupon Error" });
   }
@@ -45,16 +45,16 @@ exports.validateCoupon = async (req, res) => {
     const userId = req.user._id;
 
     const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
-    if (!coupon) return res.status(404).json({ success: false, message: "Invalid ya expired coupon code hai bhai!" });
+    if (!coupon) return res.status(404).json({ success: false, message: "Invalid or expired coupon code." });
 
     if (new Date() > coupon.expiryDate) {
-      return res.status(400).json({ success: false, message: "Ye coupon expire ho chuka hai! ⏳" });
+      return res.status(400).json({ success: false, message: "This coupon has expired." });
     }
 
     if (coupon.isFirstOrderOnly) {
       const previousOrder = await Order.findOne({ user: userId, orderStatus: { $ne: 'Cancelled' } });
       if (previousOrder) {
-        return res.status(400).json({ success: false, message: "Ye coupon sirf first order ke liye valid hai! 🛍️" });
+        return res.status(400).json({ success: false, message: "This coupon is only valid for your first order." });
       }
     }
 
@@ -67,12 +67,12 @@ exports.validateCoupon = async (req, res) => {
         .sort((a, b) => b.minCartValue - a.minCartValue)[0];
 
       if (!matchedSlab) {
-        return res.status(400).json({ success: false, message: `Is coupon ke liye minimum cart amount kam hai!` });
+        return res.status(400).json({ success: false, message: "Minimum cart amount criteria is not met." });
       }
       discount = matchedSlab.discountAmount;
     } else {
       if (cartAmount < coupon.minCartValue) {
-        return res.status(400).json({ success: false, message: `Ye coupon lagane ke liye kam se kam ₹${coupon.minCartValue} ki shopping karo!` });
+        return res.status(400).json({ success: false, message: `Minimum order value of ₹${coupon.minCartValue} is required to apply this coupon.` });
       }
 
       if (coupon.discountType === 'Flat') {
@@ -88,7 +88,7 @@ exports.validateCoupon = async (req, res) => {
     const finalAmount = cartAmount - discount;
     res.status(200).json({
       success: true,
-      message: "Coupon applied successfully! 🎉",
+      message: "Coupon applied successfully.",
       discountAmount: discount,
       finalAmount: finalAmount < 0 ? 0 : finalAmount
     });

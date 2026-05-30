@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { favoriteService, cartService } from "../utils/service";
+import { useCart } from "../context/CartContext";
 
 const CloseIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
@@ -109,6 +110,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function WishlistModal({ onClose }: { onClose: () => void }) {
+  const { addToCart: globalAddToCart } = useCart();
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   // Tracks which product IDs are currently mid-request to prevent double-taps
@@ -164,26 +166,17 @@ export default function WishlistModal({ onClose }: { onClose: () => void }) {
     setAddingToCart((prev) => new Set(prev).add(productId));
 
     try {
-      await cartService.addToCart({
-        productId,
-        quantity: 1,
-      size:
-  targetProduct?.variants?.[0]?.size ||
-  targetProduct?.sizes?.[0] ||
-  targetProduct?.size ||
-  targetProduct?.defaultSize ||
-  "Standard",
-      });
+      const resolvedSize = targetProduct?.variants?.[0]?.size ||
+        targetProduct?.sizes?.[0] ||
+        targetProduct?.size ||
+        targetProduct?.defaultSize ||
+        "Standard";
 
-      // Show transient success state on the button for 2 seconds
-      setAddedToCart((prev) => new Set(prev).add(productId));
-      setTimeout(() => {
-        setAddedToCart((prev) => {
-          const next = new Set(prev);
-          next.delete(productId);
-          return next;
-        });
-      }, 2000);
+      const res = await globalAddToCart(productId, resolvedSize, 1);
+      if (res && res.success) {
+        // Automatically remove from favorites after adding to cart
+        await handleRemoveFavorite(productId);
+      }
     } catch (err) {
       console.error("[WishlistModal] addToCart failed:", err);
     } finally {

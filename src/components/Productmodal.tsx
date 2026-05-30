@@ -251,13 +251,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
     setCartState("idle");
     setTab("details");
     setNoVariant(false);
-    // Auto-select first inStock variant
-    if (safeVariants.length > 0) {
+
+    // A product requires explicit size selection if it has multiple variants
+    const requiresSizeSelection = safeVariants.length > 1;
+
+    // Auto-select first inStock variant ONLY if no explicit selection is required
+    if (requiresSizeSelection) {
+      setSelectedVariant(undefined);
+    } else if (safeVariants.length > 0) {
       setSelectedVariant(safeVariants.find((v) => v.inStock) ?? safeVariants[0]);
     } else {
       setSelectedVariant(undefined);
     }
-  }, [product?._id, product?.id]);
+  }, [product?._id, product?.id, safeVariants.length]);
 
   // Keyboard + scroll lock
   const handleKey = useCallback((e: KeyboardEvent) => {
@@ -605,7 +611,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <div className="w-full">
                       <CartAction
                         product={product}
-                        selectedSize={selectedVariant?.size || "Standard"}
+                        selectedSize={selectedVariant?.size || ""}
                         layout="wide"
                         onAddToCartSuccess={() => onAddToCart && onAddToCart(product, selectedVariant)}
                       />

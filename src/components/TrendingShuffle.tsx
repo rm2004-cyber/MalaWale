@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { Product as ShopProduct } from "./Productcard";
 import { productService } from "../utils/service";
+import CartAction from "./CartAction";
 
 // ─── Trending item type ───────────────────────────────────────────────────────
 interface TrendingProduct {
@@ -19,6 +20,7 @@ interface TrendingProduct {
   sizes?: string[];
   ordersCount?: number;
   reviews?: { user: string; rating: number; comment: string }[];
+  variants?: any[];
 }
 
 type TrendingItem = TrendingProduct | ShopProduct;
@@ -62,6 +64,7 @@ function toModalProduct(product: TrendingItem): ShopProduct {
     sizes: product.sizes ?? ["Standard"],
     ordersCount: product.ordersCount ?? 120,
     reviews: product.reviews ?? defaultReviews,
+    variants: product.variants,
   };
 }
 
@@ -103,6 +106,29 @@ function ProductCard({
         )
       : 0;
   const isNewFlag = "isNew" in product && product.isNew;
+
+  const productVariants = "variants" in product && Array.isArray(product.variants) && product.variants.length > 0
+    ? product.variants
+    : undefined;
+
+  const hasMultipleSizes = productVariants && productVariants.length > 1;
+
+  const defaultSize = hasMultipleSizes
+    ? ""
+    : (productVariants
+        ? (productVariants.find((v: any) => v.inStock)?.size ?? productVariants[0].size)
+        : "Standard");
+
+  const mockProductForCart = {
+    _id: String("id" in product ? product.id : (product as any)._id),
+    name: "title" in product ? product.title : (product as any).name,
+    variants: productVariants || [{
+      size: "Standard",
+      price: product.price,
+      inStock: true,
+      stock: 99
+    }]
+  };
 
   const handleCardClick = () => {
     if (!onViewDetails) return;
@@ -223,37 +249,22 @@ function ProductCard({
           )}
         </div>
 
-        {/* ── Cart Icon bottom-right on hover ── */}
-        <motion.button
-          animate={{
-            opacity: isHovered ? 1 : 0,
-            y: isHovered ? 0 : 10,
-            scale: isHovered ? 1 : 0.85,
-          }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          aria-label="Add to cart"
-          className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)",
-            boxShadow: "0 3px 12px rgba(139,69,19,0.55)",
-          }}
-          onClick={handleCartClick}
+        {/* Synced Cart Action */}
+        <div
+          className="absolute inset-x-0 bottom-3 flex justify-center z-20"
+          onClick={(e) => e.stopPropagation()}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth={2.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-4 h-4"
-          >
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <path d="M16 10a4 4 0 01-8 0" />
-          </svg>
-        </motion.button>
+          <CartAction
+            product={mockProductForCart}
+            selectedSize={defaultSize}
+            layout="compact"
+            onAddToCartSuccess={() => {
+              if (onAddToCart) {
+                onAddToCart(toModalProduct(product));
+              }
+            }}
+          />
+        </div>
 
         {/* Hover ring border */}
         <div
@@ -505,6 +516,7 @@ export default function TrendingShuffle({
             sizes,
             ordersCount,
             reviews,
+            variants: Array.isArray(r.variants) && r.variants.length > 0 ? r.variants : undefined,
           };
         });
 

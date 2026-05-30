@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -255,6 +255,17 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const showValidationError = (msg: string) => {
+    setValidationError(msg);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    toast.error(msg);
+  };
+
   // ── Shipping: FREE above ₹1999, else ₹99 ──
   const shippingCost = cartTotal >= 1999 ? 0 : 99;
 
@@ -301,7 +312,10 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
   }, []);
 
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return toast.error("Please enter a coupon code");
+    if (!couponCode.trim()) {
+      showValidationError("Please enter a coupon code");
+      return;
+    }
     setCouponLoading(true);
     try {
       const res = await couponService.validateCoupon({ code: couponCode.trim().toUpperCase(), totalAmount: cartTotal });
@@ -309,9 +323,11 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
         setDiscount(res.data.discountAmount);
         setAppliedCoupon(res.data);
         toast.success("Discount applied! ✨");
+        setValidationError(null);
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Invalid coupon code");
+      const errMsg = err.response?.data?.message || "Invalid coupon code";
+      showValidationError(errMsg);
       setDiscount(0);
       setAppliedCoupon(null);
     } finally {
@@ -323,22 +339,24 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
     setAppliedCoupon(null);
     setDiscount(0);
     setCouponCode("");
+    setValidationError(null);
   };
 
   /* ── Validate address fields ── */
   const validateAddress = (): boolean => {
     if (!address.fullName || !address.phone || !address.street || !address.city || !address.pincode) {
-      toast.error("Please fill all required fields");
+      showValidationError("Please fill all required fields (*)");
       return false;
     }
     if (!/^\d{10}$/.test(address.phone)) {
-      toast.error("Please enter a valid 10-digit phone number");
+      showValidationError("Please enter a valid 10-digit phone number");
       return false;
     }
     if (!/^\d{6}$/.test(address.pincode)) {
-      toast.error("Please enter a valid 6-digit pincode");
+      showValidationError("Please enter a valid 6-digit pincode");
       return false;
     }
+    setValidationError(null);
     return true;
   };
 
@@ -368,15 +386,15 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
         clearCart();
         setIsSuccess(true);
       } else {
-        toast.error(res?.data?.message || "Order rejected by server");
+        showValidationError(res?.data?.message || "Order rejected by server");
       }
     } catch (err: any) {
       if (err.response) {
-        toast.error(`Error ${err.response.status}: ${err.response.data?.message || "Server error"}`);
+        showValidationError(`Error ${err.response.status}: ${err.response.data?.message || "Server error"}`);
       } else if (err.request) {
-        toast.error("Network error: Could not connect to server.");
+        showValidationError("Network error: Could not connect to server.");
       } else {
-        toast.error("Something went wrong. Please try again.");
+        showValidationError("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -386,44 +404,37 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
 const handleOnlineOrder = async () => {
   setLoading(true);
 
-  // Step 1: Order Create karo pehle taaki MongoDB ID mile
-  let localOrderId: string;
+  // Step 1: Pre-authorize online checkout to generate Razorpay Order ID securely
+  let razorpayOrderId: string;
+  const orderPayload = buildOrderPayload("Online", null);
   try {
-    const orderRes = await orderService.placeOrder(buildOrderPayload("Online", null));
-    if (!orderRes?.data?.order?._id) throw new Error("Order creation failed");
-    localOrderId = orderRes.data.order._id;
+    const orderRes = await orderService.placeOrder(orderPayload);
+    if (orderRes?.data?.success && orderRes?.data?.razorpayOrderId) {
+      razorpayOrderId = orderRes.data.razorpayOrderId;
+    } else {
+      throw new Error(orderRes?.data?.message || "Order pre-authorization failed");
+    }
   } catch (err: any) {
-    toast.error("Failed to initialize order.");
+    const errMsg = err.response?.data?.message || "Failed to initialize order details.";
+    showValidationError(errMsg);
     setLoading(false);
     return;
   }
 
-  // Step 2: Razorpay SDK Load karo
+  // Step 2: Load Razorpay SDK
   const sdkLoaded = await loadRazorpay();
   if (!sdkLoaded) {
-    toast.error("Failed to load payment gateway.");
-    setLoading(false);
-    return;
-  }
-
-  // Step 3: Razorpay Payment Order generate karo
-  let razorpayOrderId: string;
-  try {
-    const res = await paymentService.createOrder({ amount: finalTotal, orderId: localOrderId });
-    razorpayOrderId = res.data.razorpayOrderId;
-    if (!razorpayOrderId) throw new Error("Razorpay Order ID missing");
-  } catch (err: any) {
-    toast.error("Payment initiation failed.");
+    showValidationError("Failed to load payment gateway.");
     setLoading(false);
     return;
   }
 
   setLoading(false);
 
-  // Step 4: Razorpay Popup
+  // Step 3: Open Razorpay Payment Popup
   const options = {
     key: "rzp_test_RwyAESgygh78Yf",
-    amount: finalTotal * 100,
+    amount: Math.round(finalTotal * 100),
     currency: "INR",
     name: "MalaWale",
     description: "Sacred Treasures Order",
@@ -437,19 +448,20 @@ const handleOnlineOrder = async () => {
     handler: async (response: any) => {
       setLoading(true);
       try {
-        // Step 5: Verification (Ab localOrderId valid hai!)
+        // Step 4: Verify signature and securely save order, deduct stock, and empty cart in DB
         await paymentService.verifyPayment({
-          orderId: localOrderId,
           razorpay_order_id: response.razorpay_order_id,
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_signature: response.razorpay_signature,
+          orderPayload: orderPayload
         });
 
-        // Step 6: Success - Yahan bas status update kar do ya redirect
+        // Step 5: Clear cart state and render success screen
         clearCart();
         setIsSuccess(true);
       } catch (err: any) {
-        toast.error("Payment verification failed.");
+        const errMsg = err.response?.data?.message || "Payment verification failed. Please contact support.";
+        showValidationError(errMsg);
       } finally {
         setLoading(false);
       }
@@ -459,7 +471,7 @@ const handleOnlineOrder = async () => {
   try {
     const rzp = new (window as any).Razorpay(options);
     rzp.on("payment.failed", (resp: any) => {
-      toast.error(`Payment failed: ${resp.error?.description}`);
+      showValidationError(`Payment failed: ${resp.error?.description}`);
     });
     rzp.open();
   } catch (err) {
@@ -502,7 +514,69 @@ const handleOnlineOrder = async () => {
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden", background: "#fdf7f0" }}>
 
       {/* ── Scrollable body ── */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px 0" }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "18px 16px 0" }}>
+
+        {/* ── ERROR BANNER ── */}
+        <AnimatePresence>
+          {validationError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              style={{ overflow: "hidden", marginBottom: "12px" }}
+            >
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                background: "linear-gradient(135deg, #fdf2f2 0%, #fde8e8 100%)",
+                border: "1.5px solid #f8b4b4",
+                borderRadius: "14px",
+                padding: "12px 14px",
+                boxShadow: "0 4px 12px rgba(224,86,86,0.08)",
+              }}>
+                <div style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "50%",
+                  backgroundColor: "#e53e3e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  flexShrink: 0,
+                }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" width="12" height="12">
+                    <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
+                    <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#9b2c2c", fontFamily: "'Georgia', serif" }}>
+                    Attention Needed
+                  </p>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#c53030", fontWeight: 500 }}>
+                    {validationError}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setValidationError(null)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#9b2c2c",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    padding: "4px 8px",
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── ADDRESS SECTION ── */}
         <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>

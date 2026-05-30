@@ -40,6 +40,7 @@ interface NormalisedProduct {
   reviewCount: number;
   slug?: string;
   isBestseller?: boolean;
+  variants?: any[];
 }
 
 // ─── Data Normaliser ──────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ function normaliseProduct(raw: Product): NormalisedProduct {
     reviewCount: raw.reviewCount ?? 0,
     slug: raw.slug,
     isBestseller: raw.isBestseller,
+    variants: raw.variants,
   };
 }
 
@@ -275,20 +277,31 @@ function ProductCard({
       description: product.name,
       sizes: ["Standard"],
       ordersCount: 100,
-      reviews: []
+      reviews: [],
+      variants: product.variants,
     });
 
   };
 
+  const hasMultipleSizes = product.variants && product.variants.length > 1;
+
+  const defaultSize = hasMultipleSizes
+    ? ""
+    : (product.variants && product.variants.length > 0
+        ? (product.variants.find((v: any) => v.inStock)?.size ?? product.variants[0].size)
+        : "Standard");
+
   const mockProductForCart = {
     _id: product.key,
     name: product.name,
-    variants: [{
-      size: "Standard",
-      price: product.price,
-      inStock: true,
-      stock: 99
-    }]
+    variants: product.variants && product.variants.length > 0
+      ? product.variants
+      : [{
+          size: "Standard",
+          price: product.price,
+          inStock: true,
+          stock: 99
+        }]
   };
 
   return (
@@ -340,7 +353,7 @@ function ProductCard({
         >
           <CartAction
             product={mockProductForCart}
-            selectedSize="Standard"
+            selectedSize={defaultSize}
             layout="compact"
             onAddToCartSuccess={() => {
               if (onAddToCart) {

@@ -7,16 +7,16 @@ exports.addReview = async (req, res) => {
     const user = req.user._id;
 
     if (!product || !rating || !comment) {
-      return res.status(400).json({ success: false, message: "Product, rating aur comment sab zaroori hain!" });
+      return res.status(400).json({ success: false, message: "Product, rating, and comment are required." });
     }
 
     if (rating < 1 || rating > 5) {
-      return res.status(400).json({ success: false, message: "Rating sirf 1 se 5 ke beech ho sakti hai!" });
+      return res.status(400).json({ success: false, message: "Rating must be between 1 and 5." });
     }
 
     const productExists = await Product.findById(product);
     if (!productExists) {
-      return res.status(404).json({ success: false, message: "Yeh product database mein nahi mila!" });
+      return res.status(404).json({ success: false, message: "Product not found." });
     }
 
     const newReview = new Review({
@@ -31,7 +31,7 @@ exports.addReview = async (req, res) => {
     res.status(201).json({ 
       success: true, 
       review: newReview, 
-      message: "Review boom baam save ho gaya! ⭐" 
+      message: "Review successfully submitted." 
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Review Engine Error", error: error.message });

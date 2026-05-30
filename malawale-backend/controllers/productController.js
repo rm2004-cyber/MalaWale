@@ -19,18 +19,18 @@ exports.createProduct = async (req, res) => {
     const { name, description, category, badge, isFeatured, variants, details } = req.body;
 
     if (!name || !description || !category || !variants) {
-      return res.status(400).json({ success: false, message: "Saari mandatory fields bharo bhai!" });
+      return res.status(400).json({ success: false, message: "All mandatory fields are required." });
     }
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, message: "Kam se kam ek product ki photo upload karo!" });
+      return res.status(400).json({ success: false, message: "At least one product image upload is required." });
     }
 
     let parsedVariants;
     try {
       parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
     } catch (e) {
-      return res.status(400).json({ success: false, message: "Variants ka format sahi nahi hai!" });
+      return res.status(400).json({ success: false, message: "Invalid variants format." });
     }
 
     let parsedDetails = [];
@@ -57,7 +57,7 @@ exports.createProduct = async (req, res) => {
     });
 
     await newProduct.save();
-    res.status(201).json({ success: true, product: newProduct, message: "Premium Product Details ke sath live ho gaya! 🚀" });
+    res.status(201).json({ success: true, product: newProduct, message: "Product details successfully saved." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Product Engine Error", error: error.message });
   }
@@ -105,7 +105,7 @@ exports.updateProduct = async (req, res) => {
     const { name, description, category, badge, isFeatured, variants, details, soldCount } = req.body;
 
     let product = await Product.findById(id);
-    if (!product) return res.status(404).json({ success: false, message: "Product nahi mila bhai!" });
+    if (!product) return res.status(404).json({ success: false, message: "Product not found." });
 
     if (name) product.name = name;
     if (description) product.description = description;
@@ -119,7 +119,7 @@ exports.updateProduct = async (req, res) => {
         // Isme ab size, mrp, price, stock ke saath inStock boolean status bhi makkhan tarike se update ho jayega
         product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
       } catch (e) {
-        return res.status(400).json({ success: false, message: "Variants JSON galat hai!" });
+        return res.status(400).json({ success: false, message: "Invalid variants JSON." });
       }
     }
 
@@ -138,7 +138,7 @@ exports.updateProduct = async (req, res) => {
     }
 
     await product.save();
-    res.status(200).json({ success: true, product, message: "Product boom baam edit ho gaya! 🔄🔥" });
+    res.status(200).json({ success: true, product, message: "Product details successfully updated." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update Product Error", error: error.message });
   }
@@ -149,15 +149,15 @@ exports.toggleVariantStock = async (req, res) => {
     const { productId, size, inStock } = req.body;
 
     if (!productId || !size || inStock === undefined) {
-      return res.status(400).json({ success: false, message: "ProductId, Size aur inStock status zaroori hain!" });
+      return res.status(400).json({ success: false, message: "Product ID, size, and stock status are required." });
     }
 
     const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ success: false, message: "Product nahi mila bhai!" });
+    if (!product) return res.status(404).json({ success: false, message: "Product not found." });
 
     const variantIndex = product.variants.findIndex(v => v.size === size);
     if (variantIndex === -1) {
-      return res.status(404).json({ success: false, message: "Ye waala size variant product mein nahi mila!" });
+      return res.status(404).json({ success: false, message: "Size variant not found in product." });
     }
 
     // Status update (true/false)
@@ -173,7 +173,7 @@ exports.toggleVariantStock = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       product, 
-      message: `Product ka ${size} variant successfully ${inStock ? 'In Stock 🟢' : 'Out of Stock 🔴'} mark ho gaya!` 
+      message: `Product variant ${size} successfully marked as ${inStock ? 'In Stock' : 'Out of Stock'}.` 
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Toggle Stock Error", error: error.message });
@@ -183,9 +183,9 @@ exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndDelete(id);
-    if (!product) return res.status(404).json({ success: false, message: "Product pehle se delete hai!" });
+    if (!product) return res.status(404).json({ success: false, message: "Product is already deleted." });
 
-    res.status(200).json({ success: true, message: "Product tabah kar diya gaya! 🗑️" });
+    res.status(200).json({ success: true, message: "Product successfully deleted." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Delete Product Error" });
   }

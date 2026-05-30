@@ -26,12 +26,12 @@ exports.placeOrder = async (req, res) => {
     const paymentType = paymentMethod;
 
     if (!address || !paymentType) {
-      return res.status(400).json({ success: false, message: "Address aur Payment Type zaroori hain!" });
+      return res.status(400).json({ success: false, message: "Address and payment method are required." });
     }
 
     const cart = await Cart.findOne({ user: userId }).populate('items.product');
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ success: false, message: "Aapki cart khali hai bhai!" });
+      return res.status(400).json({ success: false, message: "Your cart is empty." });
     }
 
     for (const item of cart.items) {
@@ -40,10 +40,50 @@ exports.placeOrder = async (req, res) => {
         : item.product.variants[0];
 
       if (!variant || variant.stock < item.quantity || variant.inStock === false) {
-        return res.status(400).json({ success: false, message: `${item.product.name} stock mein nahi hai!` });
+        return res.status(400).json({ success: false, message: `${item.product.name} is out of stock.` });
       }
     }
 
+    const isOnline = paymentType === 'Online';
+    let razorpayOrderId = null;
+
+    if (isOnline) {
+      // 1. Online Flow: Prepare order items and validate stock availability (No DB saves or stock deductions yet)
+      const orderItems = [];
+      for (const item of cart.items) {
+        let variant = item.size 
+          ? item.product.variants.find(v => v.size.trim().toLowerCase() === item.size.trim().toLowerCase())
+          : item.product.variants[0];
+        
+        const price = variant ? variant.price : item.product.variants[0].price;
+        orderItems.push({
+          product: item.product._id,
+          size: item.size || variant.size,
+          quantity: item.quantity,
+          price: price
+        });
+      }
+
+      // 2. Create Razorpay order to pre-authorize payment
+      const options = {
+        amount: Math.round(totalAmount * 100),
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`
+      };
+      const razorpayOrder = await razorpay.orders.create(options);
+      razorpayOrderId = razorpayOrder.id;
+      console.log("Razorpay Order Created (Not saved to DB yet):", razorpayOrderId);
+
+      // Return initialized details. Carts, DB order, and stock levels remain completely untouched!
+      return res.status(200).json({ 
+        success: true, 
+        razorpayOrderId: razorpayOrderId,
+        totalAmount: totalAmount,
+        message: "Razorpay order initiated successfully!" 
+      });
+    }
+
+    // COD Flow: Save order, deduct stock, and clear cart immediately!
     const orderItems = [];
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id);
@@ -65,40 +105,25 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    const isOnline = paymentType === 'Online';
-    let razorpayOrderId = null;
-
-    if (isOnline) {
-      const options = {
-        amount: totalAmount * 100,
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`
-      };
-      const razorpayOrder = await razorpay.orders.create(options);
-      razorpayOrderId = razorpayOrder.id;
-      console.log("Razorpay Order Created:", razorpayOrderId);
-    }
-
     const newOrder = new Order({
       user: userId,
       items: orderItems,
       address: address,
       totalAmount: totalAmount,
       paymentType: paymentType,
-      paymentStatus: isOnline ? 'Pending' : 'Completed',
+      paymentStatus: 'Completed',
       orderStatus: 'Pending',
-      razorpayOrderId: razorpayOrderId,
+      razorpayOrderId: null,
       couponCode: couponCode || null
     });
 
     await newOrder.save();
-    console.log("Order Saved to DB:", newOrder._id);
+    console.log("COD Order Saved to DB:", newOrder._id);
     await Cart.findOneAndDelete({ user: userId });
 
     res.status(201).json({ 
       success: true, 
       order: newOrder,
-      razorpayOrderId: razorpayOrderId,
       message: "Order placed successfully!" 
     });
   } catch (error) {
@@ -111,10 +136,10 @@ exports.updateOrderStatus = async (req, res) => {
     const { orderId, status, courierPartnerName, trackingIdOrNumber } = req.body;
 
     let order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order nahi mila!" });
+    if (!order) return res.status(404).json({ success: false, message: "Order not found." });
 
     // 1. Status transition check (Optional but Good Practice)
-    if (order.orderStatus === 'Cancelled') return res.status(400).json({ success: false, message: "Cancelled order update nahi ho sakta." });
+    if (order.orderStatus === 'Cancelled') return res.status(400).json({ success: false, message: "Cancelled order cannot be updated." });
 
     order.orderStatus = status;
 
@@ -123,7 +148,7 @@ exports.updateOrderStatus = async (req, res) => {
     else if (status === 'Packed') order.statusTimestamps.packedAt = Date.now();
     else if (status === 'Shipped') {
       if (!courierPartnerName || !trackingIdOrNumber) {
-        return res.status(400).json({ success: false, message: "Tracking details zaroori hain!" });
+        return res.status(400).json({ success: false, message: "Tracking details are required." });
       }
       order.courierPartnerName = courierPartnerName;
       order.trackingIdOrNumber = trackingIdOrNumber;
@@ -163,20 +188,20 @@ exports.cancelOrderByCustomer = async (req, res) => {
     
     if (!order) {
       console.warn(`[CANCEL-ERROR] Order ${orderId} not found for User ${userId}`);
-      return res.status(404).json({ success: false, message: "Order nahi mila bhai!" });
+      return res.status(404).json({ success: false, message: "Order not found." });
     }
 
     if (order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered') {
       console.warn(`[CANCEL-BLOCKED] Order ${orderId} is ${order.orderStatus}, cannot cancel.`);
       return res.status(400).json({ 
         success: false, 
-        message: "Order courier ko handover ho chuka hai, ab cancel nahi kiya ja sakta! 🚫" 
+        message: "Order has already been shipped and cannot be cancelled." 
       });
     }
 
     if (order.orderStatus === 'Cancelled') {
       console.warn(`[CANCEL-BLOCKED] Order ${orderId} already cancelled.`);
-      return res.status(400).json({ success: false, message: "Order pehle se hi cancelled hai!" });
+      return res.status(400).json({ success: false, message: "Order is already cancelled." });
     }
 
     // Process Cancellation
@@ -209,7 +234,7 @@ exports.cancelOrderByCustomer = async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, order, message: "Aapka order successfully cancel ho gaya hai! 🗑️" });
+    res.status(200).json({ success: true, order, message: "Your order has been successfully cancelled." });
   } catch (error) {
     console.error(`[CANCEL-FATAL] Error cancelling order ${req.body.orderId}:`, error);
     res.status(500).json({ success: false, message: "Customer Cancellation Error", error: error.message });
@@ -223,12 +248,12 @@ exports.rejectOrderByAdmin = async (req, res) => {
     let order = await Order.findById(orderId);
     if (!order) {
       console.error(`[ADMIN-REJECT-ERROR] Order ${orderId} not found.`);
-      return res.status(404).json({ success: false, message: "Order nahi mila!" });
+      return res.status(404).json({ success: false, message: "Order not found." });
     }
 
     if (order.orderStatus === 'Cancelled') {
       console.warn(`[ADMIN-REJECT-BLOCKED] Order ${orderId} already cancelled.`);
-      return res.status(400).json({ success: false, message: "Order pehle se hi cancelled/rejected hai!" });
+      return res.status(400).json({ success: false, message: "Order is already cancelled or rejected." });
     }
 
     order.orderStatus = 'Cancelled';
@@ -259,7 +284,7 @@ exports.rejectOrderByAdmin = async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, order, message: "Admin ne order reject/cancel kar diya hai! ❌" });
+    res.status(200).json({ success: true, order, message: "Order cancelled by admin." });
   } catch (error) {
     console.error(`[ADMIN-REJECT-FATAL] Error rejecting order ${req.body.orderId}:`, error);
     res.status(500).json({ success: false, message: "Admin Rejection Error", error: error.message });

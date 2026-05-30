@@ -2,6 +2,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
+const Cart = require('../models/Cart');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -31,10 +33,11 @@ exports.createOrder = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderPayload } = req.body;
+        const userId = req.user._id;
 
-        if (!orderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-            return res.status(400).json({ success: false, message: "Missing required fields for verification" });
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderPayload) {
+            return res.status(400).json({ success: false, message: "Required fields for verification are missing!" });
         }
 
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
@@ -44,29 +47,91 @@ exports.verifyPayment = async (req, res) => {
             .digest("hex");
 
         if (razorpay_signature === expectedSign) {
-            // MongoDB ID validation check
-            if (orderId.length !== 24) {
-                return res.status(400).json({ success: false, message: "Invalid Order ID format" });
+            const { items, shippingAddress, couponCode, totalAmount } = orderPayload;
+
+            if (!shippingAddress || !items || items.length === 0) {
+                return res.status(400).json({ success: false, message: "Invalid order details in payload!" });
             }
 
-            const updatedOrder = await Order.findByIdAndUpdate(
-                orderId, 
-                { 
-                    paymentStatus: 'Completed', 
-                    paymentId: razorpay_payment_id 
-                },
-                { new: true }
-            );
-
-            if (!updatedOrder) {
-                return res.status(404).json({ success: false, message: "Order not found" });
+            // 1. Stock check before saving order
+            const cart = await Cart.findOne({ user: userId }).populate('items.product');
+            if (!cart || cart.items.length === 0) {
+                return res.status(400).json({ success: false, message: "Your cart is empty!" });
             }
 
-            return res.status(200).json({ success: true, message: "Payment verified successfully!" });
+            for (const item of cart.items) {
+                let variant = item.size 
+                    ? item.product.variants.find(v => v.size.trim().toLowerCase() === item.size.trim().toLowerCase())
+                    : item.product.variants[0];
+
+                if (!variant || variant.stock < item.quantity || variant.inStock === false) {
+                    return res.status(400).json({ success: false, message: `${item.product.name} is out of stock!` });
+                }
+            }
+
+            // 2. Prepare items, deduct stock, and save product updates
+            const orderItems = [];
+            for (const item of cart.items) {
+                const product = await Product.findById(item.product._id);
+                let variant = item.size 
+                    ? product.variants.find(v => v.size.trim().toLowerCase() === item.size.trim().toLowerCase())
+                    : product.variants[0];
+                
+                const price = variant ? variant.price : product.variants[0].price;
+                variant.stock -= item.quantity;
+                product.soldCount += item.quantity;
+                if (variant.stock === 0) variant.inStock = false;
+                await product.save();
+
+                orderItems.push({
+                    product: item.product._id,
+                    size: item.size || variant.size,
+                    quantity: item.quantity,
+                    price: price
+                });
+            }
+
+            // 3. Prepare shipping address
+            const address = {
+                receiverName: shippingAddress.fullName,
+                receiverPhone: shippingAddress.phone,
+                addressLine: shippingAddress.street,
+                pincode: shippingAddress.pincode,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                addressType: 'Home'
+            };
+
+            // 4. Create and save MongoDB Order document
+            const newOrder = new Order({
+                user: userId,
+                items: orderItems,
+                address: address,
+                totalAmount: totalAmount,
+                paymentType: 'Online',
+                paymentStatus: 'Completed',
+                orderStatus: 'Pending',
+                razorpayOrderId: razorpay_order_id,
+                paymentId: razorpay_payment_id,
+                couponCode: couponCode || null
+            });
+
+            await newOrder.save();
+            console.log("Online Order Saved to DB (After success verification):", newOrder._id);
+
+            // 5. Clear cart
+            await Cart.findOneAndDelete({ user: userId });
+
+            return res.status(200).json({ 
+                success: true, 
+                order: newOrder,
+                message: "Payment verified and order placed successfully!" 
+            });
         }
 
         return res.status(400).json({ success: false, message: "Invalid signature! Potential fraud detected." });
     } catch (error) {
+        console.error("Payment Verification Error:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

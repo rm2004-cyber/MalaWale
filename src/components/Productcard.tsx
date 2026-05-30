@@ -248,10 +248,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const hasVariants =
     Array.isArray(product?.variants) && (product.variants?.length ?? 0) > 0;
 
-  // Default to first inStock variant
-  const defaultVariant = hasVariants
-    ? (product.variants!.find((v) => v.inStock) ?? product.variants![0])
-    : undefined;
+  // A product requires explicit size selection if it has multiple variants
+  const requiresSizeSelection = hasVariants && product.variants!.length > 1;
+
+  // Default to first inStock variant only if no explicit selection is required
+  const defaultVariant = requiresSizeSelection
+    ? undefined
+    : (hasVariants ? (product.variants!.find((v) => v.inStock) ?? product.variants![0]) : undefined);
 
   const [selectedVariant, setSelectedVariant] = useState<Variant | undefined>(
     defaultVariant
@@ -263,7 +266,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Sync selectedVariant when product changes (list re-renders with different product)
   useEffect(() => {
     const variants = product?.variants;
-    if (Array.isArray(variants) && variants.length > 0) {
+    const hasVar = Array.isArray(variants) && variants.length > 0;
+    const reqSize = hasVar && variants.length > 1;
+    
+    if (reqSize) {
+      setSelectedVariant(undefined);
+    } else if (hasVar) {
       setSelectedVariant(variants.find((v) => v.inStock) ?? variants[0]);
     } else {
       setSelectedVariant(undefined);
@@ -306,7 +314,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const categoryName = resolveCategoryName(product.category);
 
   // ── Derived cart mapping variables ──
-  const currentVariantSize = selectedVariant?.size || "Standard";
+  const currentVariantSize = selectedVariant?.size || "";
 
   // ── Handlers ──
   const handleVariantSelect = (e: React.MouseEvent, variant: Variant) => {

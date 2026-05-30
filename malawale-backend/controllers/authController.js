@@ -6,7 +6,7 @@ exports.firebaseLoginOrSignup = async (req, res) => {
     const { firebaseUid, phone, name, email, dob, isNewUser } = req.body;
 
     if (!phone) {
-      return res.status(400).json({ success: false, message: "Phone number zaroori hai bhai!" });
+      return res.status(400).json({ success: false, message: "Phone number is required." });
     }
 
     let user;
@@ -19,7 +19,7 @@ exports.firebaseLoginOrSignup = async (req, res) => {
     if (!user) {
       if (isNewUser) {
         if (!name || !email) {
-          return res.status(400).json({ success: false, message: "Naye user ke liye Name aur Email compulsory hain." });
+          return res.status(400).json({ success: false, message: "Name and Email are required for registration." });
         }
         
         user = new User({
@@ -32,7 +32,7 @@ exports.firebaseLoginOrSignup = async (req, res) => {
         });
         await user.save();
       } else {
-        return res.status(404).json({ success: false, message: "User DB mein nahi mila, naye sir se registration karo." });
+        return res.status(404).json({ success: false, message: "User not found. Please register." });
       }
     }
 
@@ -52,7 +52,7 @@ exports.firebaseLoginOrSignup = async (req, res) => {
         email: user.email,
         role: user.role 
       },
-      message: user.role === 'admin' ? "Pranam Admin Sahib! 👑" : "Welcome to MalaWale! ✦"
+      message: user.role === 'admin' ? "Welcome Admin!" : "Welcome to MalaWale!"
     });
 
   } catch (error) {

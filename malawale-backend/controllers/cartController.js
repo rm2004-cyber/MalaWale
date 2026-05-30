@@ -8,7 +8,7 @@ exports.addToCart = async (req, res) => {
     const itemSize = size || "Standard";
 
     if (!productId) {
-      return res.status(400).json({ success: false, message: "Product ID zaroori hai!" });
+      return res.status(400).json({ success: false, message: "Product ID is required." });
     }
 
     // Atomic increment: try to update existing matching item
@@ -23,7 +23,7 @@ exports.addToCart = async (req, res) => {
         } 
       },
       { $inc: { "items.$.quantity": qty } },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     // If item was not found/updated, push new item (upserts the cart if not exists)
@@ -31,11 +31,11 @@ exports.addToCart = async (req, res) => {
       cart = await Cart.findOneAndUpdate(
         { user: userId },
         { $push: { items: { product: productId, size: itemSize, quantity: qty } } },
-        { new: true, upsert: true }
+        { returnDocument: 'after', upsert: true }
       );
     }
 
-    res.status(200).json({ success: true, cart, message: "Item cart mein jod diya gaya! 🛒" });
+    res.status(200).json({ success: true, cart, message: "Item added to cart successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Cart Engine Error", error: error.message });
   }
@@ -49,7 +49,7 @@ exports.getCart = async (req, res) => {
     });
 
     if (!cart) {
-      return res.status(200).json({ success: true, items: [], message: "Cart ekdum khali hai." });
+      return res.status(200).json({ success: true, items: [], message: "Cart is empty." });
     }
 
     res.status(200).json({ success: true, cart });
@@ -72,7 +72,7 @@ exports.removeFromCart = async (req, res) => {
     );
 
     await cart.save();
-    res.status(200).json({ success: true, cart, message: "Item cart se hata diya gaya." });
+    res.status(200).json({ success: true, cart, message: "Item removed from cart." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Remove Cart Error", error: error.message });
   }
@@ -85,7 +85,7 @@ exports.updateQuantity = async (req, res) => {
     const itemSize = size || "Standard";
 
     if (!productId || typeof quantity === 'undefined') {
-      return res.status(400).json({ success: false, message: "Product ID aur Quantity zaroori hain!" });
+      return res.status(400).json({ success: false, message: "Product ID and quantity are required." });
     }
 
     // Atomic update of quantity
@@ -100,7 +100,7 @@ exports.updateQuantity = async (req, res) => {
         } 
       },
       { $set: { "items.$.quantity": quantity } },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     // If item doesn't exist, push it
@@ -108,7 +108,7 @@ exports.updateQuantity = async (req, res) => {
       cart = await Cart.findOneAndUpdate(
         { user: userId },
         { $push: { items: { product: productId, size: itemSize, quantity: quantity } } },
-        { new: true, upsert: true }
+        { returnDocument: 'after', upsert: true }
       );
     }
 

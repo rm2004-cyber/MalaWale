@@ -68,7 +68,7 @@ export const CartProvider = ({ children }) => {
       const response = await cartService.addToCart({ productId, size, quantity });
       if (response.data.success) {
         await fetchCart();
-        return { success: true, message: "Item cart mein jod gaya! 🛒" };
+        return { success: true, message: "Item added to cart successfully." };
       }
     } catch (error) {
       console.error("Add To Cart Error:", error.message);
@@ -81,7 +81,7 @@ export const CartProvider = ({ children }) => {
       const response = await cartService.removeFromCart({ productId, size });
       if (response.data.success) {
         await fetchCart();
-        return { success: true, message: "Item cart se saaf! 🗑️" };
+        return { success: true, message: "Item removed from cart." };
       }
     } catch (error) {
       console.error("Remove From Cart Error:", error.message);

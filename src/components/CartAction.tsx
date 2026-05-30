@@ -58,6 +58,33 @@ const CheckIcon = () => (
   </svg>
 );
 
+const MinusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={3}
+    strokeLinecap="round"
+    className="w-3.5 h-3.5"
+  >
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={3}
+    strokeLinecap="round"
+    className="w-3.5 h-3.5"
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export const CartAction: React.FC<CartActionProps> = ({
@@ -67,28 +94,30 @@ export const CartAction: React.FC<CartActionProps> = ({
   onAddToCartSuccess,
 }) => {
   const { user, openLoginModal } = useAuth();
-  const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart() as any;
+  const { cartItems, getCartItem, addToCart, updateQuantity, removeFromCart } = useCart() as any;
   const isAuthenticated = !!user;
 
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
   const [isHovered, setIsHovered] = useState(false);
 
-  // 1. Convert cartItems to a safe array for absolute look-up stability
-  const cartItemsArray = Array.isArray(cartItems)
-    ? cartItems
-    : cartItems && typeof cartItems === "object"
-    ? Object.values(cartItems)
-    : [];
-
   const productId = product._id || product.id;
   const normalizedSize = selectedSize.toLowerCase();
 
-  // 2. Perform the exact on-mount/on-render lookup requested
-  const cartItem = cartItemsArray.find((i: any) => {
-    const itemProductId = i.productId?._id || i.productId;
-    const itemSize = (i.size || "Standard").toLowerCase();
-    return itemProductId === productId && itemSize === normalizedSize;
-  });
+  // Robust on-mount/on-render lookup using context map helper or standard fallback scanning
+  const cartItem = typeof getCartItem === "function"
+    ? getCartItem(productId, selectedSize)
+    : (() => {
+      const cartItemsArray = Array.isArray(cartItems)
+        ? cartItems
+        : cartItems && typeof cartItems === "object"
+          ? Object.values(cartItems)
+          : [];
+      return cartItemsArray.find((i: any) => {
+        const itemProductId = i.product?._id || i.product || i.productId?._id || i.productId;
+        const itemSize = (i.size || "Standard").toLowerCase();
+        return String(itemProductId) === String(productId) && itemSize === normalizedSize;
+      });
+    })();
 
   const isInCart = !!cartItem;
   const quantityInCart = cartItem ? cartItem.quantity : 0;
@@ -114,11 +143,20 @@ export const CartAction: React.FC<CartActionProps> = ({
 
     if (cartState === "added") return;
 
+    // Validate size selection: if the product has multiple size variants, a size must be explicitly selected.
+    const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+    const requiresSize = hasVariants && product.variants!.length > 1;
+
+    if (requiresSize && (!selectedSize || selectedSize === "")) {
+      toast.error("Please select a size!");
+      return;
+    }
+
     try {
       if (!productId) throw new Error("Product context ID missing.");
 
       await addToCart(productId, selectedSize, 1);
-      
+
       if (onAddToCartSuccess) {
         onAddToCartSuccess();
       }
@@ -138,7 +176,7 @@ export const CartAction: React.FC<CartActionProps> = ({
     try {
       if (quantityInCart > 1) {
         await updateQuantity(productId, selectedSize, quantityInCart - 1);
-        toast.success("Quantity updated! 🔄");
+        toast.success("Quantity updated!");
       } else {
         await removeFromCart(productId, selectedSize);
         toast.success("Item removed from cart! 🗑️");
@@ -154,7 +192,7 @@ export const CartAction: React.FC<CartActionProps> = ({
     if (!productId) return;
     try {
       await updateQuantity(productId, selectedSize, quantityInCart + 1);
-      toast.success("Quantity updated! 🔄");
+      toast.success("Quantity updated!");
     } catch (err) {
       console.error("Increment operation failed:", err);
       toast.error("Failed to update cart.");
@@ -166,7 +204,7 @@ export const CartAction: React.FC<CartActionProps> = ({
   if (layout === "compact") {
     // Elegant floating gold-and-creamy pill (standardized from the Bestsellers section)
     return (
-      <div 
+      <div
         className="flex items-center justify-between select-none"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -174,42 +212,53 @@ export const CartAction: React.FC<CartActionProps> = ({
         {isInCart ? (
           <div
             style={{
-              background: "rgba(255, 249, 242, 0.96)",
-              backdropFilter: "blur(8px)",
-              border: "1.5px solid #d4a373",
-              boxShadow: "0 4px 16px rgba(139, 69, 19, 0.2)",
+              background: "rgba(255, 249, 242, 0.98)",
+              backdropFilter: "blur(12px)",
+              border: "1.5px solid rgba(212, 163, 115, 0.65)",
+              boxShadow: "0 6px 20px rgba(139, 69, 19, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
             }}
-            className="flex items-center justify-between w-28 h-8 rounded-full px-1"
+            className="flex items-center justify-between w-32 h-9 rounded-full px-1"
             onClick={(e) => e.stopPropagation()}
           >
             <motion.button
-              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(139,69,19,0.3)" }}
+              whileTap={{ scale: 0.9 }}
               onClick={handleDecrement}
               style={{
                 background: "linear-gradient(135deg, #8b4513, #c8843a)",
               }}
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold select-none cursor-pointer"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white select-none cursor-pointer border-0"
             >
-              −
+              <MinusIcon />
             </motion.button>
-            <span
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                color: "#8b4513",
-              }}
-              className="text-xs font-black px-2"
-            >
-              {quantityInCart}
-            </span>
+
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={quantityInCart}
+                initial={{ opacity: 0, scale: 0.8, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 4 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  color: "#8b4513",
+                }}
+                className="text-xs font-black px-2 select-none"
+              >
+                {quantityInCart}
+              </motion.span>
+            </AnimatePresence>
+
             <motion.button
-              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(139,69,19,0.3)" }}
+              whileTap={{ scale: 0.9 }}
               onClick={handleIncrement}
               style={{
                 background: "linear-gradient(135deg, #8b4513, #c8843a)",
               }}
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold select-none cursor-pointer"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white select-none cursor-pointer border-0"
             >
-              +
+              <PlusIcon />
             </motion.button>
           </div>
         ) : (
@@ -238,55 +287,64 @@ export const CartAction: React.FC<CartActionProps> = ({
 
   // Layout wide (used in ProductCard and ProductModal)
   return (
-    <div 
+    <div
       className="w-full select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {isInCart ? (
-        <div 
-          className="flex items-center justify-between w-full h-11 rounded-xl overflow-hidden px-1"
+        <div
+          className="flex items-center justify-between w-full h-12 rounded-xl overflow-hidden px-1.5"
           style={{
-            background: "rgba(255, 249, 242, 0.96)",
-            backdropFilter: "blur(8px)",
-            border: "1.5px solid #d4a373",
-            boxShadow: "0 4px 16px rgba(139, 69, 19, 0.1)",
+            background: "rgba(255, 249, 242, 0.98)",
+            backdropFilter: "blur(12px)",
+            border: "1.5px solid rgba(212, 163, 115, 0.6)",
+            boxShadow: "0 6px 20px rgba(139, 69, 19, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Decrement Button */}
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(139,69,19,0.35)" }}
+            whileTap={{ scale: 0.92 }}
             onClick={handleDecrement}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-white transition-all shadow-sm cursor-pointer"
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-all shadow-sm cursor-pointer border-0"
             style={{
               background: "linear-gradient(135deg, #8b4513, #c8843a)",
             }}
           >
-            −
+            <MinusIcon />
           </motion.button>
 
           {/* Quantity Display */}
-          <span 
-            className="text-base font-black px-4"
-            style={{
-              color: "#8b4513",
-              fontFamily: "'Playfair Display', serif"
-            }}
-          >
-            {quantityInCart}
-          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={quantityInCart}
+              initial={{ opacity: 0, scale: 0.8, y: -5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="text-base font-black px-4 select-none"
+              style={{
+                color: "#8b4513",
+                fontFamily: "'Playfair Display', serif"
+              }}
+            >
+              {quantityInCart}
+            </motion.span>
+          </AnimatePresence>
 
           {/* Increment Button */}
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(139,69,19,0.35)" }}
+            whileTap={{ scale: 0.92 }}
             onClick={handleIncrement}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-white transition-all shadow-sm cursor-pointer"
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-all shadow-sm cursor-pointer border-0"
             style={{
               background: "linear-gradient(135deg, #8b4513, #c8843a)",
             }}
           >
-            +
+            <PlusIcon />
           </motion.button>
         </div>
       ) : (
@@ -311,8 +369,8 @@ export const CartAction: React.FC<CartActionProps> = ({
                 isOutOfStock
                   ? "linear-gradient(135deg, #9ca3af, #6b7280)"
                   : cartState === "added"
-                  ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
-                  : "linear-gradient(135deg, #8b4513, #c8843a)",
+                    ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
+                    : "linear-gradient(135deg, #8b4513, #c8843a)",
             }}
             transition={{ duration: 0.4 }}
           />

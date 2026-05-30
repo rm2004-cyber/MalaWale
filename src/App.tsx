@@ -243,16 +243,8 @@ function App() {
 
   const handleAddToCart = () => {};
 
-  const handleModalAddToCart = async (product: Product, variant?: Variant) => {
-    try {
-      const productId = product._id || product.id;
-      await addToCart(productId!, variant?.size || "Standard", 1);
-      toast.success("Added to cart! 🛒"); 
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Modal Add To Cart Failed:", error);
-      toast.error("Failed to add to cart.");
-    }
+  const handleModalAddToCart = () => {
+    setIsModalOpen(false);
   };
 
   const closeModal = () => {

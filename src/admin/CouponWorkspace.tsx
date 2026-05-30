@@ -58,7 +58,7 @@ export default function CouponWorkspace() {
 
     try {
       await couponService.createCoupon(payload);
-      toast.success(`Discount Code ${payload.code} launched successfully! 🏷️`);
+      toast.success(`Discount Code ${payload.code} launched successfully!`);
       // Reset input parameters blocks
       setCode(""); setDiscountValue(0); setminCartValue(0); setExpiryDate("");
       loadCoupons();
@@ -87,7 +87,7 @@ export default function CouponWorkspace() {
 
       {/* Creation Segment Block */}
       <div className="bg-amber-50/20 border border-dashed border-orange-200 p-5 rounded-2xl space-y-4">
-        <p className="text-sm font-bold text-[#8b4513]">🏷️ Mint Brand New Promotional Voucher</p>
+        <p className="text-sm font-bold text-[#8b4513]">Mint Brand New Promotional Voucher</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>

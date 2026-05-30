@@ -32,7 +32,12 @@ interface UserInfo {
 }
 
 interface OrderItem {
-  product?: string;
+  product?: string | {
+    _id: string;
+    name: string;
+    description?: string;
+    images?: string[];
+  };
   name?: string;
   size?: string;
   quantity: number;
@@ -52,6 +57,9 @@ interface DBOrder {
   trackingId?: string;
   trackingLink?: string;
   items?: OrderItem[];
+  paymentType: "COD" | "Online";
+  paymentStatus: "Pending" | "Completed" | "Failed" | "Refunded";
+  couponCode?: string | null;
 }
 
 interface DashboardStats {
@@ -146,9 +154,33 @@ function formatAddress(address?: UserAddress): string | null {
 
 function itemDisplayName(item: OrderItem): string {
   if (item.name) return item.name;
-  if (item.product) return item.product;
+  if (item.product && typeof item.product === "object") return item.product.name;
+  if (typeof item.product === "string") return item.product;
   return "Unknown Item";
 }
+
+function calculateOrderBreakdown(order: DBOrder) {
+  let subtotal = 0;
+  if (order.items && order.items.length > 0) {
+    subtotal = order.items.reduce((sum, item) => {
+      const qty = Number(item.quantity) || 0;
+      const price = Number(item.price) || 0;
+      return sum + (qty * price);
+    }, 0);
+  } else {
+    subtotal = order.totalAmount;
+  }
+
+  const shippingCost = subtotal >= 1999 ? 0 : 99;
+  const discount = Math.max(0, (subtotal + shippingCost) - order.totalAmount);
+
+  return {
+    subtotal,
+    shippingCost,
+    discount,
+  };
+}
+
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 
@@ -194,6 +226,7 @@ interface OrderCardProps {
   onMarkDelivered: (order: DBOrder) => void;
   onOpenShipModal: (order: DBOrder) => void;
   onManage: (order: DBOrder) => void;
+  onPrint: (order: DBOrder) => void;
 }
 
 function OrderCard({
@@ -205,9 +238,11 @@ function OrderCard({
   onMarkDelivered,
   onOpenShipModal,
   onManage,
+  onPrint,
 }: OrderCardProps) {
   const [expanded, setExpanded] = useState(false);
   const cfg = STATUS_CONFIG[order.orderStatus] ?? STATUS_CONFIG.Pending;
+  const { subtotal, shippingCost, discount } = calculateOrderBreakdown(order);
 
   // Prefer top-level order.address (from API), fall back to user.address
   const resolvedAddress = order.address ?? order.user?.address;
@@ -241,7 +276,7 @@ function OrderCard({
               onClick={() => onMarkPacked(order)}
               className="text-[11px] font-bold bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg transition"
             >
-              📦 Mark Packed
+              Mark Packed
             </button>
             <button
               onClick={() => onReject(order)}
@@ -259,7 +294,7 @@ function OrderCard({
               onClick={() => onOpenShipModal(order)}
               className="text-[11px] font-bold bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition"
             >
-              🚚 Ship Order
+              Ship Order
             </button>
           </div>
         );
@@ -271,13 +306,13 @@ function OrderCard({
               onClick={() => onMarkDelivered(order)}
               className="text-[11px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition"
             >
-              ✅ Mark Delivered
+              Mark Delivered
             </button>
             <button
               onClick={() => onManage(order)}
               className="text-[11px] font-bold border border-[#8b4513] text-[#8b4513] hover:bg-[#8b4513] hover:text-white px-3 py-1.5 rounded-lg transition"
             >
-              ✏️ Edit Tracking
+              Edit Tracking
             </button>
           </div>
         );
@@ -326,6 +361,19 @@ function OrderCard({
                 >
                   {cfg.label}
                 </span>
+                {order.paymentType === "Online" && order.paymentStatus === "Completed" ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500 text-white shadow-sm flex items-center gap-1 border border-emerald-600/20">
+                    Paid Online
+                  </span>
+                ) : order.paymentType === "COD" ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase text-white shadow-sm flex items-center gap-1 animate-cod-pulse border border-red-600/20">
+                    COD
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-700 border border-amber-200">
+                    {order.paymentType} ({order.paymentStatus})
+                  </span>
+                )}
                 {resolvedAddress?.addressType && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-100 text-stone-500 border border-stone-200">
                     {resolvedAddress.addressType}
@@ -344,7 +392,6 @@ function OrderCard({
 
               {order.trackingId && (
                 <p className="text-[11px] text-emerald-700 mt-1 font-medium flex items-center gap-1 flex-wrap">
-                  <span>📦</span>
                   <span className="font-mono">{order.trackingId}</span>
                   {order.courierName && (
                     <span className="text-stone-400">· {order.courierName}</span>
@@ -367,7 +414,15 @@ function OrderCard({
               <p className="font-black text-stone-800 text-lg leading-none">
                 ₹{(order.totalAmount ?? 0).toLocaleString("en-IN")}
               </p>
-              {renderPhaseActions()}
+              <div className="flex flex-wrap gap-1.5 justify-end mt-1 items-center">
+                {renderPhaseActions()}
+                <button
+                  onClick={() => onPrint(order)}
+                  className="text-[11px] font-bold border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1 shrink-0"
+                >
+                  Print Label
+                </button>
+              </div>
             </div>
           </div>
 
@@ -387,7 +442,7 @@ function OrderCard({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 pt-3 border-t border-stone-100 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-stone-600">
+                <div className="mt-3 pt-3 border-t border-stone-100 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-stone-600">
                   {formattedAddress && (
                     <div>
                       <p className="font-bold text-stone-400 uppercase text-[10px] mb-1">
@@ -433,6 +488,37 @@ function OrderCard({
                       </ul>
                     </div>
                   )}
+
+                  {/* Payment & Coupon Breakdown Column */}
+                  <div className="bg-stone-50/70 p-3.5 rounded-xl border border-stone-100/80">
+                    <p className="font-bold text-stone-400 uppercase text-[10px] mb-2 tracking-wider">
+                      Payment &amp; Coupon Details
+                    </p>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-stone-500">Items Subtotal:</span>
+                        <span className="font-semibold text-stone-850">₹{subtotal.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-stone-500">Delivery Charges:</span>
+                        <span className={shippingCost === 0 ? "text-emerald-600 font-bold" : "font-semibold text-stone-850"}>
+                          {shippingCost === 0 ? "FREE" : `₹${shippingCost}`}
+                        </span>
+                      </div>
+                      {discount > 0 && (
+                        <div className="flex justify-between items-center bg-emerald-50 text-emerald-800 px-2 py-1 rounded-lg border border-emerald-100">
+                          <span className="flex items-center gap-1 font-semibold text-[10px] uppercase tracking-wider">
+                            Coupon ({order.couponCode || "COUPON"}):
+                          </span>
+                          <span className="font-bold">-₹{discount.toLocaleString("en-IN")}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-stone-200/60 my-1 pt-1.5 flex justify-between font-bold text-stone-800">
+                        <span>Total Payable:</span>
+                        <span className="text-stone-950">₹{order.totalAmount.toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -483,7 +569,7 @@ function LogisticsModal({
     setSaving(true);
     try {
       await orderService.updateOrderStatus(payload);
-      toast.success("Order updated successfully! 📦");
+      toast.success("Order updated successfully!");
       onSaved();
       onClose();
     } catch (err) {
@@ -720,6 +806,7 @@ export default function OrdersWorkspace() {
     totalOrders: 0,
   });
   const [modalState, setModalState] = useState<ModalState | null>(null);
+  const [printOrder, setPrintOrder] = useState<DBOrder | null>(null);
 
   // ── Data fetchers ──────────────────────────────────────────────────────────
 
@@ -810,7 +897,7 @@ const loadStats = useCallback(async () => {
     console.log("[handleMarkPacked] Payload:", payload);
     try {
       await orderService.updateOrderStatus(payload);
-      toast.success("Order marked as Packed! 📦");
+      toast.success("Order marked as Packed!");
       refresh();
     } catch (err: any) {
       console.error("[handleMarkPacked] Error:", err.response?.data ?? err);
@@ -823,7 +910,7 @@ const loadStats = useCallback(async () => {
     console.log("[handleMarkDelivered] Payload:", payload);
     try {
       await orderService.updateOrderStatus(payload);
-      toast.success("Order marked as Delivered! ✅");
+      toast.success("Order marked as Delivered!");
       refresh();
     } catch (err: any) {
       console.error("[handleMarkDelivered] Error:", err.response?.data ?? err);
@@ -891,28 +978,28 @@ const loadStats = useCallback(async () => {
             <StatCard
               label="Total Orders"
               value={(stats?.totalOrders ?? 0).toLocaleString("en-IN")}
-              icon="🗂️"
+              icon="O"
               accent="bg-sky-100"
               sub="All time"
             />
             <StatCard
               label="Pending"
               value={stats.pendingOrders}
-              icon="⏳"
+              icon="P"
               accent="bg-amber-100"
               sub="Awaiting action"
             />
            <StatCard
   label="Revenue"
   value={`₹${(stats?.totalRevenue ?? 0).toLocaleString("en-IN")}`} 
-  icon="💰"
+  icon="R"
   accent="bg-emerald-100"
   sub="Gross collected"
 />
             <StatCard
               label="Shipped Today"
               value={stats.shippedToday}
-              icon="🚚"
+              icon="S"
               accent="bg-violet-100"
               sub="Dispatched"
             />
@@ -990,6 +1077,7 @@ const loadStats = useCallback(async () => {
                 onMarkDelivered={handleMarkDelivered}
                 onOpenShipModal={handleOpenShipModal}
                 onManage={handleManage}
+                onPrint={setPrintOrder}
               />
             ))}
           </AnimatePresence>
@@ -1010,6 +1098,257 @@ const loadStats = useCallback(async () => {
           onSaved={refresh}
         />
       )}
+
+      {/* ── Print Label Modal ── */}
+      {printOrder && (
+        <PrintLabelModal
+          order={printOrder}
+          onClose={() => setPrintOrder(null)}
+        />
+      )}
     </div>
+  );
+}
+
+/* ─── PrintLabelModal ─────────────────────────────────────────────── */
+
+interface PrintLabelModalProps {
+  order: DBOrder;
+  onClose: () => void;
+}
+
+function PrintLabelModal({ order, onClose }: PrintLabelModalProps) {
+  const resolvedAddress = order.address ?? order.user?.address;
+  const formattedAddress = formatAddress(resolvedAddress);
+  const { subtotal, shippingCost, discount } = calculateOrderBreakdown(order);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 16 }}
+          className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        >
+          {/* Modal Header */}
+          <div className="bg-stone-50 border-b px-6 py-4 flex items-center justify-between shrink-0">
+            <div>
+              <h3 className="text-sm font-bold text-stone-800 flex items-center gap-2">
+                Shipping Label &amp; Invoice Generator
+              </h3>
+              <p className="text-xs text-stone-400 mt-0.5">
+                Generate high-resolution printable slip for packing &amp; shipping.
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-stone-400 hover:text-stone-600 transition text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Modal Body: Scrollable Preview */}
+          <div className="flex-1 overflow-y-auto p-6 bg-stone-100 flex justify-center">
+            {/* Printable Container */}
+            <div
+              id="print-area-invoice"
+              style={{
+                width: "100%",
+                maxWidth: "650px",
+                background: "#ffffff",
+                border: "2px dashed #000000",
+                padding: "24px",
+                boxSizing: "border-box",
+                fontFamily: "system-ui, -apple-system, sans-serif",
+                color: "#000000",
+              }}
+            >
+              {/* Slip Header */}
+              <div style={{ textAlign: "center", borderBottom: "2px solid #000000", paddingBottom: "12px", marginBottom: "16px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "bold", letterSpacing: "0.2em" }}>✦ ॐ श्री गणेशाय नमः ✦</span>
+                <h1 style={{ fontSize: "28px", fontWeight: 900, margin: "6px 0 2px 0", letterSpacing: "0.05em", fontFamily: "Georgia, serif" }}>MALA WALE</h1>
+                <p style={{ fontSize: "11px", fontStyle: "italic", margin: 0, color: "#444444" }}>Divine Handcrafted Treasures &amp; Sacred Beads from Vrindavan</p>
+              </div>
+
+              {/* Sender & Recipient Grid */}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "20px", marginBottom: "20px", fontSize: "12px", lineHeight: "1.5" }}>
+                {/* Sender (Left) */}
+                <div style={{ flex: 1, borderRight: "1px dashed #cccccc", paddingRight: "20px" }}>
+                  <p style={{ margin: "0 0 6px 0", fontWeight: "bold", textTransform: "uppercase", fontSize: "10px", color: "#555555", letterSpacing: "0.05em" }}>From (Sender):</p>
+                  <p style={{ margin: "0 0 3px 0", fontWeight: "bold", fontSize: "14px" }}>MalaWale Shipping Hub</p>
+                  <p style={{ margin: 0 }}>Gali No. 2, Raman Reti, Vrindavan</p>
+                  <p style={{ margin: 0 }}>Mathura, Uttar Pradesh - 281121</p>
+                  <p style={{ margin: "6px 0 0 0" }}><strong>Phone:</strong> +91 99999 99999</p>
+                  <p style={{ margin: 0 }}><strong>Email:</strong> orders@malawale.com</p>
+                </div>
+
+                {/* Recipient (Right) */}
+                <div style={{ flex: 1, paddingLeft: "10px" }}>
+                  <p style={{ margin: "0 0 6px 0", fontWeight: "bold", textTransform: "uppercase", fontSize: "10px", color: "#555555", letterSpacing: "0.05em" }}>To (Recipient):</p>
+                  <p style={{ margin: "0 0 3px 0", fontWeight: "bold", fontSize: "15px" }}>{resolvedAddress?.receiverName || order.user?.name || "Anonymous Recipient"}</p>
+                  <p style={{ margin: 0, fontWeight: 500 }}>{resolvedAddress?.addressLine}</p>
+                  {resolvedAddress?.landmark && <p style={{ margin: 0, fontSize: "11px", fontStyle: "italic" }}>Landmark: {resolvedAddress.landmark}</p>}
+                  <p style={{ margin: 0, fontWeight: 600 }}>{resolvedAddress?.city}, {resolvedAddress?.state} - {resolvedAddress?.pincode}</p>
+                  <p style={{ margin: "6px 0 0 0" }}><strong>Phone:</strong> {resolvedAddress?.receiverPhone || order.user?.phone || "N/A"}</p>
+                  <p style={{ margin: 0 }}><strong>Order Ref:</strong> #{order.orderId}</p>
+                </div>
+              </div>
+
+              {/* Order Info Bar */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f5f5f5", padding: "10px 14px", borderRadius: "6px", marginBottom: "20px", fontSize: "11px", fontWeight: "bold", border: "1px solid #e0e0e0" }}>
+                <span>ORDER DATE: {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                <span style={{ fontSize: "12px", textTransform: "uppercase" }}>PAYMENT: <span style={{ color: order.paymentType === "COD" ? "#d32f2f" : "#2e7d32" }}>{order.paymentType}</span></span>
+              </div>
+
+              {/* Items Table */}
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "24px", fontSize: "12px", textAlign: "left" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #000000" }}>
+                    <th style={{ padding: "8px 4px", width: "40px", fontWeight: "bold" }}>No.</th>
+                    <th style={{ padding: "8px 4px", fontWeight: "bold" }}>Item Description</th>
+                    <th style={{ padding: "8px 4px", width: "80px", fontWeight: "bold", textAlign: "center" }}>Size</th>
+                    <th style={{ padding: "8px 4px", width: "60px", fontWeight: "bold", textAlign: "center" }}>Qty</th>
+                    <th style={{ padding: "8px 4px", width: "90px", fontWeight: "bold", textAlign: "right" }}>Rate</th>
+                    <th style={{ padding: "8px 4px", width: "100px", fontWeight: "bold", textAlign: "right" }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items?.map((item, i) => {
+                    const qty = Number(item.quantity) || 0;
+                    const price = Number(item.price) || 0;
+                    const name = typeof item.product === "object" && item.product?.name ? item.product.name : (item.name || "Sacred Item");
+                    const description = typeof item.product === "object" && item.product?.description ? item.product.description : "";
+                    return (
+                      <tr key={i} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top" }}>{i + 1}</td>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top" }}>
+                          <span style={{ fontWeight: "bold", display: "block" }}>{name}</span>
+                          {description && <span style={{ fontSize: "10px", color: "#555555", display: "block", marginTop: "2px", lineHeight: "1.3" }}>{description.slice(0, 80)}{description.length > 80 ? "..." : ""}</span>}
+                        </td>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top", textAlign: "center" }}>{item.size || "Standard"}</td>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top", textAlign: "center" }}>{qty}</td>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top", textAlign: "right" }}>₹{price.toLocaleString("en-IN")}</td>
+                        <td style={{ padding: "10px 4px", verticalAlign: "top", textAlign: "right", fontWeight: "bold" }}>₹{(qty * price).toLocaleString("en-IN")}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Totals Summary */}
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "24px" }}>
+                <div style={{ width: "250px", fontSize: "12px", lineHeight: "1.8" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Items Subtotal:</span>
+                    <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Shipping Charges:</span>
+                    <span style={{ color: shippingCost === 0 ? "#2e7d32" : "#000000", fontWeight: shippingCost === 0 ? "bold" : "normal" }}>
+                      {shippingCost === 0 ? "FREE" : `₹${shippingCost}`}
+                    </span>
+                  </div>
+                  {discount > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#2e7d32", fontWeight: "bold" }}>
+                      <span>Discount ({order.couponCode || "Coupon"}):</span>
+                      <span>-₹{discount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: "bold", paddingTop: "6px", borderTop: "1px solid #000000", marginTop: "4px" }}>
+                    <span>Grand Total:</span>
+                    <span>₹{order.totalAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Blessings */}
+              <div style={{ textAlign: "center", borderTop: "1px solid #000000", paddingTop: "12px", fontSize: "11px", lineHeight: "1.4" }}>
+                <p style={{ margin: "0 0 4px 0", fontWeight: "bold" }}>May your blessings multiply a thousandfold! Jai Shri Radhe Krishna!</p>
+                <p style={{ margin: 0, color: "#666666", fontSize: "10px" }}>Handcrafted with absolute devotion. For support, contact orders@malawale.com</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer Controls */}
+          <div className="flex justify-between items-center px-6 py-4 border-t bg-stone-50 shrink-0">
+            <span className="text-[11px] text-stone-400 italic">
+              Tip: Set layout to "Portrait" and enable "Background Graphics" in browser print settings.
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 border border-stone-200 rounded-xl text-xs font-semibold text-stone-500 hover:bg-stone-100 transition"
+              >
+                Close Preview
+              </button>
+              <button
+                onClick={handlePrint}
+                className="px-5 py-2 bg-[#8b4513] hover:bg-[#7a3b10] text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
+              >
+                Print Label &amp; Invoice
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Global CSS and Print Styling Injection */}
+        <style>{`
+          @keyframes codBreathe {
+            0%, 100% {
+              background-color: #ef4444;
+              box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+              transform: scale(1);
+            }
+            50% {
+              background-color: #dc2626;
+              box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+              transform: scale(1.05);
+            }
+          }
+          .animate-cod-pulse {
+            animation: codBreathe 2s infinite ease-in-out;
+          }
+
+          @media print {
+            /* Hide the entire browser viewport elements */
+            body * {
+              visibility: hidden !important;
+            }
+            /* Render ONLY the print slip area */
+            #print-area-invoice, #print-area-invoice * {
+              visibility: visible !important;
+            }
+            #print-area-invoice {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              border: 1px solid #000000 !important;
+              padding: 10px !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+            }
+            /* Remove margins/headers from printable page */
+            @page {
+              size: auto;
+              margin: 8mm;
+            }
+          }
+        `}</style>
+      </motion.div>
+    </AnimatePresence>
   );
 }
