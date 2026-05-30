@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product, Review, Variant } from "./Productcard";
+import CartAction from "./CartAction";
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -271,25 +272,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  // ── Cart handler ───────────────────────────────────────────────────────────
-
-  const handleCart = () => {
-    if (!product) return;
-    // If product has variants and none selected
-    if (hasVariants && !selectedVariant) {
-      setNoVariant(true);
-      setTimeout(() => setNoVariant(false), 1800);
-      return;
-    }
-    // If selected variant is out of stock
-    if (selectedVariant && (!selectedVariant.inStock || selectedVariant.stock === 0)) {
-      return;
-    }
-    if (cartState === "added") return;
-    onAddToCart(product, selectedVariant);
-    setCartState("added");
-    setTimeout(() => setCartState("idle"), 2400);
-  };
+  // ── Cart handler removed (moved to shared CartAction component) ──
 
   const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -619,57 +602,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
 
                     {/* CTA */}
-                    <motion.button
-                      onClick={handleCart}
-                      disabled={isOutOfStock}
-                      className="w-full h-14 rounded-2xl flex items-center justify-center gap-2.5 text-base font-semibold overflow-hidden relative"
-                      style={{
-                        fontFamily: "'Jost', sans-serif",
-                        letterSpacing: "0.05em",
-                        background: isOutOfStock
-                          ? "linear-gradient(135deg, #9ca3af, #6b7280)"
-                          : cartState === "added"
-                          ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
-                          : "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)",
-                        color: "#fff",
-                        boxShadow: isOutOfStock ? "none"
-                          : cartState === "added"
-                          ? "0 6px 20px rgba(74,124,89,0.4)"
-                          : "0 6px 24px rgba(139,69,19,0.38)",
-                        cursor: isOutOfStock ? "not-allowed" : "pointer",
-                        opacity: isOutOfStock ? 0.7 : 1,
-                        transition: "background 0.4s ease, box-shadow 0.4s ease",
-                      }}
-                      whileHover={isOutOfStock ? {} : { scale: 1.015 }}
-                      whileTap={isOutOfStock ? {} : { scale: 0.98 }}>
-                      <AnimatePresence mode="wait">
-                        {isOutOfStock ? (
-                          <motion.span key="oos" className="flex items-center gap-2"
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                            Out of Stock
-                          </motion.span>
-                        ) : cartState === "added" ? (
-                          <motion.span key="done" className="flex items-center gap-2"
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" className="w-5 h-5">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Added to Cart!
-                          </motion.span>
-                        ) : (
-                          <motion.span key="add" className="flex items-center gap-2"
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                            <CartIcon /> Add to Cart
-                            {selectedVariant && (
-                              <span className="text-xs px-2 py-0.5 rounded-full ml-1"
-                                style={{ background: "rgba(255,255,255,0.25)", fontFamily: "'Jost', sans-serif" }}>
-                                {selectedVariant.size}
-                              </span>
-                            )}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </motion.button>
+                    <div className="w-full">
+                      <CartAction
+                        product={product}
+                        selectedSize={selectedVariant?.size || "Standard"}
+                        layout="wide"
+                        onAddToCartSuccess={() => onAddToCart && onAddToCart(product, selectedVariant)}
+                      />
+                    </div>
 
                     {/* Tabs */}
                     <div>

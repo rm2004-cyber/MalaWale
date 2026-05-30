@@ -17,6 +17,8 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const { handleWebhook } = require('./controllers/paymentController');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,7 +29,7 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
-
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 app.use(cors());
 app.use(express.json()); 
 
@@ -46,6 +48,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/coupon', couponRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.use(express.static(path.join(__dirname, '../dist')));
 

@@ -166,16 +166,15 @@ export default function CartModal({ onClose }: CartModalProps) {
     }
   }, [fetchCart, user, authLoading]);
 
-  const handleQuantityChange = (productId: string, variantId: string, currentQty: number, change: number) => {
+  // ── FIX 1: Use `size` instead of `variantId` as the identifier ────
+  const handleQuantityChange = (productId: string, size: string, currentQty: number, change: number) => {
     const newQty = currentQty + change;
-    if (newQty <= 0) removeFromCart(productId, variantId);
-    else updateQuantity(productId, variantId, newQty);
+    if (newQty <= 0) removeFromCart(productId, size);
+    else updateQuantity(productId, size, newQty);
   };
 
   const hasItems = cart?.items?.length > 0;
 
-  // Shared slide-over wrapper — always rendered so backdrop/panel stay mounted
-  // across both views (prevents re-mount flicker)
   return (
     <motion.div
       style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", justifyContent: "flex-end" }}
@@ -183,7 +182,7 @@ export default function CartModal({ onClose }: CartModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Backdrop — clicking it always closes the entire modal */}
+      {/* Backdrop */}
       <motion.div
         style={{ position: "absolute", inset: 0, background: "rgba(30,15,5,0.55)", backdropFilter: "blur(4px)" }}
         onClick={onClose}
@@ -211,7 +210,6 @@ export default function CartModal({ onClose }: CartModalProps) {
         exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 320, damping: 32 }}
       >
-        {/* ── VIEW SWITCHER with AnimatePresence ── */}
         <AnimatePresence mode="wait" initial={false}>
 
           {/* ══════════════ CART VIEW ══════════════ */}
@@ -307,15 +305,21 @@ export default function CartModal({ onClose }: CartModalProps) {
                   {hasItems && cart.items.map((item: any, index: number) => {
                     const product = item.product || item;
                     const productId = product?._id || product?.id || "";
-                    const matchedVariant = product?.variants?.find((v: any) => v.size === item.size) || product?.variants?.[0];
-                    const variantId = matchedVariant?._id || matchedVariant?.id || "";
+
+                    // ── FIX 2: Normalize size comparison with .toLowerCase() ──
+                    const itemSize = item.size ?? "";
+                    const matchedVariant = product?.variants?.find(
+                      (v: any) => v.size?.toLowerCase() === itemSize.toLowerCase()
+                    ) || product?.variants?.[0];
+
                     const itemName = product?.name || "Sacred Item";
                     const itemPrice = matchedVariant?.price ?? matchedVariant?.mrp ?? 0;
                     const itemImage = product?.images?.[0] || product?.image || null;
 
                     return (
+                      // ── FIX 3: Key uses productId + size for stable, unique identity ──
                       <motion.div
-                        key={item._id || `${productId}-${variantId}`}
+                        key={`${productId}-${itemSize}`}
                         initial={{ opacity: 0, x: 24 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -24, height: 0, marginBottom: 0 }}
@@ -334,24 +338,38 @@ export default function CartModal({ onClose }: CartModalProps) {
                             ₹{itemPrice.toLocaleString("en-IN")}
                           </p>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            {/* ── FIX 1 (applied): pass itemSize in place of variantId ── */}
                             <button
-                              onClick={() => handleQuantityChange(productId, variantId, item.quantity, -1)}
+                              onClick={() => handleQuantityChange(productId, itemSize, item.quantity, -1)}
                               style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#8b4513", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
                               onMouseEnter={e => (e.currentTarget.style.background = "#f5ddb8")}
                               onMouseLeave={e => (e.currentTarget.style.background = "#fdf0e0")}
                             >−</button>
                             <span style={{ fontSize: "13px", fontWeight: 700, minWidth: "22px", textAlign: "center", color: "#3d1f08" }}>{item.quantity}</span>
                             <button
-                              onClick={() => handleQuantityChange(productId, variantId, item.quantity, 1)}
+                              onClick={() => handleQuantityChange(productId, itemSize, item.quantity, 1)}
                               style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#8b4513", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
                               onMouseEnter={e => (e.currentTarget.style.background = "#f5ddb8")}
                               onMouseLeave={e => (e.currentTarget.style.background = "#fdf0e0")}
                             >+</button>
                           </div>
                         </div>
+                        {/* ── FIX 1 (applied): pass itemSize to removeFromCart ── */}
                         <button
-                          onClick={() => removeFromCart(productId, variantId)}
-                          style={{ padding: "6px", background: "transparent", border: "none", cursor: "pointer", color: "#c0806a", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "color 0.15s, background 0.15s" }}
+                          onClick={() => removeFromCart(productId, itemSize)}
+                          style={{
+                            padding: "6px",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "#c0806a",
+                            borderRadius: "8px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            transition: "color 0.15s, background 0.15s"
+                          }}
                           onMouseEnter={e => { e.currentTarget.style.color = "#c0392b"; e.currentTarget.style.background = "#fef2f2"; }}
                           onMouseLeave={e => { e.currentTarget.style.color = "#c0806a"; e.currentTarget.style.background = "transparent"; }}
                           title="Remove item"
@@ -392,7 +410,6 @@ export default function CartModal({ onClose }: CartModalProps) {
                       </div>
                     </div>
 
-                    {/* ── Proceed to Checkout — switches view ── */}
                     <button
                       onClick={() => setCurrentView("checkout")}
                       style={{
@@ -445,7 +462,6 @@ export default function CartModal({ onClose }: CartModalProps) {
               >
                 <MandalaBg />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
-                  {/* Back button */}
                   <button
                     onClick={() => setCurrentView("cart")}
                     style={{
@@ -462,7 +478,6 @@ export default function CartModal({ onClose }: CartModalProps) {
                     Back to Cart
                   </button>
 
-                  {/* Close */}
                   <button
                     onClick={onClose}
                     style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff8ee", flexShrink: 0, transition: "background 0.2s" }}
@@ -483,7 +498,6 @@ export default function CartModal({ onClose }: CartModalProps) {
                 </div>
               </div>
 
-              {/* CheckoutModal fills the remaining space */}
               <CheckoutModal
                 onBack={() => setCurrentView("cart")}
                 onClose={onClose}

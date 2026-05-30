@@ -11,26 +11,30 @@ exports.addToCart = async (req, res) => {
       return res.status(400).json({ success: false, message: "Product ID zaroori hai!" });
     }
 
-    let cart = await Cart.findOne({ user: userId });
+    // Atomic increment: try to update existing matching item
+    let cart = await Cart.findOneAndUpdate(
+      { 
+        user: userId, 
+        items: { 
+          $elemMatch: { 
+            product: productId, 
+            size: { $regex: new RegExp(`^${itemSize}$`, "i") } 
+          } 
+        } 
+      },
+      { $inc: { "items.$.quantity": qty } },
+      { new: true }
+    );
 
+    // If item was not found/updated, push new item (upserts the cart if not exists)
     if (!cart) {
-      cart = new Cart({
-        user: userId,
-        items: [{ product: productId, size: itemSize, quantity: qty }]
-      });
-    } else {
-      const itemIndex = cart.items.findIndex(
-        item => item.product.toString() === productId && item.size === itemSize
+      cart = await Cart.findOneAndUpdate(
+        { user: userId },
+        { $push: { items: { product: productId, size: itemSize, quantity: qty } } },
+        { new: true, upsert: true }
       );
-
-      if (itemIndex > -1) {
-        cart.items[itemIndex].quantity += qty;
-      } else {
-        cart.items.push({ product: productId, size: itemSize, quantity: qty });
-      }
     }
 
-    await cart.save();
     res.status(200).json({ success: true, cart, message: "Item cart mein jod diya gaya! 🛒" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Cart Engine Error", error: error.message });
@@ -64,7 +68,7 @@ exports.removeFromCart = async (req, res) => {
     if (!cart) return res.status(404).json({ success: false, message: "Cart nahi mili." });
 
     cart.items = cart.items.filter(
-      item => !(item.product.toString() === productId && item.size === itemSize)
+      item => !(item.product.toString() === productId && item.size.toLowerCase() === itemSize.toLowerCase())
     );
 
     await cart.save();
@@ -80,26 +84,35 @@ exports.updateQuantity = async (req, res) => {
     const userId = req.user._id;
     const itemSize = size || "Standard";
 
-    if (!productId || !quantity) {
+    if (!productId || typeof quantity === 'undefined') {
       return res.status(400).json({ success: false, message: "Product ID aur Quantity zaroori hain!" });
     }
 
-    let cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ success: false, message: "Cart nahi mili!" });
-
-    const itemIndex = cart.items.findIndex(
-      item => item.product.toString() === productId && item.size === itemSize
+    // Atomic update of quantity
+    let cart = await Cart.findOneAndUpdate(
+      { 
+        user: userId, 
+        items: { 
+          $elemMatch: { 
+            product: productId, 
+            size: { $regex: new RegExp(`^${itemSize}$`, "i") } 
+          } 
+        } 
+      },
+      { $set: { "items.$.quantity": quantity } },
+      { new: true }
     );
 
-    if (itemIndex > -1) {
-      cart.items[itemIndex].quantity = quantity;
-      await cart.save();
-      res.status(200).json({ success: true, cart, message: "Quantity update ho gayi! 🔄" });
-    } else {
-      cart.items.push({ product: productId, size: itemSize, quantity: quantity });
-      await cart.save();
-      res.status(200).json({ success: true, cart, message: "Item added with updated quantity!" });
+    // If item doesn't exist, push it
+    if (!cart) {
+      cart = await Cart.findOneAndUpdate(
+        { user: userId },
+        { $push: { items: { product: productId, size: itemSize, quantity: quantity } } },
+        { new: true, upsert: true }
+      );
     }
+
+    res.status(200).json({ success: true, cart, message: "Quantity update ho gayi! 🔄" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update Cart Quantity Error", error: error.message });
   }

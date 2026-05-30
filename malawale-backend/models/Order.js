@@ -26,6 +26,8 @@ const OrderSchema = new mongoose.Schema({
   paymentStatus: { type: String, enum: ['Pending', 'Completed', 'Failed', 'Refunded'], default: 'Pending' },
   paymentGateway: { type: String, default: "" },
   transactionId: { type: String, default: "" },
+  razorpayOrderId: { type: String, default: "" }, 
+paymentId: { type: String, default: "" },
   gatewayResponse: { type: Object, default: null },
   orderStatus: { 
     type: String, 

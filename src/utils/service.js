@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-  ? 'https://malawale.onrender.com/api' 
+  ? 'http://localhost:5000/api' 
   : '/api'; 
 
 const api = axios.create({
@@ -69,6 +69,10 @@ export const couponService = {
   validateCoupon: (data) => api.post('/coupon/validate', data),
 };
 
+export const paymentService = {
+  createOrder: (data) => api.post('/payment/create', data),
+  verifyPayment: (data) => api.post('/payment/verify', data),
+};
 export const bannerService = {
   getBanners: () => api.get('/banner/all'),
   createBanner: (formData) => api.post('/banner/create', formData, {

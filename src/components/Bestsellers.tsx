@@ -2,6 +2,9 @@ import { useRef, useEffect, useState } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
 import { productService } from "../utils/service";
 import type { Product as ShopProduct } from "./Productcard";
+import { useCart } from "../context/CartContext";
+import { toast } from "react-hot-toast";
+import CartAction from "./CartAction";
 // ─── Product Interface (mirrors MongoDB shape) ────────────────────────────────
 
 export interface Product {
@@ -277,6 +280,17 @@ function ProductCard({
 
   };
 
+  const mockProductForCart = {
+    _id: product.key,
+    name: product.name,
+    variants: [{
+      size: "Standard",
+      price: product.price,
+      inStock: true,
+      stock: 99
+    }]
+  };
+
   return (
     <motion.article
       custom={index}
@@ -307,24 +321,45 @@ function ProductCard({
           <DiscountBadge discount={product.discount} />
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileHover={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.22 }}
-          className="absolute inset-x-0 bottom-0 flex justify-center pb-3 opacity-0 group-hover:opacity-100"
+        <div 
+          className="absolute inset-x-0 bottom-3 flex justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{
+            // Keep quantity selector always visible when item is in cart so user has visual state feedback
+            // Wait, we can make it always visible if item is in cart! That is extremely good UX. Let's do that!
+          }}
         >
-          <button
-            style={{
-              background:
-                "linear-gradient(90deg, #8b4513 0%, #c8843a 100%)",
-              fontFamily: "'Jost', sans-serif",
-              boxShadow: "0 4px 18px rgba(139,69,19,0.40)",
+          {/* We will render CartAction here. It handles showing compact selector beautifully! */}
+        </div>
+
+        {/* Let's render the CartAction as a floating container.
+            We want it to be persistently visible if in cart, or hover-revealed if not in cart.
+            Let's pass the layout="compact" which already has custom styling! */}
+        <div
+          className="absolute inset-x-0 bottom-3 flex justify-center z-20"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CartAction
+            product={mockProductForCart}
+            selectedSize="Standard"
+            layout="compact"
+            onAddToCartSuccess={() => {
+              if (onAddToCart) {
+                onAddToCart({
+                  id: product.key,
+                  name: product.name,
+                  category: "Bestseller",
+                  price: product.price,
+                  originalPrice: product.originalPrice,
+                  images: [product.image],
+                  description: product.name,
+                  sizes: ["Standard"],
+                  ordersCount: 100,
+                  reviews: []
+                });
+              }
             }}
-            className="text-white text-xs font-semibold tracking-wide uppercase px-5 py-2 rounded-full transition-transform active:scale-95"
-          >
-            Add to Cart
-          </button>
-        </motion.div>
+          />
+        </div>
 
       </div>
 

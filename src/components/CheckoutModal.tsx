@@ -4,13 +4,25 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { orderService, couponService } from "../utils/service";
+import { orderService, couponService, paymentService } from "../utils/service";
 import { toast } from "react-hot-toast";
 
 interface CheckoutModalProps {
   onBack: () => void;
   onClose: () => void;
 }
+
+/* ─── Load Razorpay Script ───────────────────────────────────────── */
+const loadRazorpay = (): Promise<boolean> => {
+  return new Promise(resolve => {
+    if ((window as any).Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 /* ─── Spinning OM Loader ─────────────────────────────────────────── */
 const OmSpinner = ({ size = 44 }: { size?: number }) => {
@@ -105,36 +117,30 @@ const IconCheck = () => (
     <polyline strokeLinecap="round" strokeLinejoin="round" points="20 6 9 17 4 12" />
   </svg>
 );
+const IconPayment = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path strokeLinecap="round" d="M2 10h20" />
+  </svg>
+);
 
 /* ─── Lotus SVG ──────────────────────────────────────────────────── */
 const LotusIcon = () => (
   <svg viewBox="0 0 120 120" width="90" height="90" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Glow circle behind */}
     <circle cx="60" cy="60" r="52" fill="url(#lotusGlow)" opacity="0.18" />
-
-    {/* Outer petals */}
     <path d="M60 90 C45 75 30 65 30 48 C30 35 44 28 60 38 C76 28 90 35 90 48 C90 65 75 75 60 90Z"
       fill="url(#petalOuter)" opacity="0.55" />
     <path d="M60 90 C40 80 20 78 18 60 C16 44 32 34 60 44 C88 34 104 44 102 60 C100 78 80 80 60 90Z"
       fill="url(#petalMid)" opacity="0.4" />
-
-    {/* Inner petals */}
     <path d="M60 80 C50 68 44 55 50 44 C54 36 60 34 60 34 C60 34 66 36 70 44 C76 55 70 68 60 80Z"
       fill="url(#petalInner)" />
     <path d="M60 80 C36 70 26 56 34 44 C40 34 52 32 60 44 C68 32 80 34 86 44 C94 56 84 70 60 80Z"
       fill="url(#petalSide)" opacity="0.7" />
-
-    {/* Center */}
     <circle cx="60" cy="56" r="9" fill="url(#centerGold)" />
     <circle cx="60" cy="56" r="5" fill="#fff8ee" opacity="0.9" />
-
-    {/* Checkmark inside center */}
     <path d="M55 56 L58.5 59.5 L65 53" stroke="#8b4513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-
-    {/* Water ripple lines at base */}
     <path d="M36 92 Q60 86 84 92" stroke="#c8a06a" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
     <path d="M28 98 Q60 90 92 98" stroke="#c8a06a" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
-
     <defs>
       <radialGradient id="lotusGlow" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stopColor="#f5c472" />
@@ -217,204 +223,29 @@ const OrderSuccessView = ({ onClose }: { onClose: () => void }) => {
         overflow: "hidden",
       }}
     >
-      {/* Decorative radial glow background */}
-      <div style={{
-        position: "absolute",
-        top: "20%",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "260px",
-        height: "260px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(245,196,114,0.18) 0%, transparent 70%)",
-        pointerEvents: "none",
-      }} />
-
-      {/* Ornamental top line */}
-      <motion.div
-        initial={{ scaleX: 0, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ duration: 0.7, delay: 0.3 }}
-        style={{
-          position: "absolute",
-          top: "28px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          whiteSpace: "nowrap",
-        }}
-      >
+      <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: "260px", height: "260px", borderRadius: "50%", background: "radial-gradient(circle, rgba(245,196,114,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <motion.div initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }} transition={{ duration: 0.7, delay: 0.3 }} style={{ position: "absolute", top: "28px", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
         <span style={{ fontSize: "10px", color: "#c8a06a", letterSpacing: "0.18em", fontFamily: "Georgia, serif", opacity: 0.7 }}>✦ &nbsp; श्री गणेशाय नमः &nbsp; ✦</span>
       </motion.div>
-
-      {/* Particles burst */}
       <div style={{ position: "absolute", width: "100%", height: "100%", pointerEvents: "none" }}>
-        {particles.map((p, i) => (
-          <Particle key={i} {...p} />
-        ))}
+        {particles.map((p, i) => <Particle key={i} {...p} />)}
       </div>
-
-      {/* Lotus icon with pulse ring */}
-      <motion.div
-        initial={{ scale: 0.4, opacity: 0, rotate: -15 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ duration: 0.7, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }}
-        style={{ position: "relative", marginBottom: "6px" }}
-      >
-        {/* Pulse rings */}
+      <motion.div initial={{ scale: 0.4, opacity: 0, rotate: -15 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.34, 1.56, 0.64, 1] }} style={{ position: "relative", marginBottom: "6px" }}>
         {[1, 2].map(ring => (
-          <motion.div
-            key={ring}
-            initial={{ scale: 0.6, opacity: 0.6 }}
-            animate={{ scale: 1.8 + ring * 0.3, opacity: 0 }}
-            transition={{ duration: 1.8, delay: 0.4 + ring * 0.3, repeat: Infinity, repeatDelay: 0.8 }}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "90px",
-              height: "90px",
-              borderRadius: "50%",
-              border: "1.5px solid #c87941",
-              pointerEvents: "none",
-            }}
-          />
+          <motion.div key={ring} initial={{ scale: 0.6, opacity: 0.6 }} animate={{ scale: 1.8 + ring * 0.3, opacity: 0 }} transition={{ duration: 1.8, delay: 0.4 + ring * 0.3, repeat: Infinity, repeatDelay: 0.8 }} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "90px", height: "90px", borderRadius: "50%", border: "1.5px solid #c87941", pointerEvents: "none" }} />
         ))}
         <LotusIcon />
       </motion.div>
-
-      {/* OM symbol */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.45 }}
-        style={{ fontSize: "22px", color: "#c87941", fontFamily: "serif", marginBottom: "14px", opacity: 0.85 }}
-      >
-        ॐ
-      </motion.div>
-
-      {/* Main heading */}
-      <motion.h2
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, delay: 0.5 }}
-        style={{
-          margin: "0 0 8px",
-          fontSize: "24px",
-          fontFamily: "'Georgia', 'Times New Roman', serif",
-          fontWeight: 700,
-          color: "#3d1f08",
-          lineHeight: 1.2,
-          letterSpacing: "-0.01em",
-        }}
-      >
-        Order Placed!
-      </motion.h2>
-
-      {/* Sub heading */}
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-        style={{
-          margin: "0 0 6px",
-          fontSize: "13.5px",
-          color: "#7a4a20",
-          fontFamily: "'Georgia', serif",
-          fontStyle: "italic",
-          lineHeight: 1.6,
-          maxWidth: "260px",
-        }}
-      >
-        Your sacred treasures are being prepared with devotion and care.
-      </motion.p>
-
-      {/* Spiritual message */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.75 }}
-        style={{
-          margin: "0 0 28px",
-          fontSize: "12px",
-          color: "#b09070",
-          fontFamily: "'Georgia', serif",
-          letterSpacing: "0.04em",
-        }}
-      >
-        🙏 May your blessings multiply a thousandfold.
-      </motion.p>
-
-      {/* Divider */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
-        style={{
-          width: "140px",
-          height: "1px",
-          background: "linear-gradient(to right, transparent, #d4a87a, transparent)",
-          marginBottom: "28px",
-        }}
-      />
-
-      {/* Close button */}
-      <motion.button
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.85 }}
-        whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(91,32,5,0.44)" }}
-        whileTap={{ scale: 0.97 }}
-        onClick={onClose}
-        style={{
-          padding: "14px 36px",
-          background: "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)",
-          color: "#fff8ee",
-          border: "none",
-          borderRadius: "14px",
-          cursor: "pointer",
-          fontWeight: 700,
-          fontFamily: "'Georgia', serif",
-          fontSize: "14px",
-          letterSpacing: "0.03em",
-          boxShadow: "0 6px 24px rgba(91,32,5,0.35)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* shimmer */}
-        <span style={{
-          position: "absolute",
-          top: 0,
-          left: "-100%",
-          width: "60%",
-          height: "100%",
-          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
-          animation: "shimmer 2.2s infinite",
-        }} />
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45 }} style={{ fontSize: "22px", color: "#c87941", fontFamily: "serif", marginBottom: "14px", opacity: 0.85 }}>ॐ</motion.div>
+      <motion.h2 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.5 }} style={{ margin: "0 0 8px", fontSize: "24px", fontFamily: "'Georgia', 'Times New Roman', serif", fontWeight: 700, color: "#3d1f08", lineHeight: 1.2, letterSpacing: "-0.01em" }}>Order Placed!</motion.h2>
+      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }} style={{ margin: "0 0 6px", fontSize: "13.5px", color: "#7a4a20", fontFamily: "'Georgia', serif", fontStyle: "italic", lineHeight: 1.6, maxWidth: "260px" }}>Your sacred treasures are being prepared with devotion and care.</motion.p>
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.75 }} style={{ margin: "0 0 28px", fontSize: "12px", color: "#b09070", fontFamily: "'Georgia', serif", letterSpacing: "0.04em" }}>🙏 May your blessings multiply a thousandfold.</motion.p>
+      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.5, delay: 0.7 }} style={{ width: "140px", height: "1px", background: "linear-gradient(to right, transparent, #d4a87a, transparent)", marginBottom: "28px" }} />
+      <motion.button initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.85 }} whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(91,32,5,0.44)" }} whileTap={{ scale: 0.97 }} onClick={onClose} style={{ padding: "14px 36px", background: "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)", color: "#fff8ee", border: "none", borderRadius: "14px", cursor: "pointer", fontWeight: 700, fontFamily: "'Georgia', serif", fontSize: "14px", letterSpacing: "0.03em", boxShadow: "0 6px 24px rgba(91,32,5,0.35)", position: "relative", overflow: "hidden" }}>
+        <span style={{ position: "absolute", top: 0, left: "-100%", width: "60%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)", animation: "shimmer 2.2s infinite" }} />
         Close &amp; Return
       </motion.button>
-
-      {/* Bottom ornament */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: 0.6 }}
-        style={{
-          position: "absolute",
-          bottom: "18px",
-          fontSize: "10px",
-          color: "#c8a06a",
-          letterSpacing: "0.14em",
-          fontFamily: "Georgia, serif",
-          opacity: 0.6,
-        }}
-      >
-        ✦ &nbsp; Handcrafted with devotion &nbsp; ✦
-      </motion.p>
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.6 }} style={{ position: "absolute", bottom: "18px", fontSize: "10px", color: "#c8a06a", letterSpacing: "0.14em", fontFamily: "Georgia, serif", opacity: 0.6 }}>✦ &nbsp; Handcrafted with devotion &nbsp; ✦</motion.p>
     </motion.div>
   );
 };
@@ -423,6 +254,9 @@ const OrderSuccessView = ({ onClose }: { onClose: () => void }) => {
 export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
+
+  // ── Shipping: FREE above ₹1999, else ₹99 ──
+  const shippingCost = cartTotal >= 1999 ? 0 : 99;
 
   const [address, setAddress] = useState({
     fullName: user?.name || "",
@@ -439,12 +273,18 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discount, setDiscount] = useState(0);
 
+  // ── Payment Method ──
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Online">("COD");
+
   const [loading, setLoading] = useState(false);
   const [couponLoading, setCouponLoading] = useState(false);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const addr = (k: keyof typeof address) => (v: string) => setAddress(prev => ({ ...prev, [k]: v }));
+
+  // ── Final total: (subtotal - discount) + shipping ──
+  const finalTotal = (cartTotal - discount) + shippingCost;
 
   useEffect(() => {
     const fetchCoupons = async () => {
@@ -484,61 +324,158 @@ export default function CheckoutModal({ onBack, onClose }: CheckoutModalProps) {
     setDiscount(0);
     setCouponCode("");
   };
-const handlePlaceOrder = async () => {
-  if (!address.fullName || !address.phone || !address.street || !address.city || !address.pincode) {
-    return toast.error("Please fill all required fields");
-  }
-  
-  setLoading(true);
-  
-  const orderPayload = {
-    items: cart.items,
-    shippingAddress: address,
-    paymentMethod: "COD",
-    couponCode: appliedCoupon?.code || null,
-    totalAmount: finalTotal,
+
+  /* ── Validate address fields ── */
+  const validateAddress = (): boolean => {
+    if (!address.fullName || !address.phone || !address.street || !address.city || !address.pincode) {
+      toast.error("Please fill all required fields");
+      return false;
+    }
+    if (!/^\d{10}$/.test(address.phone)) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return false;
+    }
+    if (!/^\d{6}$/.test(address.pincode)) {
+      toast.error("Please enter a valid 6-digit pincode");
+      return false;
+    }
+    return true;
   };
 
-  console.log("DEBUG: Starting Order Placement...");
-  console.log("DEBUG: Payload:", JSON.stringify(orderPayload, null, 2));
+  /* ── Build order payload ── */
+  const buildOrderPayload = (method: "COD" | "Online", razorpayData?: any) => ({
+    items: cart.items,
+    shippingAddress: address,
+    paymentMethod: method,
+    couponCode: appliedCoupon?.code || null,
+    subtotal: cartTotal,
+    discount,
+    shippingCost,
+    totalAmount: finalTotal,
+    ...(razorpayData && {
+      razorpayOrderId: razorpayData.razorpay_order_id,
+      razorpayPaymentId: razorpayData.razorpay_payment_id,
+      razorpaySignature: razorpayData.razorpay_signature,
+    }),
+  });
+
+  /* ── COD Flow ── */
+  const handleCODOrder = async () => {
+    setLoading(true);
+    try {
+      const res = await orderService.placeOrder(buildOrderPayload("COD"));
+      if (res?.data?.success) {
+        clearCart();
+        setIsSuccess(true);
+      } else {
+        toast.error(res?.data?.message || "Order rejected by server");
+      }
+    } catch (err: any) {
+      if (err.response) {
+        toast.error(`Error ${err.response.status}: ${err.response.data?.message || "Server error"}`);
+      } else if (err.request) {
+        toast.error("Network error: Could not connect to server.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const handleOnlineOrder = async () => {
+  setLoading(true);
+
+  // Step 1: Order Create karo pehle taaki MongoDB ID mile
+  let localOrderId: string;
+  try {
+    const orderRes = await orderService.placeOrder(buildOrderPayload("Online", null));
+    if (!orderRes?.data?.order?._id) throw new Error("Order creation failed");
+    localOrderId = orderRes.data.order._id;
+  } catch (err: any) {
+    toast.error("Failed to initialize order.");
+    setLoading(false);
+    return;
+  }
+
+  // Step 2: Razorpay SDK Load karo
+  const sdkLoaded = await loadRazorpay();
+  if (!sdkLoaded) {
+    toast.error("Failed to load payment gateway.");
+    setLoading(false);
+    return;
+  }
+
+  // Step 3: Razorpay Payment Order generate karo
+  let razorpayOrderId: string;
+  try {
+    const res = await paymentService.createOrder({ amount: finalTotal, orderId: localOrderId });
+    razorpayOrderId = res.data.razorpayOrderId;
+    if (!razorpayOrderId) throw new Error("Razorpay Order ID missing");
+  } catch (err: any) {
+    toast.error("Payment initiation failed.");
+    setLoading(false);
+    return;
+  }
+
+  setLoading(false);
+
+  // Step 4: Razorpay Popup
+  const options = {
+    key: "rzp_test_RwyAESgygh78Yf",
+    amount: finalTotal * 100,
+    currency: "INR",
+    name: "MalaWale",
+    description: "Sacred Treasures Order",
+    order_id: razorpayOrderId,
+    prefill: {
+      name: address.fullName,
+      contact: address.phone,
+      email: user?.email || "",
+    },
+    theme: { color: "#8b4513" },
+    handler: async (response: any) => {
+      setLoading(true);
+      try {
+        // Step 5: Verification (Ab localOrderId valid hai!)
+        await paymentService.verifyPayment({
+          orderId: localOrderId,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+        });
+
+        // Step 6: Success - Yahan bas status update kar do ya redirect
+        clearCart();
+        setIsSuccess(true);
+      } catch (err: any) {
+        toast.error("Payment verification failed.");
+      } finally {
+        setLoading(false);
+      }
+    },
+  };
 
   try {
-    const res = await orderService.placeOrder(orderPayload);
-    
-    console.log("DEBUG: Raw Response Object:", res);
-    console.log("DEBUG: Response Status:", res?.status);
-    console.log("DEBUG: Response Data:", res?.data);
-
-    if (res?.data?.success) {
-      console.log("DEBUG: Success detected, clearing cart...");
-      clearCart();
-      setIsSuccess(true);
-    } else {
-      console.warn("DEBUG: API returned success: false or unexpected format");
-      toast.error(res?.data?.message || "Order rejected by server");
-    }
-  } catch (err: any) {
-    console.error("DEBUG: CATCH BLOCK TRIGGERED!");
-    console.error("DEBUG: Error Object:", err);
-    
-    if (err.response) {
-      // Server ne kuch response diya (4xx ya 5xx)
-      console.error("DEBUG: Server Response Data:", err.response.data);
-      console.error("DEBUG: Server Response Status:", err.response.status);
-      toast.error(`Error ${err.response.status}: ${err.response.data?.message || "Server error"}`);
-    } else if (err.request) {
-      // Request bheji gayi par koi response nahi mila
-      console.error("DEBUG: No Response Received (Network Error)");
-      toast.error("Network error: Server se connection nahi ho raha.");
-    } else {
-      // Request set-up mein error
-      console.error("DEBUG: Setup Error:", err.message);
-      toast.error("Code mein kuch gadbad hai.");
-    }
-  } finally {
+    const rzp = new (window as any).Razorpay(options);
+    rzp.on("payment.failed", (resp: any) => {
+      toast.error(`Payment failed: ${resp.error?.description}`);
+    });
+    rzp.open();
+  } catch (err) {
     setLoading(false);
   }
 };
+
+  /* ── Main handler ── */
+  const handlePlaceOrder = async () => {
+    if (!validateAddress()) return;
+    if (paymentMethod === "COD") {
+      await handleCODOrder();
+    } else {
+      await handleOnlineOrder();
+    }
+  };
 
   /* ── Success screen ── */
   if (isSuccess) {
@@ -553,7 +490,6 @@ const handlePlaceOrder = async () => {
     );
   }
 
-  const finalTotal = cartTotal - discount;
   const indianStates = [
     "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat",
     "Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh",
@@ -571,27 +507,17 @@ const handlePlaceOrder = async () => {
         {/* ── ADDRESS SECTION ── */}
         <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
           <SectionLabel icon={<IconLocation />} title="Delivery Address" />
-
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {/* Row 1 */}
             <div style={{ display: "flex", gap: "10px" }}>
               <Field label="Full Name" placeholder="Recipient name" value={address.fullName} onChange={addr("fullName")} half required />
               <Field label="Mobile Number" placeholder="10-digit number" value={address.phone} onChange={addr("phone")} type="tel" half required />
             </div>
-
-            {/* Row 2 — street full width */}
             <Field label="House / Flat / Building, Street" placeholder="e.g. 12B, Ram Nagar Colony" value={address.street} onChange={addr("street")} required />
-
-            {/* Row 3 — landmark */}
             <Field label="Landmark (Optional)" placeholder="e.g. Near Hanuman Mandir" value={address.landmark} onChange={addr("landmark")} />
-
-            {/* Row 4 */}
             <div style={{ display: "flex", gap: "10px" }}>
               <Field label="City / District" placeholder="City" value={address.city} onChange={addr("city")} half required />
               <Field label="Pincode" placeholder="6-digit code" value={address.pincode} onChange={addr("pincode")} type="number" half required />
             </div>
-
-            {/* Row 5 — state select */}
             <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
               <label style={{ fontSize: "10px", fontWeight: 700, color: "#9a7860", textTransform: "uppercase", letterSpacing: "0.07em" }}>State</label>
               <select
@@ -607,11 +533,85 @@ const handlePlaceOrder = async () => {
           </div>
         </div>
 
+        {/* ── PAYMENT METHOD SECTION ── */}
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+          <SectionLabel icon={<IconPayment />} title="Payment Method" />
+          <div style={{ display: "flex", gap: "10px" }}>
+
+            {/* COD Option */}
+            <button
+              onClick={() => setPaymentMethod("COD")}
+              style={{
+                flex: 1,
+                padding: "12px 10px",
+                borderRadius: "12px",
+                border: paymentMethod === "COD" ? "2px solid #8b4513" : "1.5px solid #e8d5b7",
+                background: paymentMethod === "COD" ? "linear-gradient(135deg, #fdf0e0, #fde8cc)" : "#fffdf9",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                {/* Radio dot */}
+                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "COD" ? "#8b4513" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {paymentMethod === "COD" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#8b4513" }} />}
+                </div>
+                <span style={{ fontSize: "13px", fontWeight: 700, color: paymentMethod === "COD" ? "#4a2008" : "#7a6050", fontFamily: "'Georgia',serif" }}>Cash on Delivery</span>
+              </div>
+              <p style={{ margin: "0 0 0 24px", fontSize: "10.5px", color: "#9a7860" }}>Pay when your order arrives</p>
+            </button>
+
+            {/* Online Option */}
+            <button
+              onClick={() => setPaymentMethod("Online")}
+              style={{
+                flex: 1,
+                padding: "12px 10px",
+                borderRadius: "12px",
+                border: paymentMethod === "Online" ? "2px solid #8b4513" : "1.5px solid #e8d5b7",
+                background: paymentMethod === "Online" ? "linear-gradient(135deg, #fdf0e0, #fde8cc)" : "#fffdf9",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "Online" ? "#8b4513" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {paymentMethod === "Online" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#8b4513" }} />}
+                </div>
+                <span style={{ fontSize: "13px", fontWeight: 700, color: paymentMethod === "Online" ? "#4a2008" : "#7a6050", fontFamily: "'Georgia',serif" }}>Pay Online</span>
+              </div>
+              <p style={{ margin: "0 0 0 24px", fontSize: "10.5px", color: "#9a7860" }}>UPI · Cards · Net Banking</p>
+            </button>
+          </div>
+
+          {/* Online hint banner */}
+          <AnimatePresence>
+            {paymentMethod === "Online" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: "hidden" }}
+              >
+                <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", background: "linear-gradient(to right,#f0fdf4,#dcfce7)", border: "1px dashed #86efac", borderRadius: "8px", padding: "8px 12px" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" width="14" height="14">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <p style={{ margin: 0, fontSize: "11px", color: "#15803d", fontWeight: 600 }}>
+                    Secured by Razorpay · 100% safe & encrypted
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* ── COUPONS SECTION ── */}
         <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
           <SectionLabel icon={<IconTag />} title="Offers & Coupons" />
 
-          {/* Applied coupon chip */}
           <AnimatePresence>
             {appliedCoupon && (
               <motion.div
@@ -626,7 +626,7 @@ const handlePlaceOrder = async () => {
                   </div>
                   <div>
                     <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#15803d" }}>{appliedCoupon.code}</p>
-                    <p style={{ margin: 0, fontSize: "11px", color: "#16a34a" }}>₹{discount} saved on this order</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "#16a34a" }}>₹{discount.toLocaleString("en-IN")} saved on this order</p>
                   </div>
                 </div>
                 <button onClick={handleRemoveCoupon} style={{ fontSize: "11px", color: "#dc2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600, padding: "2px 6px" }}>
@@ -636,7 +636,6 @@ const handlePlaceOrder = async () => {
             )}
           </AnimatePresence>
 
-          {/* Available coupon chips */}
           {loadingCoupons ? (
             <div style={{ display: "flex", justifyContent: "center", padding: "10px 0" }}>
               <OmSpinner size={32} />
@@ -646,21 +645,7 @@ const handlePlaceOrder = async () => {
               {coupons.map(c => {
                 const isSelected = couponCode === c.code;
                 return (
-                  <button
-                    key={c._id}
-                    onClick={() => setCouponCode(c.code)}
-                    style={{
-                      background: isSelected ? "linear-gradient(135deg,#6e2e08,#9a4a1a)" : "#fffdf9",
-                      border: `1.5px ${isSelected ? "solid #8b4513" : "dashed #d4a87a"}`,
-                      borderRadius: "10px",
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                      textAlign: "left",
-                      transition: "all 0.18s",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <button key={c._id} onClick={() => setCouponCode(c.code)} style={{ background: isSelected ? "linear-gradient(135deg,#6e2e08,#9a4a1a)" : "#fffdf9", border: `1.5px ${isSelected ? "solid #8b4513" : "dashed #d4a87a"}`, borderRadius: "10px", padding: "8px 12px", cursor: "pointer", whiteSpace: "nowrap", textAlign: "left", transition: "all 0.18s", flexShrink: 0 }}>
                     <p style={{ fontSize: "12px", fontWeight: 700, color: isSelected ? "#fff8ee" : "#8b4513", margin: "0 0 2px", letterSpacing: "0.04em" }}>{c.code}</p>
                     <p style={{ fontSize: "10px", color: isSelected ? "rgba(255,232,180,0.85)" : "#9a7860", margin: 0 }}>
                       {c.discountType === "percentage" ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
@@ -671,7 +656,6 @@ const handlePlaceOrder = async () => {
             </div>
           )}
 
-          {/* Input row */}
           {!appliedCoupon && (
             <div style={{ display: "flex", gap: "8px" }}>
               <input
@@ -699,7 +683,6 @@ const handlePlaceOrder = async () => {
         <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "16px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
           <SectionLabel icon={<IconReceipt />} title="Order Summary" />
 
-          {/* Cart items compact list */}
           {cart?.items?.length > 0 && (
             <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
               {cart.items.map((item: any, i: number) => {
@@ -732,10 +715,32 @@ const handlePlaceOrder = async () => {
                 <span>− ₹{discount.toLocaleString("en-IN")}</span>
               </div>
             )}
+
+            {/* Shipping row — dynamic */}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#7a6050" }}>
-              <span>Delivery</span>
-              <span style={{ color: "#16a34a", fontWeight: 600 }}>FREE</span>
+              <span>Delivery charges</span>
+              {shippingCost === 0 ? (
+                <span style={{ color: "#16a34a", fontWeight: 600 }}>FREE</span>
+              ) : (
+                <span>₹{shippingCost.toLocaleString("en-IN")}</span>
+              )}
             </div>
+
+            {/* Free shipping nudge */}
+            {shippingCost > 0 && (
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  style={{ background: "#fdf7f0", border: "1px dashed #d4a87a", borderRadius: "8px", padding: "6px 10px", overflow: "hidden" }}
+                >
+                  <p style={{ margin: 0, fontSize: "10.5px", color: "#9a5a20" }}>
+                    🚚 Add ₹{(1999 - cartTotal).toLocaleString("en-IN")} more for <strong>FREE delivery</strong>
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            )}
+
             <div style={{ height: "1px", background: "linear-gradient(to right,transparent,#d4a87a,transparent)", margin: "4px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontSize: "14px", fontWeight: 700, color: "#4a2008", fontFamily: "'Georgia',serif" }}>Total Payable</span>
@@ -745,14 +750,16 @@ const handlePlaceOrder = async () => {
             </div>
           </div>
 
-          {/* COD badge */}
+          {/* Payment method badge */}
           <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px", background: "#fdf0e0", borderRadius: "8px", padding: "8px 12px", border: "1px dashed #d4a87a" }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth="1.8" width="16" height="16">
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <path strokeLinecap="round" d="M2 10h20" />
             </svg>
             <p style={{ margin: 0, fontSize: "11.5px", color: "#7a4a20", fontWeight: 600 }}>
-              Cash on Delivery — Pay when your order arrives
+              {paymentMethod === "COD"
+                ? "Cash on Delivery — Pay when your order arrives"
+                : "Online Payment via Razorpay — UPI · Cards · Net Banking"}
             </p>
           </div>
         </div>
@@ -771,7 +778,9 @@ const handlePlaceOrder = async () => {
             border: "none",
             background: loading
               ? "linear-gradient(135deg,#c4a882,#b09070)"
-              : "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)",
+              : paymentMethod === "Online"
+                ? "linear-gradient(135deg, #1a3a5c 0%, #1e5799 45%, #2980b9 100%)"
+                : "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)",
             color: "#fff8ee",
             fontSize: "14px",
             fontWeight: 700,
@@ -783,12 +792,11 @@ const handlePlaceOrder = async () => {
             justifyContent: "center",
             gap: "10px",
             boxShadow: loading ? "none" : "0 6px 24px rgba(91,32,5,0.38), 0 2px 6px rgba(91,32,5,0.18)",
-            transition: "box-shadow 0.2s, background 0.2s",
+            transition: "box-shadow 0.2s, background 0.3s",
             position: "relative",
             overflow: "hidden",
           }}
         >
-          {/* shimmer */}
           {!loading && (
             <span style={{ position: "absolute", top: 0, left: "-100%", width: "60%", height: "100%", background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)", animation: "shimmer 2.4s infinite" }} />
           )}
@@ -796,14 +804,23 @@ const handlePlaceOrder = async () => {
           {loading ? (
             <>
               <OmSpinner size={22} />
-              <span>Placing your order…</span>
+              <span>{paymentMethod === "Online" ? "Initiating Payment…" : "Placing your order…"}</span>
             </>
           ) : (
             <>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Confirm Order · ₹{finalTotal.toLocaleString("en-IN")}
+              {paymentMethod === "Online" ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <path strokeLinecap="round" d="M2 10h20" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {paymentMethod === "Online"
+                ? `Pay ₹${finalTotal.toLocaleString("en-IN")} Online`
+                : `Confirm Order · ₹${finalTotal.toLocaleString("en-IN")}`}
             </>
           )}
         </motion.button>
