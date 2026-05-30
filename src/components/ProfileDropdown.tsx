@@ -127,7 +127,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
     if (res.success) {
       setAuthStep("authenticated");
     } else {
-      setErrorMsg(res.error || "Makhanchor! Galat OTP daala hai.");
+      setErrorMsg(res.error || "Invalid OTP code.");
     }
   };
 
@@ -290,7 +290,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
           {!loading && user && (
             <motion.div key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "12px", padding: "10px", textAlign: "center", marginBottom: "12px" }}>
-                <p style={{ fontSize: "12px", fontWeight: 600, color: "#15803d" }}>Jai Shri Ram 🙏 Account Active</p>
+                <p style={{ fontSize: "12px", fontWeight: 600, color: "#15803d" }}>Account Active</p>
               </div>
               <button onClick={handleSignOut} style={{ width: "100%", padding: "10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: "12px", fontSize: "12px", fontWeight: 600, color: "#78350f", cursor: "pointer" }}>
                 Logout Account

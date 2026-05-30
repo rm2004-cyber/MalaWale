@@ -17,17 +17,17 @@ const streamUpload = (fileBuffer) => {
 exports.createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name) return res.status(400).json({ success: false, message: "Category name zaroori hai!" });
-    if (!req.file) return res.status(400).json({ success: false, message: "Category ki photo missing hai!" });
+    if (!name) return res.status(400).json({ success: false, message: "Category name is required." });
+    if (!req.file) return res.status(400).json({ success: false, message: "Category image is missing." });
 
     const imageUrl = await streamUpload(req.file.buffer);
 
     const newCategory = new Category({ name, image: imageUrl });
     await newCategory.save();
 
-    res.status(201).json({ success: true, category: newCategory, message: "Category Boom Baam ban gayi! 🔥" });
+    res.status(201).json({ success: true, category: newCategory, message: "Category successfully created." });
   } catch (error) {
-    if (error.code === 11000) return res.status(400).json({ success: false, message: "Yeh category pehle se bani hui hai bhai!" });
+    if (error.code === 11000) return res.status(400).json({ success: false, message: "This category already exists." });
     res.status(500).json({ success: false, message: "Category Engine Error", error: error.message });
   }
 };
@@ -47,7 +47,7 @@ exports.updateCategory = async (req, res) => {
     const { name } = req.body;
 
     let category = await Category.findById(id);
-    if (!category) return res.status(404).json({ success: false, message: "Category nahi mili bhai!" });
+    if (!category) return res.status(404).json({ success: false, message: "Category not found." });
 
     if (name) category.name = name;
 
@@ -57,7 +57,7 @@ exports.updateCategory = async (req, res) => {
     }
 
     await category.save();
-    res.status(200).json({ success: true, category, message: "Category makkhan tarike se update ho gayi! 🔄" });
+    res.status(200).json({ success: true, category, message: "Category successfully updated." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update Category Error", error: error.message });
   }
@@ -67,9 +67,9 @@ exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await Category.findByIdAndDelete(id);
-    if (!category) return res.status(404).json({ success: false, message: "Category pehle se hi delete hai!" });
+    if (!category) return res.status(404).json({ success: false, message: "Category already deleted." });
 
-    res.status(200).json({ success: true, message: "Category database se saaf! 🗑️" });
+    res.status(200).json({ success: true, message: "Category successfully deleted." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Delete Category Error" });
   }

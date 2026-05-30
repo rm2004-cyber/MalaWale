@@ -17,8 +17,18 @@ const firebaseConfig = {
   storageBucket: "malawale-web.firebasestorage.app",
   messagingSenderId: "597469907212",
   appId: "1:597469907212:web:6ab3e062ca7fbafa9ae129"
-};
+}; 
 
+//formy
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyDWjSTG2T10ybWyGzxt7aMtAqu7E0a8u3U",
+//   authDomain: "malawaleweb.firebaseapp.com",
+//   projectId: "malawaleweb",
+//   storageBucket: "malawaleweb.firebasestorage.app",
+//   messagingSenderId: "688094750369",
+//   appId: "1:688094750369:web:2a9ab12abb56171c0ff2e0"
+// };rahul
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 

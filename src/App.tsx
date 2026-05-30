@@ -17,8 +17,9 @@ import CollectionCircles from './components/CollectionCircles';
 import TrendingShuffle from './components/TrendingShuffle';
 import AdminDashboard from '../src/admin/Admindashboard';
 import TrackOrder from './components/TrackOrder';
-import { productService } from './utils/service';
+import { productService, cartService } from './utils/service';
 import { useAuth } from "./context/AuthContext";
+import { useCart } from "./context/CartContext";
 import { Toaster, toast } from "react-hot-toast";
 
 // ─── Helper: scroll to the products grid ────────────────────────────────────
@@ -189,10 +190,10 @@ function HomeShopPortal({
 // ─── Main App ────────────────────────────────────────────────────────────────
 function App() {
   const { user, setIsLoginOpen } = useAuth();
+  const { cartCount, addToCart } = useCart() as any;
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [cartCount, setCartCount] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [liveProducts, setLiveProducts] = useState<Product[]>([]);
@@ -240,10 +241,9 @@ function App() {
     setIsModalOpen(true);
   };
 
-  const handleAddToCart = () => setCartCount((c) => c + 1);
+  const handleAddToCart = () => {};
 
   const handleModalAddToCart = () => {
-    setCartCount((c) => c + 1);
     setIsModalOpen(false);
   };
 

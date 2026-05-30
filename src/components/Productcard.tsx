@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import { cartService, favoriteService } from "../utils/service";
+import CartAction from "./CartAction";
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -237,6 +239,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
 }) => {
   const { user, openLoginModal } = useAuth();
+  const { cartItems, addToCart: contextAddToCart, updateQuantity, removeFromCart } = useCart() as any;
   const isAuthenticated = !!user;
 
   // Guard: if product is somehow undefined/null, render nothing
@@ -245,10 +248,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const hasVariants =
     Array.isArray(product?.variants) && (product.variants?.length ?? 0) > 0;
 
-  // Default to first inStock variant
-  const defaultVariant = hasVariants
-    ? (product.variants!.find((v) => v.inStock) ?? product.variants![0])
-    : undefined;
+  // A product requires explicit size selection if it has multiple variants
+  const requiresSizeSelection = hasVariants && product.variants!.length > 1;
+
+  // Default to first inStock variant only if no explicit selection is required
+  const defaultVariant = requiresSizeSelection
+    ? undefined
+    : (hasVariants ? (product.variants!.find((v) => v.inStock) ?? product.variants![0]) : undefined);
 
   const [selectedVariant, setSelectedVariant] = useState<Variant | undefined>(
     defaultVariant
@@ -260,7 +266,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Sync selectedVariant when product changes (list re-renders with different product)
   useEffect(() => {
     const variants = product?.variants;
-    if (Array.isArray(variants) && variants.length > 0) {
+    const hasVar = Array.isArray(variants) && variants.length > 0;
+    const reqSize = hasVar && variants.length > 1;
+    
+    if (reqSize) {
+      setSelectedVariant(undefined);
+    } else if (hasVar) {
       setSelectedVariant(variants.find((v) => v.inStock) ?? variants[0]);
     } else {
       setSelectedVariant(undefined);
@@ -302,50 +313,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const displayOrdersCount = resolveOrdersCount(product);
   const categoryName = resolveCategoryName(product.category);
 
+  // ── Derived cart mapping variables ──
+  const currentVariantSize = selectedVariant?.size || "";
+
   // ── Handlers ──
   const handleVariantSelect = (e: React.MouseEvent, variant: Variant) => {
     e.stopPropagation();
     setSelectedVariant(variant);
     // Reset cart state when variant changes
     setCartState("idle");
-  };
-
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (!isAuthenticated) {
-      toast.error("You have to login first!");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      openLoginModal();
-      return;
-    }
-
-    if (cartState === "added") return;
-
-    // If product has variants but none selected, show warning
-    if (hasVariants && !selectedVariant) {
-      toast.error("Please select a size first.");
-      return;
-    }
-
-    try {
-      const productId = product._id || product.id;
-      if (!productId) throw new Error("Product ID context missing parsing fields.");
-
-      await cartService.addToCart({
-        productId,
-        quantity: 1,
-        ...(selectedVariant?._id && { variantId: selectedVariant._id }),
-        ...(selectedVariant?.size && { size: selectedVariant.size }),
-      });
-
-      onAddToCart(product, selectedVariant);
-      setCartState("added");
-      setTimeout(() => setCartState("idle"), 2200);
-    } catch (error) {
-      console.error("Cart synchronization operation failed:", error);
-      toast.error("Failed to add to cart. Please try again.");
-    }
   };
 
   const handleFav = async (e: React.MouseEvent) => {
@@ -644,93 +620,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* ── Add to Cart CTA ── */}
+        {/* ── Add to Cart CTA / Quantity Selector ── */}
         <div className="px-4 pb-4 pt-2">
-          <motion.button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className="relative w-full h-11 rounded-xl overflow-hidden flex items-center justify-center gap-2 text-sm font-semibold tracking-wide select-none"
-            style={{
-              fontFamily: "'Jost', sans-serif",
-              letterSpacing: "0.04em",
-              cursor: isOutOfStock ? "not-allowed" : "pointer",
-              opacity: isOutOfStock ? 0.65 : 1,
-            }}
-            whileTap={isOutOfStock ? {} : { scale: 0.97 }}
-          >
-            {/* Animated background */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{
-                background:
-                  isOutOfStock
-                    ? "linear-gradient(135deg, #9ca3af, #6b7280)"
-                    : cartState === "added"
-                    ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
-                    : "linear-gradient(135deg, #8b4513, #c8843a)",
-              }}
-              transition={{ duration: 0.4 }}
-            />
-            {/* Shimmer overlay */}
-            <AnimatePresence>
-              {isHovered && cartState === "idle" && !isOutOfStock && (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)",
-                    backgroundSize: "200% 100%",
-                  }}
-                  initial={{ backgroundPosition: "200% 0" }}
-                  animate={{ backgroundPosition: "-200% 0" }}
-                  transition={{ duration: 0.9, ease: "linear" }}
-                />
-              )}
-            </AnimatePresence>
-
-            <motion.span
-              className="relative z-10 flex items-center gap-2 text-white"
-              key={cartState}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22 }}
-            >
-              <AnimatePresence mode="wait">
-                {isOutOfStock ? (
-                  <motion.span
-                    key="oos"
-                    className="flex items-center gap-1.5"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    Out of Stock
-                  </motion.span>
-                ) : cartState === "added" ? (
-                  <motion.span
-                    key="check"
-                    className="flex items-center gap-1.5"
-                    initial={{ opacity: 0, scale: 0.7 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <CheckIcon /> Added to Cart
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="cart"
-                    className="flex items-center gap-1.5"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <CartIcon /> Add to Cart
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.span>
-          </motion.button>
+          <CartAction
+            product={product}
+            selectedSize={currentVariantSize}
+            layout="wide"
+            onAddToCartSuccess={() => onAddToCart && onAddToCart(product, selectedVariant)}
+          />
         </div>
 
         {/* Premium gold border accent on hover */}

@@ -6,7 +6,7 @@ module.exports = async (req, res, next) => {
     const authHeader = req.header('Authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false, message: "Pranam! Pehle login kariye bhai. Token missing hai." });
+      return res.status(401).json({ success: false, message: "Access denied. Please login first." });
     }
 
     const token = authHeader.split(' ')[1];
@@ -14,12 +14,12 @@ module.exports = async (req, res, next) => {
     
     const user = await User.findById(decoded.id);
     if (!user) {
-      return res.status(401).json({ success: false, message: "User database mein nahi mila." });
+      return res.status(401).json({ success: false, message: "User not found in database." });
     }
 
     req.user = user; // Agle controller ke liye user data attach kar diya
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: "Token expire ya galat hai bhai!" });
+    return res.status(401).json({ success: false, message: "Token is expired or invalid." });
   }
 };

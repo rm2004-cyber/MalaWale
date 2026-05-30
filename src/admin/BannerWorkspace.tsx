@@ -47,7 +47,7 @@ export default function BannerWorkspace() {
 
 const handleSaveBanner = async () => {
     if (!editingId && !selectedFile) {
-        toast.error("Image select karna zaroori hai!");
+        toast.error("Please select an image.");
         return;
     }
 

@@ -12,6 +12,7 @@ exports.getDashboardStats = async (req, res) => {
     // Populate sirf user ka basic info, address order mein already hai
     const recentOrders = await Order.find()
       .populate('user', 'name phone') 
+      .populate('items.product', 'name description images variants')
       .sort({ createdAt: -1 })
       .limit(10)
       .lean();
@@ -44,6 +45,7 @@ exports.getAllOrders = async (req, res) => {
     // Yahan sirf user ka name aur phone populate karo
     const orders = await Order.find()
       .populate('user', 'name phone')
+      .populate('items.product', 'name description images variants')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

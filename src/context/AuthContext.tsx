@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const verifyOtpAndSync = async (otpCode: string, registrationData?: { name: string; email: string; dob: string }) => {
     try {
-      if (!confirmationResult) return { success: false, error: "Pehle OTP bhejो bhai!" };
+      if (!confirmationResult) return { success: false, error: "Please request an OTP first." };
 
       const result = await confirmationResult.confirm(otpCode);
       const firebaseUser = result.user;

@@ -6,7 +6,7 @@ exports.toggleFavorite = async (req, res) => {
     const userId = req.user._id;
 
     if (!productId) {
-      return res.status(400).json({ success: false, message: "Product ID zaroori hai!" });
+      return res.status(400).json({ success: false, message: "Product ID is required." });
     }
 
     const user = await User.findById(userId);
@@ -23,7 +23,7 @@ exports.toggleFavorite = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       isFavorite: !isExist, 
-      message: isExist ? "Wishlist se hata diya" : "Wishlist mein jor diya! ❤️" 
+      message: isExist ? "Removed from Wishlist" : "Added to Wishlist" 
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Favorite Engine Error", error: error.message });

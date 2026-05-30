@@ -321,7 +321,7 @@ const handleVerifyOtp = async () => {
             return;
           }
 
-          toast.success("Welcome, Sanwariya Administrator! 🙏");
+          toast.success("Welcome, Administrator!");
           
           // 🔥 FIXED LOGIC: Passing real backend user data object back to Admindashboard hierarchy state layer
           onLoginSuccess(loggedUser); 
@@ -329,7 +329,7 @@ const handleVerifyOtp = async () => {
           triggerError(apiResponse?.data?.message || "Database synchronization failed.");
         }
       } else {
-        triggerError(res.error || "Makhanchor! Galat OTP daala hai.");
+        triggerError(res.error || "Invalid OTP code.");
       }
     } catch (err: any) {
       console.error(err);
