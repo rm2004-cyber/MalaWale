@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { Product as ShopProduct } from "./Productcard";
 import { productService } from "../utils/service";
 import CartAction from "./CartAction";
+import { useCart } from "../context/CartContext";
 
 // ─── Trending item type ───────────────────────────────────────────────────────
 interface TrendingProduct {
@@ -107,6 +108,8 @@ function ProductCard({
       : 0;
   const isNewFlag = "isNew" in product && product.isNew;
 
+  const { cartItems } = useCart() as any;
+
   const productVariants = "variants" in product && Array.isArray(product.variants) && product.variants.length > 0
     ? product.variants
     : undefined;
@@ -119,8 +122,19 @@ function ProductCard({
         ? (productVariants.find((v: any) => v.inStock)?.size ?? productVariants[0].size)
         : "Standard");
 
+  // Dynamic selection if a size variant of this product is already in the global cart
+  const productIdStr = String("id" in product ? product.id : (product as any)._id);
+  const activeInCartVariant = productVariants?.find((v: any) => {
+    const sizeKey = (v.size || "Standard").toLowerCase();
+    return !!cartItems?.[`${productIdStr}_${sizeKey}`];
+  });
+
+  const selectedSize = activeInCartVariant
+    ? activeInCartVariant.size
+    : defaultSize;
+
   const mockProductForCart = {
-    _id: String("id" in product ? product.id : (product as any)._id),
+    _id: productIdStr,
     name: "title" in product ? product.title : (product as any).name,
     variants: productVariants || [{
       size: "Standard",
@@ -256,7 +270,7 @@ function ProductCard({
         >
           <CartAction
             product={mockProductForCart}
-            selectedSize={defaultSize}
+            selectedSize={selectedSize}
             layout="compact"
             onAddToCartSuccess={() => {
               if (onAddToCart) {

@@ -278,6 +278,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   }, [product?._id, product?.id]);
 
+  // Automatically select the active size variant that is currently in the global cart
+  useEffect(() => {
+    if (!product || !cartItems) return;
+    const productId = product._id || product.id;
+    if (!productId) return;
+
+    const variants = product.variants;
+    if (Array.isArray(variants) && variants.length > 0) {
+      const activeInCartVariant = variants.find((variant) => {
+        const sizeKey = (variant.size || "Standard").toLowerCase();
+        return !!cartItems[`${productId}_${sizeKey}`];
+      });
+
+      if (activeInCartVariant) {
+        const currentSizeKey = (selectedVariant?.size || "").toLowerCase();
+        const currentIsInCart = currentSizeKey ? !!cartItems[`${productId}_${currentSizeKey}`] : false;
+        
+        // Auto-select if nothing is selected or if the currently selected size is not in the cart
+        if (!selectedVariant || !currentIsInCart) {
+          setSelectedVariant(activeInCartVariant);
+        }
+      }
+    }
+  }, [cartItems, product, selectedVariant]);
+
   // Live viewers local engine bounded securely between 5 and 80
   const [viewersCount, setViewersCount] = useState<number>(() => {
     const safeId = product?._id ?? product?.id ?? "";

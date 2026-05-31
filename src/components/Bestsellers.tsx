@@ -283,6 +283,8 @@ function ProductCard({
 
   };
 
+  const { cartItems } = useCart() as any;
+
   const hasMultipleSizes = product.variants && product.variants.length > 1;
 
   const defaultSize = hasMultipleSizes
@@ -290,6 +292,16 @@ function ProductCard({
     : (product.variants && product.variants.length > 0
         ? (product.variants.find((v: any) => v.inStock)?.size ?? product.variants[0].size)
         : "Standard");
+
+  // Dynamic selection if a size variant of this product is already in the global cart
+  const activeInCartVariant = product.variants?.find((v: any) => {
+    const sizeKey = (v.size || "Standard").toLowerCase();
+    return !!cartItems?.[`${product.key}_${sizeKey}`];
+  });
+
+  const selectedSize = activeInCartVariant
+    ? activeInCartVariant.size
+    : defaultSize;
 
   const mockProductForCart = {
     _id: product.key,
@@ -353,7 +365,7 @@ function ProductCard({
         >
           <CartAction
             product={mockProductForCart}
-            selectedSize={defaultSize}
+            selectedSize={selectedSize}
             layout="compact"
             onAddToCartSuccess={() => {
               if (onAddToCart) {
