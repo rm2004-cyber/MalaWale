@@ -218,10 +218,8 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
           <span style={{ fontSize: "72px", color: "#fff", fontFamily: "serif", lineHeight: 1 }}>ॐ</span>
         </div>
 
-        <div className="flex-shrink-0 flex items-center justify-center rounded-full" style={{ width: "46px", height: "46px", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)" }}>
+        <div className="flex-shrink-0 flex items-center justify-center rounded-full" style={{ width: "46px", height: "46px", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)", color: "rgba(255,245,230,0.9)" }}>
           <UserIcon />
-          <style>{`svg path { stroke: rgba(255,245,230,0.9); }`}</style>
-          <span style={{ display: "none" }} />
         </div>
 
         <div>
