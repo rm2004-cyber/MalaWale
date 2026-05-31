@@ -1,7 +1,7 @@
 // src/utils/razorpay.js
 export const loadRazorpay = () => {
     return new Promise((resolve) => {
-        if (window.Razorpay) {
+        if ((window as any).Razorpay) {
             resolve(true);
             return;
         }

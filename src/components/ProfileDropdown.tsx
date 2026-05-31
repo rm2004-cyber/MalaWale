@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
@@ -76,11 +76,66 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
   const [authStep, setAuthStep] = useState<AuthStep>(user ? "authenticated" : "phone");
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpCode, setOtpCode] = useState("");
+  const [otpArray, setOtpArray] = useState<string[]>(Array(6).fill(""));
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const [userProfile, setUserProfile] = useState({ name: "", email: "", dob: "" });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const isPhoneComplete = mobileNumber.length === 10;
+
+  // Sync otpArray changes directly to the parent otpCode string
+  useEffect(() => {
+    setOtpCode(otpArray.join(""));
+  }, [otpArray]);
+
+  // Auto-focus first input box when transition to OTP step occurs
+  useEffect(() => {
+    if (authStep === "otp") {
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 150);
+    }
+  }, [authStep]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    const cleanValue = value.replace(/\D/g, "").slice(-1);
+    const newOtp = [...otpArray];
+    newOtp[index] = cleanValue;
+    setOtpArray(newOtp);
+
+    // Auto-focus next input box on typing a digit
+    if (cleanValue !== "" && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (otpArray[index] === "" && index > 0) {
+        const newOtp = [...otpArray];
+        newOtp[index - 1] = "";
+        setOtpArray(newOtp);
+        otpRefs.current[index - 1]?.focus();
+      } else if (otpArray[index] !== "") {
+        const newOtp = [...otpArray];
+        newOtp[index] = "";
+        setOtpArray(newOtp);
+      }
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasteData.length === 6) {
+      const newOtp = pasteData.split("");
+      setOtpArray(newOtp);
+      otpRefs.current[5]?.focus();
+    }
+  };
 
   useEffect(() => {
     setAuthStep(user ? "authenticated" : "phone");
@@ -269,14 +324,47 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
             <motion.div key="otp" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
               <button type="button" onClick={() => (userProfile.name ? setAuthStep("register") : setAuthStep("phone"))} style={{ fontSize: "11px", color: "#8b4513", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Back</button>
               <p style={{ fontSize: "12px", fontWeight: 500, color: "#7a4010", marginBottom: "12px" }}>Enter 6-digit OTP sent to +91 {mobileNumber}</p>
-              <input
-                type="text"
-                maxLength={6}
-                value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="──────"
-                style={{ width: "100%", textAlign: "center", padding: "12px", background: "#fff", border: "1.5px solid #dfc9a0", borderRadius: "12px", marginBottom: "12px", fontSize: "22px", fontWeight: 700, letterSpacing: "0.3em", outline: "none", color: "#7a3810", boxSizing: "border-box" }}
-              />
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "16px" }}>
+                {otpArray.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => (otpRefs.current[idx] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    onPaste={handleOtpPaste}
+                    onFocus={() => setFocusedIndex(idx)}
+                    onBlur={() => setFocusedIndex(null)}
+                    style={{
+                      width: "42px",
+                      height: "46px",
+                      textAlign: "center",
+                      fontSize: "20px",
+                      fontWeight: 700,
+                      background: "#fff",
+                      border: focusedIndex === idx
+                        ? "2.5px solid #8b4513"
+                        : digit
+                          ? "2.5px solid #c87941"
+                          : "1.5px solid #dfc9a0",
+                      borderRadius: "10px",
+                      outline: "none",
+                      color: "#7a3810",
+                      boxShadow: focusedIndex === idx
+                        ? "0 0 0 3px rgba(139,69,19,0.15)"
+                        : digit
+                          ? "0 2px 8px rgba(139,69,19,0.06)"
+                          : "none",
+                      transition: "all 0.18s ease",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                ))}
+              </div>
               <button
                 disabled={otpCode.length !== 6}
                 onClick={handleVerify}
@@ -290,7 +378,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
           {!loading && user && (
             <motion.div key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "12px", padding: "10px", textAlign: "center", marginBottom: "12px" }}>
-                <p style={{ fontSize: "12px", fontWeight: 600, color: "#15803d" }}>Account Active</p>
+                <p style={{ fontSize: "12px", fontWeight: 600, color: "#15803d" }}>Jai Shree Ram 🙏 Account Active</p>
               </div>
               <button onClick={handleSignOut} style={{ width: "100%", padding: "10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: "12px", fontSize: "12px", fontWeight: 600, color: "#78350f", cursor: "pointer" }}>
                 Logout Account
