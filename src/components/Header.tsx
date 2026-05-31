@@ -10,6 +10,7 @@ import CartModal from "./CartModal";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { productService } from "../utils/service";
+import { toast } from "react-hot-toast";
 
 type ActiveModalWindow = "none" | "orders" | "wishlist" | "cart";
 
@@ -273,6 +274,12 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
 
   const profileRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Clear search value on mount/reload
+  useEffect(() => {
+    setSearchValue("");
+  }, []);
 
   const { text: placeholderText, visible: placeholderVisible } = useCyclingPlaceholder(searchFocused);
 
@@ -315,10 +322,6 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
     return () => clearTimeout(timer);
   }, [searchValue]);
 
-  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-  }, []);
-
   const handleSelectResult = useCallback((name: string, productId: string) => {
     setSearchValue(name);
     setSearchFocused(false);
@@ -337,6 +340,16 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
     }
   }, [onProductSelect]);
 
+  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchResults.length > 0) {
+      const first = searchResults[0];
+      handleSelectResult(first.name, first._id);
+    } else if (searchValue.trim().length > 0 && !searchLoading) {
+      toast.error(`No products found matching "${searchValue}"`);
+    }
+  }, [searchResults, searchValue, searchLoading, handleSelectResult]);
+
   const showDropdown =
     searchFocused &&
     searchValue.trim().length > 0 &&
@@ -345,11 +358,11 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:wght@400;500;600&display=swap');
 
         .header-root { font-family: 'Jost', sans-serif; }
-        .brand-title { font-family: 'Playfair Display', serif; letter-spacing: 0.08em; }
-        .brand-subtitle { font-family: 'Cormorant Garamond', serif; }
+        .brand-title { font-family: 'Cinzel', serif; letter-spacing: 0.12em; font-weight: 600; }
+        .brand-subtitle { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 500; }
         .divine-gradient { background: linear-gradient(135deg, #fdf6ec 0%, #fff8f0 50%, #fdf0e0 100%); }
         .header-border { background: linear-gradient(90deg, transparent, #d4a37366, #c8843a99, #d4a37366, transparent); }
         .om-divider { font-family: serif; color: #c8843a; font-size: 10px; opacity: 0.5; }
@@ -465,16 +478,19 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                     transition: "background 0.3s ease, border-color 0.3s ease",
                   }}
                 >
-                  <motion.div
+                   <motion.div
                     className="pl-4 pr-2 flex-shrink-0"
                     animate={{ color: searchFocused ? "#c8843a" : "#c8a07a" }}
                     transition={{ duration: 0.3 }}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => inputRef.current?.focus()}
                   >
                     <SearchIcon />
                   </motion.div>
 
                   <div className="relative flex-1 py-2.5 pr-3 overflow-hidden">
                     <input
+                      ref={inputRef}
                       type="text"
                       value={searchValue}
                       onChange={(e) => setSearchValue(e.target.value)}

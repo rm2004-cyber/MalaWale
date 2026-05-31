@@ -1,13 +1,27 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { cartService } from '../utils/service';
 import { useAuth } from './AuthContext';
 
-const CartContext = createContext(null);
+interface CartContextType {
+  cart: any;
+  cartItems: Record<string, any>;
+  getCartItem: (productId: string, size?: string) => any;
+  cartLoading: boolean;
+  fetchCart: () => Promise<void>;
+  addToCart: (productId: string, size: string, quantity?: number) => Promise<{ success: boolean; message?: string; error?: any }>;
+  removeFromCart: (productId: string, size: string) => Promise<{ success: boolean; message?: string; error?: any }>;
+  updateQuantity: (productId: string, size: string, quantity: number) => Promise<{ success: boolean; error?: any } | undefined>;
+  clearCart: () => Promise<{ success: boolean } | undefined>;
+  cartCount: number;
+  cartTotal: number;
+}
 
-export const CartProvider = ({ children }) => {
+const CartContext = createContext<CartContextType | null>(null);
+
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  const [cart, setCart] = useState(null);
-  const [cartItems, setCartItems] = useState({});
+  const [cart, setCart] = useState<any>(null);
+  const [cartItems, setCartItems] = useState<Record<string, any>>({});
   const [cartLoading, setCartLoading] = useState(false);
 
   const fetchCart = useCallback(async () => {
@@ -21,7 +35,7 @@ export const CartProvider = ({ children }) => {
       if (response.data.success) {
         setCart(response.data.cart);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch Cart Error:", error.message);
     } finally {
       setCartLoading(false);
@@ -38,8 +52,8 @@ export const CartProvider = ({ children }) => {
       setCartItems({});
       return;
     }
-    const map = {};
-    cart.items.forEach(item => {
+    const map: Record<string, any> = {};
+    cart.items.forEach((item: any) => {
       const prodId = typeof item.product === 'object' && item.product !== null 
         ? item.product._id 
         : item.product;
@@ -56,47 +70,48 @@ export const CartProvider = ({ children }) => {
     setCartItems(map);
   }, [cart]);
 
-  const getCartItem = useCallback((productId, size) => {
+  const getCartItem = useCallback((productId: string, size?: string) => {
     if (!productId) return null;
     const sizeKey = (size || "Standard").toLowerCase();
     return cartItems[`${productId}_${sizeKey}`] || null;
   }, [cartItems]);
 
-  const addToCart = async (productId, size, quantity = 1) => { // variantId -> size
+  const addToCart = async (productId: string, size: string, quantity = 1) => {
     try {
-      // Backend ko ab 'size' bhejenge
       const response = await cartService.addToCart({ productId, size, quantity });
       if (response.data.success) {
         await fetchCart();
         return { success: true, message: "Item added to cart successfully." };
       }
-    } catch (error) {
+      return { success: false, error: response.data.message };
+    } catch (error: any) {
       console.error("Add To Cart Error:", error.message);
       return { success: false, error: error.response?.data?.message || error.message };
     }
   };
 
-  const removeFromCart = async (productId, size) => { // variantId -> size
+  const removeFromCart = async (productId: string, size: string) => {
     try {
       const response = await cartService.removeFromCart({ productId, size });
       if (response.data.success) {
         await fetchCart();
         return { success: true, message: "Item removed from cart." };
       }
-    } catch (error) {
+      return { success: false, error: response.data.message };
+    } catch (error: any) {
       console.error("Remove From Cart Error:", error.message);
       return { success: false, error: error.message };
     }
   };
 
-  const updateQuantity = async (productId, size, quantity) => { // variantId -> size
+  const updateQuantity = async (productId: string, size: string, quantity: number) => {
     try {
       const response = await cartService.updateQuantity({ productId, size, quantity });
       if (response.data.success) {
         await fetchCart();
         return { success: true };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update Quantity Error:", error.message);
       return { success: false, error: error.message };
     }
@@ -104,14 +119,14 @@ export const CartProvider = ({ children }) => {
 
   const getCartCount = () => {
     if (!cart || !cart.items) return 0;
-    return cart.items.reduce((total, item) => total + item.quantity, 0);
+    return cart.items.reduce((total: number, item: any) => total + item.quantity, 0);
   };
 
   const getCartTotal = () => {
     if (!cart || !cart.items) return 0;
-    return cart.items.reduce((total, item) => {
+    return cart.items.reduce((total: number, item: any) => {
       const variant =
-        item.product?.variants?.find((v) => v.size?.toLowerCase() === item.size?.toLowerCase()) ||
+        item.product?.variants?.find((v: any) => v.size?.toLowerCase() === item.size?.toLowerCase()) ||
         item.product?.variants?.[0];
       
       const price = variant?.price ?? variant?.mrp ?? 0;
@@ -121,12 +136,10 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      const response = await cartService.clearCart();
-      if (response.data.success) {
-        setCart(null); 
-        return { success: true };
-      }
-    } catch (error) {
+      // Local state is cleared. Backend automatically handles database cart deletion upon order completion.
+      setCart(null); 
+      return { success: true };
+    } catch (error: any) {
       console.error("Clear Cart Error:", error.message);
       setCart(null); 
       return { success: false };

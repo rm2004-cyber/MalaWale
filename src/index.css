@@ -1,1 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
+
+/* Global base styles for spiritual aesthetic and high readability */
+body {
+  font-family: 'Jost', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #3d1f0a;
+  /* Force all numbers to use modern uniform lining figures (perfectly aligned baselines) */
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}
+
+/* Ensure all digits and prices globally are forced to use perfectly aligned lining numbers */
+span, p, h1, h2, h3, h4, h5, h6, div, button {
+  font-variant-numeric: lining-nums !important;
+  font-feature-settings: "lnum" 1 !important;
+}
+
+/* Redefining default font properties globally for high contrast & readable medium weights */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.04em;
+  font-weight: 500; /* Spiritual medium weight, not too bold */
+}
+
+/* Ensure that paragraph, body, and input text are never paper-thin */
+p, span, button, input, textarea {
+  font-weight: 400;
+}
+
+/* Elegant class for Cormorant Garamond to ensure rich, premium look instead of paper-thin rendering */
+.font-spiritual {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500; /* Rich medium weight */
+}
+
+.font-brand {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}

@@ -232,8 +232,17 @@ function App() {
     }
   }, [location.pathname, user, navigate, setIsLoginOpen]);
 
-  const handleProductSelectFromHeader = (_name: string, _id: string) => {
-    setTimeout(scrollToProducts, 80);
+  const handleProductSelectFromHeader = (name: string, id: string) => {
+    const matched = liveProducts.find(p => p._id === id || String(p.id) === id);
+    if (matched) {
+      setSelectedProduct(matched);
+      setIsModalOpen(true);
+      
+      if (location.pathname !== "/" && !location.pathname.startsWith("/category")) {
+        navigate("/");
+      }
+      setTimeout(scrollToProducts, 120);
+    }
   };
 
   const handleViewDetails = (product: Product) => {

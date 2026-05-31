@@ -1,14 +1,24 @@
 import React, { createContext, useContext, useState } from 'react';
 
-const AppContext = createContext();
+interface AppContextType {
+  user: any;
+  cart: any[];
+  favorites: any[];
+  addToCart: (product: any, selectedSize: string) => void;
+  removeFromCart: (productId: any, size: string) => void;
+  toggleFavorite: (product: any) => void;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
+}
 
-export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Auth State
-  const [cart, setCart] = useState([]);   // Cart State
-  const [favorites, setFavorites] = useState([]); // Favorites State
+const AppContext = createContext<AppContextType | null>(null);
+
+export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null); // Auth State
+  const [cart, setCart] = useState<any[]>([]);   // Cart State
+  const [favorites, setFavorites] = useState<any[]>([]); // Favorites State
 
   // 1. Add to Cart Logic (With Size)
-  const addToCart = (product, selectedSize) => {
+  const addToCart = (product: any, selectedSize: string) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find(
         (item) => item.id === product.id && item.size === selectedSize
@@ -25,14 +35,14 @@ export const AppProvider = ({ children }) => {
   };
 
   // 2. Remove from Cart
-  const removeFromCart = (productId, size) => {
+  const removeFromCart = (productId: any, size: string) => {
     setCart((prevCart) =>
       prevCart.filter((item) => !(item.id === productId && item.size === size))
     );
   };
 
   // 3. Toggle Favorites
-  const toggleFavorite = (product) => {
+  const toggleFavorite = (product: any) => {
     setFavorites((prevFavs) => {
       const isExist = prevFavs.some((item) => item.id === product.id);
       if (isExist) {
