@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product, Review, Variant } from "./Productcard";
 import CartAction from "./CartAction";
+import { useCart } from "../context/CartContext";
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -201,6 +202,7 @@ const useDynamicSoldCount = (
 const ProductModal: React.FC<ProductModalProps> = ({
   product, isOpen, onClose, onAddToCart,
 }) => {
+  const { cartItems } = useCart() as any;
   const [activeImg, setActiveImg] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<Variant | undefined>(undefined);
   const [cartState, setCartState] = useState<"idle" | "added">("idle");
@@ -264,6 +266,30 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setSelectedVariant(undefined);
     }
   }, [product?._id, product?.id, safeVariants.length]);
+
+  // Automatically select the active size variant that is currently in the global cart
+  useEffect(() => {
+    if (!product || !cartItems || !isOpen) return;
+    const productId = product._id || product.id;
+    if (!productId) return;
+
+    if (safeVariants.length > 0) {
+      const activeInCartVariant = safeVariants.find((variant) => {
+        const sizeKey = (variant.size || "Standard").toLowerCase();
+        return !!cartItems[`${productId}_${sizeKey}`];
+      });
+
+      if (activeInCartVariant) {
+        const currentSizeKey = (selectedVariant?.size || "").toLowerCase();
+        const currentIsInCart = currentSizeKey ? !!cartItems[`${productId}_${currentSizeKey}`] : false;
+        
+        // Auto-select if nothing is selected or if the currently selected size is not in the cart
+        if (!selectedVariant || !currentIsInCart) {
+          setSelectedVariant(activeInCartVariant);
+        }
+      }
+    }
+  }, [cartItems, product, selectedVariant, safeVariants, isOpen]);
 
   // Keyboard + scroll lock
   const handleKey = useCallback((e: KeyboardEvent) => {

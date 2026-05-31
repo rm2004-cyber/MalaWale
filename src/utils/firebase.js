@@ -10,14 +10,14 @@ import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "fire
 //   appId: "1:1002469623815:web:88df357e69a383093a42a2"
 // };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCEsWv7rSPC2ccq5-hadFWG3KJ5FliwHpY",
-  authDomain: "malawale-web.firebaseapp.com",
-  projectId: "malawale-web",
-  storageBucket: "malawale-web.firebasestorage.app",
-  messagingSenderId: "597469907212",
-  appId: "1:597469907212:web:6ab3e062ca7fbafa9ae129"
-}; 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCEsWv7rSPC2ccq5-hadFWG3KJ5FliwHpY",
+//   authDomain: "malawale-web.firebaseapp.com",
+//   projectId: "malawale-web",
+//   storageBucket: "malawale-web.firebasestorage.app",
+//   messagingSenderId: "597469907212",
+//   appId: "1:597469907212:web:6ab3e062ca7fbafa9ae129"
+// };
 
 //formy
 
@@ -29,6 +29,28 @@ const firebaseConfig = {
 //   messagingSenderId: "688094750369",
 //   appId: "1:688094750369:web:2a9ab12abb56171c0ff2e0"
 // };rahul
+
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyC7oDTLdzoqpU39m6LhvwxL0HjPrzAR5ug",
+//   authDomain: "malawaleweb-2fa59.firebaseapp.com",
+//   projectId: "malawaleweb-2fa59",
+//   storageBucket: "malawaleweb-2fa59.firebasestorage.app",
+//   messagingSenderId: "615547500407",
+//   appId: "1:615547500407:web:ac7cc9e4c88bec73919372"
+// };
+//demo
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBa1d8FDz6vTAN_1ODC1E7DDWerfoaYYDc",
+  authDomain: "malawaleweb-26244.firebaseapp.com",
+  projectId: "malawaleweb-26244",
+  storageBucket: "malawaleweb-26244.firebasestorage.app",
+  messagingSenderId: "830653637838",
+  appId: "1:830653637838:web:19b129786cd9b357af1c9f"
+};
+//paid
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
