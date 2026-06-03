@@ -114,52 +114,53 @@ const handleSaveBanner = async () => {
   };
 
   return (
-    <div className="space-y-8 p-6">
-      <div className="bg-white p-6 rounded-2xl border shadow-sm">
+    <div className="space-y-8 p-4 sm:p-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border shadow-sm">
         <h2 className="text-xl font-bold mb-4">{editingId ? "Edit Banner" : "Add New Banner"}</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <input className="border p-2 rounded-lg" placeholder="Title*" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
-          <input className="border p-2 rounded-lg" placeholder="Subtitle" value={formData.subtitle} onChange={(e) => setFormData({...formData, subtitle: e.target.value})} />
-          <input className="col-span-2 border p-2 rounded-lg" placeholder="Description*" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
-          <input className="border p-2 rounded-lg" placeholder="Tag (e.g. Divine Collection)" value={formData.tag} onChange={(e) => setFormData({...formData, tag: e.target.value})} />
-          <select className="border p-2 rounded-lg" value={formData.categoryLink} onChange={(e) => setFormData({...formData, categoryLink: e.target.value})}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <input className="border p-2 rounded-lg text-sm w-full" placeholder="Title*" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+          <input className="border p-2 rounded-lg text-sm w-full" placeholder="Subtitle" value={formData.subtitle} onChange={(e) => setFormData({...formData, subtitle: e.target.value})} />
+          <input className="sm:col-span-2 border p-2 rounded-lg text-sm w-full" placeholder="Description*" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+          <input className="border p-2 rounded-lg text-sm w-full" placeholder="Tag (e.g. Divine Collection)" value={formData.tag} onChange={(e) => setFormData({...formData, tag: e.target.value})} />
+          <select className="border p-2 rounded-lg text-sm w-full bg-white" value={formData.categoryLink} onChange={(e) => setFormData({...formData, categoryLink: e.target.value})}>
             <option value="">Select Category</option>
             {categories.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
-<input
-  type="file"
-  style={{
-    padding: "7px",
-    borderRadius: "30px",
-    border: "2px solid #ccc"
-  }}
-  onChange={(e) => {
-    if (e.target.files?.[0]) {
-      setSelectedFile(e.target.files[0]);
-      setPreviewUrl(URL.createObjectURL(e.target.files[0]));
-    }
-  }}
-/>
+          <input
+            type="file"
+            className="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-[#9B1B1B]/10 file:text-[#9B1B1B] hover:file:bg-[#9B1B1B]/20"
+            style={{
+              padding: "7px",
+              borderRadius: "30px",
+              border: "2px solid #ccc"
+            }}
+            onChange={(e) => {
+              if (e.target.files?.[0]) {
+                setSelectedFile(e.target.files[0]);
+                setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+              }
+            }}
+          />
         </div>
         {previewUrl && <img src={previewUrl} className="mt-4 w-full h-48 object-cover rounded-xl" />}
         <div className="flex gap-2 mt-4">
-          <button onClick={handleSaveBanner} disabled={publishing} className="bg-[#9B1B1B] text-white px-6 py-2 rounded-lg">{publishing ? "Saving..." : "Save Banner"}</button>
-          {editingId && <button onClick={clearForm} className="bg-stone-200 px-6 py-2 rounded-lg">Cancel</button>}
+          <button onClick={handleSaveBanner} disabled={publishing} className="bg-[#9B1B1B] text-white px-6 py-2 rounded-lg text-sm font-bold">{publishing ? "Saving..." : "Save Banner"}</button>
+          {editingId && <button onClick={clearForm} className="bg-stone-200 px-6 py-2 rounded-lg text-sm font-bold">Cancel</button>}
         </div>
       </div>
 
       <div className="grid gap-4">
         {banners.map((b) => (
-          <div key={b._id} className="flex gap-4 p-4 bg-white rounded-xl border items-center">
-            <img src={b.image} className="w-48 h-28 object-cover rounded-lg" />
-            <div className="flex-1">
-              <h3 className="font-bold text-lg">{b.title}</h3>
-              <p className="text-sm text-stone-500 line-clamp-2">{b.description}</p>
-              <p className="text-xs font-bold text-[#9B1B1B]">{b.categoryLink?.name || "No Category"}</p>
+          <div key={b._id} className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-xl border sm:items-center">
+            <img src={b.image} className="w-full sm:w-48 h-28 object-cover rounded-lg shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-lg leading-tight truncate">{b.title}</h3>
+              <p className="text-sm text-stone-500 mt-1 line-clamp-2">{b.description}</p>
+              <p className="text-xs font-bold text-[#9B1B1B] mt-2">{b.categoryLink?.name || "No Category"}</p>
             </div>
-            <div className="flex flex-col gap-2">
-              <button onClick={() => startEdit(b)} className="text-blue-500 font-bold">Edit</button>
-              <button onClick={() => handleDelete(b._id)} className="text-red-500 font-bold">Delete</button>
+            <div className="flex sm:flex-col gap-3 sm:gap-2 justify-end sm:justify-start mt-2 sm:mt-0">
+              <button onClick={() => startEdit(b)} className="text-blue-500 font-bold text-sm">Edit</button>
+              <button onClick={() => handleDelete(b._id)} className="text-red-500 font-bold text-sm">Delete</button>
             </div>
           </div>
         ))}

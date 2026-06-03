@@ -91,6 +91,24 @@ const IconMessageSquare = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const IconMenu = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const IconSidebarToggle = ({ size = 18, collapsed }: { size?: number; collapsed: boolean }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" className="transition-transform duration-300">
+    {collapsed ? (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+    ) : (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+    )}
+  </svg>
+);
+
 // ── NAV_TABS — now includes feedback ────────────────────────────────────────
 const NAV_TABS = [
   { id: "products",   label: "Products",    Icon: IconGrid },
@@ -111,6 +129,8 @@ export default function AdminDashboard() {
   const [totalSales, setTotalSales] = useState("₹0");
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -213,66 +233,118 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f7f5f0] font-sans text-stone-800">
+      
+      {/* ── Mobile Sidebar Backdrop ── */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-stone-900/50 backdrop-blur-xs lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside className="w-56 bg-[#18110c] flex flex-col shrink-0">
-        <div className="px-5 py-5 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-[#9B1B1B] flex items-center justify-center shrink-0">
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 lg:relative lg:translate-x-0
+        flex flex-col bg-[#18110c] shrink-0 transition-all duration-300
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        ${sidebarCollapsed ? "w-16" : "w-56"}
+      `}>
+        <div className="px-4 py-5 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-8 w-8 rounded-lg bg-[#9B1B1B] flex items-center justify-center shrink-0 text-white">
               <IconShoppingBag size={16} />
             </div>
-            <div>
-              <p className="text-amber-50 text-[13px] font-bold leading-none tracking-wide">MalaWale</p>
-              <p className="text-stone-500 text-[10px] mt-0.5 font-medium">Admin Panel</p>
-            </div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0">
+                <p className="text-amber-50 text-[13px] font-bold leading-none tracking-wide truncate">MalaWale</p>
+                <p className="text-stone-500 text-[10px] mt-0.5 font-medium truncate">Admin Panel</p>
+              </div>
+            )}
           </div>
+          {/* Close button on mobile */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-1 text-stone-400 hover:text-white transition"
+          >
+            ✕
+          </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-stone-600 px-3 mb-2">Workspace</p>
+        <nav className="flex-1 px-2.5 py-4 space-y-0.5 overflow-y-auto">
+          {!sidebarCollapsed && (
+            <p className="text-[9px] font-bold uppercase tracking-widest text-stone-600 px-3 mb-2">Workspace</p>
+          )}
           {NAV_TABS.map(({ id, label, Icon }) => {
             const active = activeTab === id;
             return (
               <button
                 key={id}
-                onClick={() => setActiveTab(id as SidebarTab)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+                onClick={() => {
+                  setActiveTab(id as SidebarTab);
+                  setSidebarOpen(false); // Close on mobile click
+                }}
+                title={sidebarCollapsed ? label : undefined}
+                className={`w-full flex items-center rounded-xl text-[13px] font-medium transition-all ${
+                  sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
+                } ${
                   active
                     ? "bg-[#9B1B1B] text-white shadow-lg shadow-[#9B1B1B]/25"
                     : "text-stone-500 hover:text-stone-200 hover:bg-white/5"
                 }`}
               >
-                <Icon size={15} />
-                <span>{label}</span>
-                {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/50" />}
+                <Icon size={15} className="shrink-0" />
+                {!sidebarCollapsed && <span>{label}</span>}
+                {active && !sidebarCollapsed && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/50" />}
               </button>
             );
           })}
         </nav>
 
         <div className="px-3 py-4 border-t border-white/5">
-          <div className="flex items-center gap-2 px-3 py-2">
+          <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-1 py-1`}>
             <div className="w-7 h-7 rounded-full bg-[#9B1B1B]/30 flex items-center justify-center shrink-0 text-white font-bold text-xs">
               {adminUser?.name?.charAt(0).toUpperCase() || "A"}
             </div>
-            <div className="min-w-0">
-              <p className="text-stone-300 text-[12px] font-semibold truncate">{adminUser?.name || "Administrator"}</p>
-              <p className="text-stone-600 text-[10px] uppercase font-bold tracking-wider">{adminUser?.role || "Super Admin"}</p>
-            </div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0">
+                <p className="text-stone-300 text-[12px] font-semibold truncate">{adminUser?.name || "Administrator"}</p>
+                <p className="text-stone-600 text-[10px] uppercase font-bold tracking-wider truncate">{adminUser?.role || "Super Admin"}</p>
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
       {/* ── Main content ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white border-b border-stone-100 px-6 py-3.5 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-[15px] font-bold text-stone-800 capitalize">
-              {NAV_TABS.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
-            </h1>
-            <p className="text-[11px] text-stone-400 mt-0.5">
-              {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-            </p>
+        <header className="bg-white border-b border-stone-100 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Mobile Hamburger menu */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-1.5 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 transition shrink-0"
+              aria-label="Open sidebar"
+            >
+              <IconMenu size={18} />
+            </button>
+
+            {/* Desktop collapse button */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden lg:block p-1.5 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 transition shrink-0"
+              aria-label="Toggle sidebar"
+            >
+              <IconSidebarToggle size={18} collapsed={sidebarCollapsed} />
+            </button>
+
+            <div>
+              <h1 className="text-[14px] sm:text-[15px] font-bold text-stone-800 capitalize leading-none flex items-center gap-1.5">
+                {NAV_TABS.find((t) => t.id === activeTab)?.label ?? "Dashboard"}
+              </h1>
+              <p className="text-[9px] sm:text-[11px] text-stone-400 mt-0.5">
+                {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -342,22 +414,22 @@ export default function AdminDashboard() {
         </header>
 
         {/* Stats bar */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-6 py-4 bg-white border-b border-stone-100 shrink-0">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-4 sm:px-6 py-4 bg-white border-b border-stone-100 shrink-0">
           {statCards.map((card, i) => (
             <div key={i} className="flex items-center gap-3 bg-stone-50 border border-stone-100 rounded-xl px-4 py-3">
               <div className={`w-9 h-9 rounded-xl ${card.bg} flex items-center justify-center shrink-0 ${card.iconColor}`}>
                 <card.Icon size={16} />
               </div>
-              <div>
-                <p className="text-[10px] text-stone-400 font-semibold uppercase tracking-wide leading-none mb-1">{card.label}</p>
-                <p className={`text-lg font-black leading-none ${card.accent} ${"pulse" in card && card.pulse ? "animate-pulse" : ""}`}>{card.value}</p>
-                <p className="text-[10px] text-stone-400 mt-0.5">{card.sub}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-stone-400 font-semibold uppercase tracking-wide leading-none mb-1 truncate">{card.label}</p>
+                <p className={`text-base sm:text-lg font-black leading-none ${card.accent} ${"pulse" in card && card.pulse ? "animate-pulse" : ""}`}>{card.value}</p>
+                <p className="text-[10px] text-stone-400 mt-0.5 truncate">{card.sub}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-[#f7f5f0]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f7f5f0]">
           {renderWorkspace()}
         </div>
       </div>
