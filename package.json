@@ -3,19 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
- "scripts": {
-  "dev": "concurrently \"npm run server\" \"npm run client\"",
-  "server": "nodemon malawale-backend/server.js",
-  "client": "vite",
-  "build": "tsc && vite build",
-  "start": "node malawale-backend/server.js"
-},
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon malawale-backend/server.js",
+    "client": "vite",
+    "build": "tsc && vite build",
+    "start": "node malawale-backend/server.js"
+  },
   "dependencies": {
     "axios": "^1.16.1",
     "firebase": "^12.13.0",
     "framer-motion": "^12.39.0",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.15.1",

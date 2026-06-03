@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type AuthStep = "phone" | "register" | "otp" | "authenticated";
 
@@ -70,6 +72,29 @@ const OmLoader = () => {
     </div>
   );
 };
+
+const CustomDateInput = forwardRef<HTMLInputElement, any>(({ value, onClick, placeholder }, ref) => (
+  <input
+    ref={ref}
+    value={value}
+    onClick={onClick}
+    placeholder={placeholder}
+    readOnly
+    style={{
+      width: "100%",
+      padding: "10px 12px",
+      background: "#fff",
+      border: "1.5px solid #dfc9a0",
+      borderRadius: "10px",
+      fontSize: "13px",
+      outline: "none",
+      color: "#3d1f08",
+      boxSizing: "border-box",
+      cursor: "pointer"
+    }}
+  />
+));
+CustomDateInput.displayName = "CustomDateInput";
 
 export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose }: ProfileDropdownProps) {
   const { user, checkUserExists, sendOtp, verifyOtp, logout } = useAuth();
@@ -198,7 +223,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
 
   return (
     <motion.div
-      className="absolute right-0 top-full mt-3 z-[999] overflow-hidden"
+      className="absolute right-0 top-full mt-3 z-[999]"
       style={{
         width: "320px",
         borderRadius: "16px",
@@ -213,7 +238,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
     >
       <div id="sign-in-button" />
 
-      <div className="relative overflow-hidden px-5 py-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #7a3810 0%, #D84315 55%, #b8642e 100%)", minHeight: "80px" }}>
+      <div className="relative overflow-hidden px-5 py-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #7a3810 0%, #D84315 55%, #b8642e 100%)", minHeight: "80px", borderTopLeftRadius: "15px", borderTopRightRadius: "15px" }}>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 select-none pointer-events-none" style={{ opacity: 0.13 }}>
           <span style={{ fontSize: "72px", color: "#fff", fontFamily: "serif", lineHeight: 1 }}>ॐ</span>
         </div>
@@ -297,60 +322,120 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
               <button type="button" onClick={() => setAuthStep("phone")} style={{ fontSize: "11px", color: "#9B1B1B", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Change Number</button>
               <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#7a4010", marginBottom: "12px", textTransform: "uppercase" }}>Complete Devotee Profile</p>
 
-              {/* {(["name", "email", "dob"] as const).map((field) => (
-                <input
-                  key={field}
-                  type={field === "email" ? "email" : field === "dob" ? "date" : "text"}
-                  placeholder={field === "name" ? "Full Name" : field === "email" ? "Gmail Address" : ""}
-                  value={userProfile[field]}
-                  onChange={(e) => setUserProfile({ ...userProfile, [field]: e.target.value })}
-                  style={{ width: "100%", padding: "10px 12px", background: "#fff", border: "1.5px solid #dfc9a0", borderRadius: "10px", marginBottom: "8px", fontSize: "13px", outline: "none", color: "#3d1f08", boxSizing: "border-box" }}
-                />
-              ))} */}
 
+              <style>{`
+                .react-datepicker-popper {
+                  z-index: 10000 !important;
+                }
+                .react-datepicker-wrapper {
+                  width: 100%;
+                }
+                .react-datepicker {
+                  font-family: inherit;
+                  border: 1.5px solid #dfc9a0;
+                  border-radius: 12px;
+                  background-color: #fdf8f2;
+                  box-shadow: 0 10px 30px rgba(122, 56, 16, 0.15);
+                  border-color: #dfc9a0;
+                }
+                .react-datepicker__header {
+                  background-color: #fdf5eb;
+                  border-bottom: 1.5px solid #dfc9a0;
+                  border-top-left-radius: 12px;
+                  border-top-right-radius: 12px;
+                  padding-top: 8px;
+                }
+                .react-datepicker__current-month, 
+                .react-datepicker__day-name {
+                  color: #7a3810;
+                  font-weight: 600;
+                }
+                .react-datepicker__day--selected, 
+                .react-datepicker__day--keyboard-selected {
+                  background-color: #D84315 !important;
+                  color: white !important;
+                  border-radius: 8px;
+                }
+                .react-datepicker__day:hover {
+                  background-color: #f5e8d0;
+                  border-radius: 8px;
+                }
+                .react-datepicker__navigation {
+                  top: 8px;
+                }
+                .react-datepicker__navigation-icon::before {
+                  border-color: #7a3810;
+                  border-width: 2px 2px 0 0;
+                }
+                .react-datepicker__year-dropdown-container--select {
+                  margin: 5px 0;
+                }
+                .react-datepicker__year-select {
+                  background: #fff;
+                  border: 1px solid #dfc9a0;
+                  border-radius: 6px;
+                  padding: 2px 4px;
+                  color: #7a3810;
+                  outline: none;
+                }
+              `}</style>
 
-              {/* Find this section inside your code and update it */}
               {(["name", "email", "dob"] as const).map((field) => {
-                // Determine initial input type
-                let inputType = "text";
-                if (field === "email") inputType = "email";
+                const isDob = field === "dob";
+                const isEmail = field === "email";
+
+                if (isDob) {
+                  return (
+                    <div key={field} style={{ marginBottom: "8px", width: "100%" }}>
+                      <DatePicker
+                        selected={userProfile.dob ? new Date(userProfile.dob) : null}
+                        popperPlacement="bottom-start"
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            setUserProfile({ ...userProfile, dob: `${year}-${month}-${day}` });
+                          } else {
+                            setUserProfile({ ...userProfile, dob: "" });
+                          }
+                        }}
+                        dateFormat="dd-MM-yyyy"
+                        maxDate={new Date()}
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        placeholderText="Date of Birth (DD-MM-YYYY)"
+                        customInput={<CustomDateInput />}
+                      />
+                    </div>
+                  );
+                }
 
                 return (
-                  <input
-                    key={field}
-                    type={inputType}
-                    // On focus, if it's the DOB field, switch it to date type to trigger the native calendar picker
-                    onFocus={(e) => {
-                      if (field === "dob") e.currentTarget.type = "date";
-                    }}
-                    // On blur, if no value is chosen, switch it back to text type to reveal the placeholder again
-                    onBlur={(e) => {
-                      if (field === "dob" && !e.currentTarget.value) {
-                        e.currentTarget.type = "text";
+                  <div key={field} style={{ position: "relative", marginBottom: "8px", width: "100%" }}>
+                    <input
+                      type={isEmail ? "email" : "text"}
+                      placeholder={
+                        field === "name"
+                          ? "Full Name"
+                          : "Gmail Address"
                       }
-                    }}
-                    placeholder={
-                      field === "name"
-                        ? "Full Name"
-                        : field === "email"
-                          ? "Gmail Address"
-                          : "Date of Birth (DD-MM-YYYY)" // Added clear placeholder text here
-                    }
-                    value={userProfile[field]}
-                    onChange={(e) => setUserProfile({ ...userProfile, [field]: e.target.value })}
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      background: "#fff",
-                      border: "1.5px solid #dfc9a0",
-                      borderRadius: "10px",
-                      marginBottom: "8px",
-                      fontSize: "13px",
-                      outline: "none",
-                      color: "#3d1f08",
-                      boxSizing: "border-box"
-                    }}
-                  />
+                      value={userProfile[field]}
+                      onChange={(e) => setUserProfile({ ...userProfile, [field]: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        background: "#fff",
+                        border: "1.5px solid #dfc9a0",
+                        borderRadius: "10px",
+                        fontSize: "13px",
+                        outline: "none",
+                        color: "#3d1f08",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
                 );
               })}
 
