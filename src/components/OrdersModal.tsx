@@ -55,7 +55,7 @@ export default function OrdersModal({ onClose }: OrdersModalProps) {
         animate={{ scale: 1, opacity: 1 }}
       >
         {/* Header */}
-        <div className="px-6 py-4 bg-[#8b4513] flex justify-between items-center text-amber-100">
+        <div className="px-6 py-4 bg-[#9B1B1B] flex justify-between items-center text-amber-100">
           <h2 className="font-bold text-lg">My Orders</h2>
           <button onClick={onClose}><CloseIcon /></button>
         </div>

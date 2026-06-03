@@ -103,7 +103,7 @@ const MandalaBg = () => (
   >
     {[0, 30, 60, 90, 120, 150].map((a, i) => (
       <g key={i} transform={`rotate(${a} 100 100)`}>
-        <ellipse cx="100" cy="55" rx="8" ry="45" fill="#8b4513" />
+        <ellipse cx="100" cy="55" rx="8" ry="45" fill="#9B1B1B" />
       </g>
     ))}
     {[0, 45, 90, 135].map((a, i) => (
@@ -111,9 +111,9 @@ const MandalaBg = () => (
         <ellipse cx="100" cy="40" rx="5" ry="30" fill="#c87941" />
       </g>
     ))}
-    <circle cx="100" cy="100" r="20" fill="none" stroke="#8b4513" strokeWidth="2" />
+    <circle cx="100" cy="100" r="20" fill="none" stroke="#9B1B1B" strokeWidth="2" />
     <circle cx="100" cy="100" r="12" fill="none" stroke="#c87941" strokeWidth="1.5" />
-    <circle cx="100" cy="100" r="5" fill="#8b4513" />
+    <circle cx="100" cy="100" r="5" fill="#9B1B1B" />
   </svg>
 );
 
@@ -324,9 +324,9 @@ export default function CartModal({ onClose }: CartModalProps) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -24, height: 0, marginBottom: 0 }}
                         transition={{ duration: 0.22, delay: index * 0.05 }}
-                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "#fff", border: "1px solid #eedcbe", borderRadius: "14px", boxShadow: "0 2px 12px rgba(139,69,19,0.07), 0 1px 3px rgba(139,69,19,0.05)", position: "relative", overflow: "hidden" }}
+                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "#fff", border: "1px solid #eedcbe", borderRadius: "14px", boxShadow: "0 2px 12px rgba(155, 27, 27,0.07), 0 1px 3px rgba(155, 27, 27,0.05)", position: "relative", overflow: "hidden" }}
                       >
-                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "3px", background: "linear-gradient(to bottom, #c87941, #8b4513)", borderRadius: "14px 0 0 14px" }} />
+                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "3px", background: "linear-gradient(to bottom, #c87941, #9B1B1B)", borderRadius: "14px 0 0 14px" }} />
                         <div style={{ width: "56px", height: "56px", borderRadius: "10px", background: "linear-gradient(135deg, #fdf0e0 0%, #f5ddb8 100%)", border: "1px solid #e8d0a8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
                           {itemImage ? <img src={itemImage} alt={itemName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <MalaIcon />}
                         </div>
@@ -341,14 +341,14 @@ export default function CartModal({ onClose }: CartModalProps) {
                             {/* ── FIX 1 (applied): pass itemSize in place of variantId ── */}
                             <button
                               onClick={() => handleQuantityChange(productId, itemSize, item.quantity, -1)}
-                              style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#8b4513", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
+                              style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#9B1B1B", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
                               onMouseEnter={e => (e.currentTarget.style.background = "#f5ddb8")}
                               onMouseLeave={e => (e.currentTarget.style.background = "#fdf0e0")}
                             >−</button>
                             <span style={{ fontSize: "13px", fontWeight: 700, minWidth: "22px", textAlign: "center", color: "#3d1f08" }}>{item.quantity}</span>
                             <button
                               onClick={() => handleQuantityChange(productId, itemSize, item.quantity, 1)}
-                              style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#8b4513", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
+                              style={{ width: "26px", height: "26px", borderRadius: "7px", background: "#fdf0e0", border: "1px solid #e0c090", color: "#9B1B1B", fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", lineHeight: 1, transition: "background 0.15s" }}
                               onMouseEnter={e => (e.currentTarget.style.background = "#f5ddb8")}
                               onMouseLeave={e => (e.currentTarget.style.background = "#fdf0e0")}
                             >+</button>

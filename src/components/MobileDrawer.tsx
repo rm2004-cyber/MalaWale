@@ -72,7 +72,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
           >
             <div 
               className="p-5 flex flex-col gap-1 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #8b4513 0%, #a0522d 100%)" }}
+              style={{ background: "linear-gradient(135deg, #9B1B1B 0%, #D84315 100%)" }}
             >
               <button 
                 onClick={onClose}
@@ -88,7 +88,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
             {isAuthenticated && (
               <div className="px-5 py-3.5 bg-orange-50/50 border-b border-orange-100/40 flex flex-col gap-0.5">
                 <span className="text-[10px] text-amber-800/60 font-medium uppercase tracking-wider">Session Active</span>
-                <span className="text-sm font-bold text-[#8b4513] truncate">Hari Om, {user?.name || "Devotee"}! 🙏</span>
+                <span className="text-sm font-bold text-[#9B1B1B] truncate">Hari Om, {user?.name || "Devotee"}! 🙏</span>
               </div>
             )}
 
@@ -128,7 +128,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
                       }, 180);
                     }}
                     className="w-full px-5 py-3.5 flex items-center justify-between text-left text-sm font-medium border-b border-orange-100/40 transition-all active:bg-orange-100/40 cursor-pointer"
-                    style={{ color: "#8b4513" }}
+                    style={{ color: "#9B1B1B" }}
                   >
                     <span className="tracking-wide">{cat.name}</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="opacity-60">
@@ -146,7 +146,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
             <div className="mt-auto border-t border-orange-100/70 bg-orange-50/20 p-4 flex flex-col gap-1">
               <button
                 className="w-full py-2.5 px-2 text-left text-xs font-bold uppercase tracking-wider transition-colors hover:bg-orange-100/30 rounded-xl flex items-center justify-between cursor-pointer"
-                style={{ color: "#a0522d", background: "rgba(212,163,115,0.08)" }}
+                style={{ color: "#D84315", background: "rgba(212, 175, 55,0.08)" }}
                 onClick={() => {
                   navigate("/track-order");
                   onClose();
@@ -158,7 +158,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
 
               <button
                 className="w-full py-2 px-2 text-left text-xs font-medium opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
-                style={{ color: "#a0522d" }}
+                style={{ color: "#D84315" }}
                 onClick={() => { navigate("/contact"); onClose(); }}
               >
                 Contact Us
@@ -166,7 +166,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
 
               <button
                 className="w-full py-2 px-2 text-left text-xs font-medium opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
-                style={{ color: "#a0522d" }}
+                style={{ color: "#D84315" }}
                 onClick={() => { navigate("/faqs"); onClose(); }}
               >
                 FAQs
@@ -195,7 +195,7 @@ export default function MobileDrawer({ isOpen, onClose, onCategorySelect }: Mobi
                     }
                   }}
                   className="w-full mt-1 py-3 px-3 text-center text-xs font-bold rounded-xl text-white transition cursor-pointer uppercase tracking-widest shadow-sm"
-                  style={{ background: "linear-gradient(135deg, #c8843a 0%, #a0522d 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #E65100 0%, #D84315 100%)" }}
                 >
                   Login / Register ✦
                 </button>

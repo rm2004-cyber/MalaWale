@@ -171,7 +171,7 @@ function StarRating({ rating, reviewCount }: StarRatingProps) {
         ))}
       </div>
       <span
-        style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+        style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}
         className="text-xs font-medium opacity-70"
       >
         ({reviewCount.toLocaleString("en-IN")})
@@ -181,7 +181,7 @@ function StarRating({ rating, reviewCount }: StarRatingProps) {
 }
 
 function StarIcon({ type }: { type: "full" | "half" | "empty" }) {
-  const color = "#d4a373";
+  const color = "#D4AF37";
   if (type === "full")
     return (
       <svg width="13" height="13" viewBox="0 0 20 20" fill={color}>
@@ -220,7 +220,7 @@ function DiscountBadge({ discount }: { discount: number }) {
     >
       <div
         style={{
-          background: "linear-gradient(135deg, #a0522d 0%, #c8843a 100%)",
+          background: "linear-gradient(135deg, #D84315 0%, #E65100 100%)",
           fontFamily: "'Jost', sans-serif",
           borderRadius: "0 0 8px 0",
           boxShadow: "2px 2px 8px rgba(160,82,45,0.35)",
@@ -410,7 +410,7 @@ function ProductCard({
           <span
             style={{
               fontFamily: "'Playfair Display', serif",
-              color: "#8b4513"
+              color: "#9B1B1B"
             }}
             className="text-base font-bold leading-none"
           >
@@ -445,15 +445,15 @@ function OmDivider() {
       <div
         className="h-px flex-1 rounded"
         style={{
-          background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)",
+          background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)",
           opacity: 0.55,
         }}
       />
-      <span style={{ color: "#d4a373", fontSize: "18px", lineHeight: 1 }}>ॐ</span>
+      <span style={{ color: "#D4AF37", fontSize: "18px", lineHeight: 1 }}>ॐ</span>
       <div
         className="h-px flex-1 rounded"
         style={{
-          background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)",
+          background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)",
           opacity: 0.55,
         }}
       />
@@ -526,7 +526,7 @@ export default function Bestsellers({
 
       <section
         ref={sectionRef}
-        style={{ backgroundColor: "#fff9f2" }}
+        style={{ backgroundColor: "#FCF8F2" }}
         className="w-full py-12 px-4 sm:px-6 lg:px-10 xl:px-16"
         aria-label="MalaWale Bestsellers"
       >
@@ -543,7 +543,7 @@ export default function Bestsellers({
               <span
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  color: "#c8843a",
+                  color: "#E65100",
                   letterSpacing: "0.12em",
                 }}
                 className="text-xs uppercase italic tracking-widest mb-1 font-semibold"
@@ -551,7 +551,7 @@ export default function Bestsellers({
                 Handpicked & Blessed
               </span>
               <h2
-                style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}
+                style={{ fontFamily: "'Playfair Display', serif", color: "#9B1B1B" }}
                 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight"
               >
                 MalaWale Bestsellers
@@ -564,8 +564,8 @@ export default function Bestsellers({
               onClick={onViewAll}
               style={{
                 fontFamily: "'Jost', sans-serif",
-                color: "#8b4513",
-                borderColor: "#d4a373",
+                color: "#9B1B1B",
+                borderColor: "#D4AF37",
               }}
               className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border-b-2 pb-0.5 hover:opacity-80 transition-opacity"
             >
@@ -621,7 +621,7 @@ export default function Bestsellers({
           ) : (
             <div className="w-full text-center py-12">
               <p
-                style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+                style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}
                 className="text-sm font-medium opacity-60 italic"
               >
                 No sacred products available in this selection at the moment.
@@ -641,8 +641,8 @@ export default function Bestsellers({
                 onClick={onViewAll}
                 style={{
                   fontFamily: "'Jost', sans-serif",
-                  background: "linear-gradient(90deg, #8b4513 0%, #c8843a 100%)",
-                  boxShadow: "0 4px 16px rgba(139,69,19,0.28)",
+                  background: "linear-gradient(90deg, #9B1B1B 0%, #E65100 100%)",
+                  boxShadow: "0 4px 16px rgba(155, 27, 27,0.28)",
                 }}
                 className="text-white text-sm font-semibold tracking-wide px-8 py-2.5 rounded-full active:scale-95 transition-transform"
               >

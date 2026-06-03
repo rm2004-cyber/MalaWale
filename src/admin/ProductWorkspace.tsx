@@ -256,12 +256,12 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
         <div>
           <h2 className="text-xl font-bold text-stone-800">Product Catalog</h2>
           <p className="text-sm text-stone-400 mt-0.5">
-            <span className="font-semibold text-[#8b4513]">{products.length}</span> items active.
+            <span className="font-semibold text-[#9B1B1B]">{products.length}</span> items active.
           </p>
         </div>
         <button
           onClick={openCreateModal}
-          className="rounded-xl bg-[#8b4513] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#7a3b10] shadow-md"
+          className="rounded-xl bg-[#9B1B1B] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#7a3b10] shadow-md"
         >
           + Add New Sacred Item
         </button>
@@ -305,7 +305,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditModal(p)} className="px-3 py-1.5 text-xs font-semibold border rounded-lg hover:text-[#8b4513]">Edit</button>
+                      <button onClick={() => openEditModal(p)} className="px-3 py-1.5 text-xs font-semibold border rounded-lg hover:text-[#9B1B1B]">Edit</button>
                       <button onClick={() => handleDeleteProduct(p._id)} className="px-3 py-1.5 text-xs font-semibold border text-stone-400 hover:text-red-500">Delete</button>
                     </div>
                   </td>
@@ -393,7 +393,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
                 <button
                   type="button"
                   onClick={handleAddVariant}
-                  className="w-full py-2 text-xs font-bold text-[#8b4513] border border-[#8b4513]/40 rounded-lg hover:bg-[#8b4513]/5 transition"
+                  className="w-full py-2 text-xs font-bold text-[#9B1B1B] border border-[#9B1B1B]/40 rounded-lg hover:bg-[#9B1B1B]/5 transition"
                 >
                   + Add Variant
                 </button>
@@ -405,7 +405,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
                     {variants.map((v) => (
                       <div key={v.size} className="flex items-center justify-between bg-white border rounded-lg px-3 py-2">
                         <div className="flex items-center gap-3">
-                          <span className="inline-block bg-[#8b4513] text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[32px] text-center">
+                          <span className="inline-block bg-[#9B1B1B] text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[32px] text-center">
                             {v.size}
                           </span>
                           <span className="text-xs text-stone-700 font-semibold">₹{v.price}</span>
@@ -443,7 +443,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-xl text-stone-500">Cancel</button>
-              <button type="button" onClick={handleSubmit} className="px-5 py-2 bg-[#8b4513] text-white font-bold rounded-xl">Save Item</button>
+              <button type="button" onClick={handleSubmit} className="px-5 py-2 bg-[#9B1B1B] text-white font-bold rounded-xl">Save Item</button>
             </div>
           </div>
         </div>

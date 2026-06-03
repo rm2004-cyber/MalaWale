@@ -22,16 +22,16 @@ let errorCounter = 0;
 const OmWatermark = () => (
   <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" aria-hidden="true">
     {Array.from({ length: 8 }).map((_, i) => (
-      <ellipse key={i} cx="100" cy="100" rx="12" ry="38" fill="#8b4513" transform={`rotate(${i * 45} 100 100)`} opacity="0.6" />
+      <ellipse key={i} cx="100" cy="100" rx="12" ry="38" fill="#9B1B1B" transform={`rotate(${i * 45} 100 100)`} opacity="0.6" />
     ))}
-    <text x="100" y="118" textAnchor="middle" fontFamily="serif" fontSize="72" fill="#8b4513" fontWeight="bold">ॐ</text>
-    <circle cx="100" cy="100" r="92" fill="none" stroke="#c8843a" strokeWidth="1.5" strokeDasharray="4 6" />
-    <circle cx="100" cy="100" r="98" fill="none" stroke="#8b4513" strokeWidth="0.8" opacity="0.5" />
+    <text x="100" y="118" textAnchor="middle" fontFamily="serif" fontSize="72" fill="#9B1B1B" fontWeight="bold">ॐ</text>
+    <circle cx="100" cy="100" r="92" fill="none" stroke="#E65100" strokeWidth="1.5" strokeDasharray="4 6" />
+    <circle cx="100" cy="100" r="98" fill="none" stroke="#9B1B1B" strokeWidth="0.8" opacity="0.5" />
   </svg>
 );
 
 const LockIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c8843a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
@@ -66,18 +66,18 @@ const InputField = ({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}>
+      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B", opacity: 0.75 }}>
         {label}
       </label>
       <div
         className="flex items-center rounded-xl border transition-all duration-200 bg-white overflow-hidden"
         style={{
-          borderColor: focused ? "#c8843a" : "#f3d5b0",
+          borderColor: focused ? "#E65100" : "#f3d5b0",
           boxShadow: focused ? "0 0 0 3px rgba(200,132,58,0.15)" : "none",
         }}
       >
         {prefix && (
-          <span className="pl-4 pr-2 text-sm font-semibold select-none" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}>
+          <span className="pl-4 pr-2 text-sm font-semibold select-none" style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}>
             {prefix}
           </span>
         )}
@@ -110,7 +110,7 @@ const OtpInput = ({ value, onChange }: OtpInputProps) => {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", opacity: 0.75 }}>
+      <label className="text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B", opacity: 0.75 }}>
         Enter 6-Digit OTP
       </label>
       <div className="relative">
@@ -121,8 +121,8 @@ const OtpInput = ({ value, onChange }: OtpInputProps) => {
               className="flex-1 h-12 flex items-center justify-center rounded-xl border text-lg font-bold transition-all duration-150"
               style={{
                 fontFamily: "'Playfair Display', serif",
-                borderColor: d.trim() ? "#c8843a" : "#f3d5b0",
-                color: "#8b4513",
+                borderColor: d.trim() ? "#E65100" : "#f3d5b0",
+                color: "#9B1B1B",
                 background: d.trim() ? "rgba(200,132,58,0.06)" : "#fff",
                 boxShadow: d.trim() ? "0 0 0 2px rgba(200,132,58,0.18)" : "none",
               }}
@@ -143,7 +143,7 @@ const OtpInput = ({ value, onChange }: OtpInputProps) => {
           placeholder="Enter OTP"
         />
       </div>
-      <p className="text-xs mt-0.5" style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a", opacity: 0.7 }}>
+      <p className="text-xs mt-0.5" style={{ fontFamily: "'Jost', sans-serif", color: "#E65100", opacity: 0.7 }}>
         Tap above and type your OTP code
       </p>
     </div>
@@ -167,8 +167,8 @@ const PrimaryButton = ({ label, loading = false, onClick, disabled = false }: Pr
     className="w-full py-3.5 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
     style={{
       fontFamily: "'Jost', sans-serif",
-      background: "linear-gradient(135deg, #8b4513 0%, #c8843a 60%, #d4a373 100%)",
-      boxShadow: "0 4px 20px rgba(139,69,19,0.35)",
+      background: "linear-gradient(135deg, #9B1B1B 0%, #E65100 60%, #D4AF37 100%)",
+      boxShadow: "0 4px 20px rgba(155, 27, 27,0.35)",
       letterSpacing: "0.04em",
     }}
   >
@@ -345,7 +345,7 @@ const handleVerifyOtp = async () => {
         * { box-sizing: border-box; }
       `}</style>
 
-      <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 relative overflow-hidden" style={{ background: "#fff9f2" }}>
+      <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 relative overflow-hidden" style={{ background: "#FCF8F2" }}>
         <div
           className="pointer-events-none select-none absolute"
           style={{
@@ -370,7 +370,7 @@ const handleVerifyOtp = async () => {
         <div
           className="pointer-events-none absolute bottom-0 right-0 w-80 h-80 rounded-full"
           style={{
-            background: "radial-gradient(circle, rgba(139,69,19,0.08) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(155, 27, 27,0.08) 0%, transparent 70%)",
             transform: "translate(30%, 30%)",
           }}
         />
@@ -380,7 +380,7 @@ const handleVerifyOtp = async () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="relative z-10 max-w-md w-full bg-white rounded-3xl p-8 border border-orange-100 shadow-xl"
-          style={{ boxShadow: "0 8px 48px rgba(139,69,19,0.13), 0 2px 12px rgba(139,69,19,0.07)" }}
+          style={{ boxShadow: "0 8px 48px rgba(155, 27, 27,0.13), 0 2px 12px rgba(155, 27, 27,0.07)" }}
         >
           <div className="flex flex-col items-center mb-7">
             <motion.div
@@ -388,20 +388,20 @@ const handleVerifyOtp = async () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15, duration: 0.5, ease: "backOut" }}
               className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-              style={{ background: "linear-gradient(145deg, #8b4513, #c8843a)" }}
+              style={{ background: "linear-gradient(145deg, #9B1B1B, #E65100)" }}
             >
-              <span style={{ fontSize: 32, lineHeight: 1, color: "#fff9f2" }}>ॐ</span>
+              <span style={{ fontSize: 32, lineHeight: 1, color: "#FCF8F2" }}>ॐ</span>
             </motion.div>
 
-            <h1 className="text-2xl font-bold tracking-[0.15em] uppercase" style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}>
+            <h1 className="text-2xl font-bold tracking-[0.15em] uppercase" style={{ fontFamily: "'Playfair Display', serif", color: "#9B1B1B" }}>
               Mala Wale
             </h1>
 
-            <p className="text-xs tracking-widest uppercase mt-1 font-medium" style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a", opacity: 0.75 }}>
+            <p className="text-xs tracking-widest uppercase mt-1 font-medium" style={{ fontFamily: "'Jost', sans-serif", color: "#E65100", opacity: 0.75 }}>
               By Sanwariya Handicraft · Admin Portal
             </p>
 
-            <div className="mt-4 h-px w-24 rounded-full" style={{ background: "linear-gradient(90deg, transparent, #d4a373, transparent)" }} />
+            <div className="mt-4 h-px w-24 rounded-full" style={{ background: "linear-gradient(90deg, transparent, #D4AF37, transparent)" }} />
           </div>
 
           <div className="mb-4 min-h-0">
@@ -453,9 +453,9 @@ const handleVerifyOtp = async () => {
                 >
                   <div
                     className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs"
-                    style={{ background: "rgba(139,69,19,0.07)", fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+                    style={{ background: "rgba(155, 27, 27,0.07)", fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth="2.5" strokeLinecap="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B1B1B" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7z" />
                     </svg>
                     Secure passkey transmitted to +91 {phone}
@@ -473,7 +473,7 @@ const handleVerifyOtp = async () => {
                         setPhase("input");
                       }}
                       className="text-xs hover:underline disabled:opacity-40 transition-opacity"
-                      style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}
+                      style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}
                     >
                       ← Back
                     </button>
@@ -482,7 +482,7 @@ const handleVerifyOtp = async () => {
                       disabled={resendTimer > 0}
                       onClick={handleSendOtp}
                       className="text-xs hover:underline disabled:opacity-40 transition-opacity"
-                      style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a" }}
+                      style={{ fontFamily: "'Jost', sans-serif", color: "#E65100" }}
                     >
                       {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
                     </button>
@@ -499,7 +499,7 @@ const handleVerifyOtp = async () => {
 
           <div className="mt-7 pt-5 border-t border-orange-50 flex items-center justify-center gap-2">
             <LockIcon />
-            <p className="text-xs text-center opacity-50" style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513" }}>
+            <p className="text-xs text-center opacity-50" style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B" }}>
               Secured admin gateway · Unauthorized access is prohibited
             </p>
           </div>

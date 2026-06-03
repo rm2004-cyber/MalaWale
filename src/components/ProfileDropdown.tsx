@@ -63,7 +63,7 @@ const OmLoader = () => {
           <OmSymbolSVG />
         </div>
       </div>
-      <p style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontStyle: "italic", color: "#a0522d", fontSize: "15px", letterSpacing: "0.02em" }}>
+      <p style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontStyle: "italic", color: "#D84315", fontSize: "15px", letterSpacing: "0.02em" }}>
         Seeking divine connection...
       </p>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
@@ -202,7 +202,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
       style={{
         width: "320px",
         borderRadius: "16px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(139,69,19,0.12)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(155, 27, 27,0.12)",
         background: "#fdf8f2",
         border: "1px solid rgba(200,155,100,0.2)",
       }}
@@ -213,7 +213,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
     >
       <div id="sign-in-button" />
 
-      <div className="relative overflow-hidden px-5 py-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #7a3810 0%, #a0522d 55%, #b8642e 100%)", minHeight: "80px" }}>
+      <div className="relative overflow-hidden px-5 py-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #7a3810 0%, #D84315 55%, #b8642e 100%)", minHeight: "80px" }}>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 select-none pointer-events-none" style={{ opacity: 0.13 }}>
           <span style={{ fontSize: "72px", color: "#fff", fontFamily: "serif", lineHeight: 1 }}>ॐ</span>
         </div>
@@ -279,7 +279,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
               <button
                 disabled={!isPhoneComplete}
                 onClick={handlePhoneSubmit}
-                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: isPhoneComplete ? "linear-gradient(135deg, #8b4513 0%, #a0522d 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: isPhoneComplete ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "0.02em", boxShadow: isPhoneComplete ? "0 4px 14px rgba(139,69,19,0.35)" : "none", transition: "all 0.2s ease" }}
+                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: isPhoneComplete ? "linear-gradient(135deg, #9B1B1B 0%, #D84315 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: isPhoneComplete ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "0.02em", boxShadow: isPhoneComplete ? "0 4px 14px rgba(155, 27, 27,0.35)" : "none", transition: "all 0.2s ease" }}
               >
                 <PhoneIcon />
                 Send OTP
@@ -287,17 +287,17 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
 
               <div style={{ textAlign: "center", marginTop: "14px" }}>
                 <p style={{ fontSize: "11px", color: "#b08060", fontStyle: "italic", marginBottom: "8px" }}>secure &amp; quick</p>
-                <p style={{ fontSize: "11px", color: "#b08060" }}>By signing in, you agree to our <a href="#" style={{ color: "#8b4513", textDecoration: "underline" }}>Terms</a> and <a href="#" style={{ color: "#8b4513", textDecoration: "underline" }}>Privacy Policy</a></p>
+                <p style={{ fontSize: "11px", color: "#b08060" }}>By signing in, you agree to our <a href="#" style={{ color: "#9B1B1B", textDecoration: "underline" }}>Terms</a> and <a href="#" style={{ color: "#9B1B1B", textDecoration: "underline" }}>Privacy Policy</a></p>
               </div>
             </motion.div>
           )}
 
           {!loading && !user && authStep === "register" && (
             <motion.div key="register" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
-              <button type="button" onClick={() => setAuthStep("phone")} style={{ fontSize: "11px", color: "#8b4513", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Change Number</button>
+              <button type="button" onClick={() => setAuthStep("phone")} style={{ fontSize: "11px", color: "#9B1B1B", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Change Number</button>
               <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", color: "#7a4010", marginBottom: "12px", textTransform: "uppercase" }}>Complete Devotee Profile</p>
 
-              {(["name", "email", "dob"] as const).map((field) => (
+              {/* {(["name", "email", "dob"] as const).map((field) => (
                 <input
                   key={field}
                   type={field === "email" ? "email" : field === "dob" ? "date" : "text"}
@@ -306,12 +306,58 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
                   onChange={(e) => setUserProfile({ ...userProfile, [field]: e.target.value })}
                   style={{ width: "100%", padding: "10px 12px", background: "#fff", border: "1.5px solid #dfc9a0", borderRadius: "10px", marginBottom: "8px", fontSize: "13px", outline: "none", color: "#3d1f08", boxSizing: "border-box" }}
                 />
-              ))}
+              ))} */}
+
+
+              {/* Find this section inside your code and update it */}
+              {(["name", "email", "dob"] as const).map((field) => {
+                // Determine initial input type
+                let inputType = "text";
+                if (field === "email") inputType = "email";
+
+                return (
+                  <input
+                    key={field}
+                    type={inputType}
+                    // On focus, if it's the DOB field, switch it to date type to trigger the native calendar picker
+                    onFocus={(e) => {
+                      if (field === "dob") e.currentTarget.type = "date";
+                    }}
+                    // On blur, if no value is chosen, switch it back to text type to reveal the placeholder again
+                    onBlur={(e) => {
+                      if (field === "dob" && !e.currentTarget.value) {
+                        e.currentTarget.type = "text";
+                      }
+                    }}
+                    placeholder={
+                      field === "name"
+                        ? "Full Name"
+                        : field === "email"
+                          ? "Gmail Address"
+                          : "Date of Birth (DD-MM-YYYY)" // Added clear placeholder text here
+                    }
+                    value={userProfile[field]}
+                    onChange={(e) => setUserProfile({ ...userProfile, [field]: e.target.value })}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      background: "#fff",
+                      border: "1.5px solid #dfc9a0",
+                      borderRadius: "10px",
+                      marginBottom: "8px",
+                      fontSize: "13px",
+                      outline: "none",
+                      color: "#3d1f08",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                );
+              })}
 
               <button
                 disabled={!userProfile.name || !userProfile.email || !userProfile.dob}
                 onClick={handleRegisterSubmit}
-                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: userProfile.name && userProfile.email && userProfile.dob ? "linear-gradient(135deg, #8b4513 0%, #a0522d 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: "pointer", marginTop: "4px", boxShadow: "0 4px 14px rgba(139,69,19,0.3)" }}
+                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: userProfile.name && userProfile.email && userProfile.dob ? "linear-gradient(135deg, #9B1B1B 0%, #D84315 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: "pointer", marginTop: "4px", boxShadow: "0 4px 14px rgba(155, 27, 27,0.3)" }}
               >
                 Send OTP to Verify
               </button>
@@ -320,7 +366,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
 
           {!loading && !user && authStep === "otp" && (
             <motion.div key="otp" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
-              <button type="button" onClick={() => (userProfile.name ? setAuthStep("register") : setAuthStep("phone"))} style={{ fontSize: "11px", color: "#8b4513", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Back</button>
+              <button type="button" onClick={() => (userProfile.name ? setAuthStep("register") : setAuthStep("phone"))} style={{ fontSize: "11px", color: "#9B1B1B", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginBottom: "8px", padding: 0 }}>← Back</button>
               <p style={{ fontSize: "12px", fontWeight: 500, color: "#7a4010", marginBottom: "12px" }}>Enter 6-digit OTP sent to +91 {mobileNumber}</p>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "16px" }}>
                 {otpArray.map((digit, idx) => (
@@ -345,7 +391,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
                       fontWeight: 700,
                       background: "#fff",
                       border: focusedIndex === idx
-                        ? "2.5px solid #8b4513"
+                        ? "2.5px solid #9B1B1B"
                         : digit
                           ? "2.5px solid #c87941"
                           : "1.5px solid #dfc9a0",
@@ -353,9 +399,9 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
                       outline: "none",
                       color: "#7a3810",
                       boxShadow: focusedIndex === idx
-                        ? "0 0 0 3px rgba(139,69,19,0.15)"
+                        ? "0 0 0 3px rgba(155, 27, 27,0.15)"
                         : digit
-                          ? "0 2px 8px rgba(139,69,19,0.06)"
+                          ? "0 2px 8px rgba(155, 27, 27,0.06)"
                           : "none",
                       transition: "all 0.18s ease",
                       boxSizing: "border-box"
@@ -366,7 +412,7 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
               <button
                 disabled={otpCode.length !== 6}
                 onClick={handleVerify}
-                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: otpCode.length === 6 ? "linear-gradient(135deg, #8b4513 0%, #a0522d 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: otpCode.length === 6 ? "pointer" : "not-allowed", boxShadow: otpCode.length === 6 ? "0 4px 14px rgba(139,69,19,0.3)" : "none" }}
+                style={{ width: "100%", padding: "11px", borderRadius: "12px", border: "none", background: otpCode.length === 6 ? "linear-gradient(135deg, #9B1B1B 0%, #D84315 100%)" : "#d4b896", color: "#fff8ee", fontSize: "14px", fontWeight: 600, cursor: otpCode.length === 6 ? "pointer" : "not-allowed", boxShadow: otpCode.length === 6 ? "0 4px 14px rgba(155, 27, 27,0.3)" : "none" }}
               >
                 Verify &amp; Activate ✦
               </button>

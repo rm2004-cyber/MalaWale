@@ -227,7 +227,7 @@ function ProductCard({
           animate={{ opacity: isHovered ? 0.15 : 0 }}
           transition={{ duration: 0.3 }}
           className="absolute inset-0 pointer-events-none"
-          style={{ backgroundColor: "#8b4513" }}
+          style={{ backgroundColor: "#9B1B1B" }}
         />
 
         {/* ── Badge Stack top-left ── */}
@@ -238,7 +238,7 @@ function ProductCard({
               style={{
                 fontFamily: "'Jost', sans-serif",
                 background:
-                  "linear-gradient(135deg, #c0392b 0%, #a0522d 100%)",
+                  "linear-gradient(135deg, #c0392b 0%, #D84315 100%)",
                 boxShadow: "0 1px 4px rgba(160,82,45,0.45)",
               }}
             >
@@ -307,7 +307,7 @@ function ProductCard({
         )}
 
         <motion.p
-          animate={{ color: isHovered ? "#8b4513" : "#3d1c08" }}
+          animate={{ color: isHovered ? "#9B1B1B" : "#3d1c08" }}
           transition={{ duration: 0.2 }}
           className="text-sm font-semibold leading-snug line-clamp-2"
           style={{ fontFamily: "'Jost', sans-serif" }}
@@ -320,7 +320,7 @@ function ProductCard({
             className="text-base font-bold"
             style={{
               fontFamily: "'Playfair Display', serif",
-              color: "#8b4513",
+              color: "#9B1B1B",
             }}
           >
             ₹{product.price.toLocaleString("en-IN")}.00
@@ -573,7 +573,7 @@ export default function TrendingShuffle({
     <section
       ref={sectionRef}
       className="w-full py-12 px-4 md:px-8"
-      style={{ backgroundColor: "#fff9f2" }}
+      style={{ backgroundColor: "#FCF8F2" }}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -589,7 +589,7 @@ export default function TrendingShuffle({
                 fontFamily: "'Cormorant Garamond', serif",
                 fontStyle: "italic",
                 letterSpacing: "0.2em",
-                color: "#c8843a",
+                color: "#E65100",
               }}
             >
               Handcrafted • Spiritual • Sacred
@@ -603,7 +603,7 @@ export default function TrendingShuffle({
               }}
             >
               Latest &amp;{" "}
-              <span className="relative inline-block" style={{ color: "#8b4513" }}>
+              <span className="relative inline-block" style={{ color: "#9B1B1B" }}>
                 Trending
                 <svg
                   className="absolute left-0 w-full"
@@ -614,7 +614,7 @@ export default function TrendingShuffle({
                 >
                   <path
                     d="M2 6 Q30 2 60 5 Q90 8 118 4"
-                    stroke="#c8843a"
+                    stroke="#E65100"
                     strokeWidth="2.5"
                     fill="none"
                     strokeLinecap="round"
@@ -631,16 +631,16 @@ export default function TrendingShuffle({
             className="hidden sm:flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full transition-colors duration-300"
             style={{
               fontFamily: "'Jost', sans-serif",
-              border: "1px solid #c8843a",
-              color: "#8b4513",
+              border: "1px solid #E65100",
+              color: "#9B1B1B",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#8b4513";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#9B1B1B";
               (e.currentTarget as HTMLButtonElement).style.color = "#fff";
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
-              (e.currentTarget as HTMLButtonElement).style.color = "#8b4513";
+              (e.currentTarget as HTMLButtonElement).style.color = "#9B1B1B";
             }}
           >
             <svg
@@ -698,7 +698,7 @@ export default function TrendingShuffle({
         {!isLoading && displayProducts.length === 0 && (
           <div
             className="flex flex-col items-center justify-center py-20 gap-3"
-            style={{ color: "#c8843a", opacity: 0.6 }}
+            style={{ color: "#E65100", opacity: 0.6 }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-10 h-10">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
@@ -747,8 +747,8 @@ export default function TrendingShuffle({
             className="flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full"
             style={{
               fontFamily: "'Jost', sans-serif",
-              border: "1px solid #c8843a",
-              color: "#8b4513",
+              border: "1px solid #E65100",
+              color: "#9B1B1B",
             }}
           >
             <svg
@@ -774,16 +774,16 @@ export default function TrendingShuffle({
           <div
             className="h-px flex-1"
             style={{
-              background: "linear-gradient(to right, transparent, #c8843a)",
+              background: "linear-gradient(to right, transparent, #E65100)",
             }}
           />
-          <svg viewBox="0 0 24 24" fill="#c8843a" className="w-4 h-4">
+          <svg viewBox="0 0 24 24" fill="#E65100" className="w-4 h-4">
             <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
           </svg>
           <div
             className="h-px flex-1"
             style={{
-              background: "linear-gradient(to left, transparent, #c8843a)",
+              background: "linear-gradient(to left, transparent, #E65100)",
             }}
           />
         </div>

@@ -46,13 +46,13 @@ const RudrakshaMotif: FC<{ size?: number }> = ({ size = 14 }) => (
     aria-hidden="true"
   >
     {/* Outer bead */}
-    <circle cx="12" cy="12" r="9.5" fill="#d4a373" opacity="0.15" />
+    <circle cx="12" cy="12" r="9.5" fill="#D4AF37" opacity="0.15" />
     <circle
       cx="12"
       cy="12"
       r="9.5"
       fill="none"
-      stroke="#d4a373"
+      stroke="#D4AF37"
       strokeWidth="1.1"
     />
     {/* Five faces (mukhi) — lines from center to edge */}
@@ -63,23 +63,23 @@ const RudrakshaMotif: FC<{ size?: number }> = ({ size = 14 }) => (
         y1="12"
         x2={12 + 9.5 * Math.cos(((angle - 90) * Math.PI) / 180)}
         y2={12 + 9.5 * Math.sin(((angle - 90) * Math.PI) / 180)}
-        stroke="#d4a373"
+        stroke="#D4AF37"
         strokeWidth="0.9"
         strokeLinecap="round"
         opacity="0.7"
       />
     ))}
     {/* Drill hole cap */}
-    <circle cx="12" cy="3" r="1.4" fill="#d4a373" opacity="0.6" />
-    <circle cx="12" cy="21" r="1.4" fill="#d4a373" opacity="0.6" />
+    <circle cx="12" cy="3" r="1.4" fill="#D4AF37" opacity="0.6" />
+    <circle cx="12" cy="21" r="1.4" fill="#D4AF37" opacity="0.6" />
     {/* Center nub */}
-    <circle cx="12" cy="12" r="2" fill="#d4a373" opacity="0.4" />
+    <circle cx="12" cy="12" r="2" fill="#D4AF37" opacity="0.4" />
     <circle
       cx="12"
       cy="12"
       r="2"
       fill="none"
-      stroke="#d4a373"
+      stroke="#D4AF37"
       strokeWidth="0.8"
     />
   </svg>
@@ -87,7 +87,7 @@ const RudrakshaMotif: FC<{ size?: number }> = ({ size = 14 }) => (
 
 /** Tiny sparkle / diya flame */
 const SparkleMotif: FC<{ color?: string; size?: number }> = ({
-  color = "#d4a373",
+  color = "#D4AF37",
   size = 12,
 }) => (
   <svg
@@ -202,7 +202,7 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
           letterSpacing: isActive ? "0.06em" : "0.03em",
           whiteSpace: "nowrap",
           border: "none",
-          color: isActive ? "#fff9f2" : "#6b3e1e",
+          color: isActive ? "#FCF8F2" : "#6b3e1e",
           background: "transparent",
           transition: "color 0.25s",
           display: "flex",
@@ -221,9 +221,9 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
             style={{
               borderRadius: 100,
               background:
-                "linear-gradient(135deg, #8b4513 0%, #a0522d 55%, #c8843a 100%)",
+                "linear-gradient(135deg, #9B1B1B 0%, #D84315 55%, #E65100 100%)",
               boxShadow:
-                "0 4px 18px rgba(139,69,19,0.38), 0 1px 0 rgba(255,255,255,0.08) inset",
+                "0 4px 18px rgba(155, 27, 27,0.38), 0 1px 0 rgba(255,255,255,0.08) inset",
               zIndex: 0,
             }}
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
@@ -237,15 +237,15 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
             style={{
               borderRadius: 100,
               background: "rgba(255,249,242,0.82)",
-              border: "1px solid rgba(212,163,115,0.38)",
-              boxShadow: "0 1px 6px rgba(139,69,19,0.07)",
+              border: "1px solid rgba(212, 175, 55,0.38)",
+              boxShadow: "0 1px 6px rgba(155, 27, 27,0.07)",
               zIndex: 0,
             }}
             whileHover={{
               background: "rgba(255,244,235,0.97)",
               borderColor: "rgba(200,132,58,0.65)",
               boxShadow:
-                "0 3px 12px rgba(139,69,19,0.12), 0 0 0 2px rgba(212,163,115,0.15)",
+                "0 3px 12px rgba(155, 27, 27,0.12), 0 0 0 2px rgba(212, 175, 55,0.15)",
             }}
             transition={{ duration: 0.22 }}
           />
@@ -289,7 +289,7 @@ const CategoryPill: FC<PillProps> = ({ item, isActive, onClick, index }) => {
             >
               <SparkleMotif
                 size={14}
-                color={isActive ? "#ffd9a0" : "#d4a373"}
+                color={isActive ? "#ffd9a0" : "#D4AF37"}
               />
             </motion.span>
           )}
@@ -436,9 +436,9 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
     <section
       aria-label="Product Categories"
       style={{
-        background: "linear-gradient(180deg, #fff9f2 0%, #fff3e8 100%)",
-        borderBottom: "1px solid rgba(212,163,115,0.22)",
-        borderTop: "1px solid rgba(212,163,115,0.12)",
+        background: "linear-gradient(180deg, #FCF8F2 0%, #fff3e8 100%)",
+        borderBottom: "1px solid rgba(212, 175, 55,0.22)",
+        borderTop: "1px solid rgba(212, 175, 55,0.12)",
         position: "relative",
       }}
     >
@@ -452,7 +452,7 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
           width: "40%",
           height: 2,
           background:
-            "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)",
+            "linear-gradient(90deg, transparent, #D4AF37, #E65100, #D4AF37, transparent)",
           opacity: 0.55,
           borderRadius: 2,
         }}
@@ -472,7 +472,7 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
               top: 0,
               bottom: 0,
               width: 56,
-              background: "linear-gradient(to right, #fff9f2 30%, transparent)",
+              background: "linear-gradient(to right, #FCF8F2 30%, transparent)",
               zIndex: 2,
               pointerEvents: "none",
             }}
@@ -494,7 +494,7 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
               top: 0,
               bottom: 0,
               width: 56,
-              background: "linear-gradient(to left, #fff9f2 30%, transparent)",
+              background: "linear-gradient(to left, #FCF8F2 30%, transparent)",
               zIndex: 2,
               pointerEvents: "none",
             }}
@@ -558,7 +558,7 @@ const CategoryScroll: FC<CategoryScrollProps> = ({
           width: "25%",
           height: 1,
           background:
-            "linear-gradient(90deg, transparent, rgba(212,163,115,0.45), transparent)",
+            "linear-gradient(90deg, transparent, rgba(212, 175, 55,0.45), transparent)",
           borderRadius: 2,
         }}
       />
