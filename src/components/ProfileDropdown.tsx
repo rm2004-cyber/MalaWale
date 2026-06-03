@@ -33,7 +33,7 @@ const PhoneIcon = () => (
 );
 
 const GreenCheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+  <svg viewBox="0 0 24 24" fill="none" width="22" height="22" style={{ flexShrink: 0 }}>
     <circle cx="12" cy="12" r="11" fill="#22c55e" />
     <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
@@ -289,12 +289,12 @@ export default function ProfileDropdown({ onOpenOrders, onOpenWishlist, onClose 
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
                   placeholder="Enter mobile number"
-                  style={{ flex: 1, padding: "10px 12px", background: "transparent", outline: "none", border: "none", fontSize: "14px", letterSpacing: "0.08em", color: "#3d1f08" }}
+                  style={{ flex: 1, minWidth: 0, padding: "10px 8px 10px 12px", background: "transparent", outline: "none", border: "none", fontSize: "14px", letterSpacing: "0.08em", color: "#3d1f08" }}
                 />
 
                 <AnimatePresence>
                   {isPhoneComplete && (
-                    <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} style={{ paddingRight: "10px", display: "flex", alignItems: "center" }}>
+                    <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} style={{ paddingRight: "12px", display: "flex", alignItems: "center", flexShrink: 0 }}>
                       <GreenCheckIcon />
                     </motion.div>
                   )}

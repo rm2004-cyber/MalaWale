@@ -252,7 +252,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-stone-800">Product Catalog</h2>
           <p className="text-sm text-stone-400 mt-0.5">
@@ -261,7 +261,7 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
         </div>
         <button
           onClick={openCreateModal}
-          className="rounded-xl bg-[#9B1B1B] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#7a3b10] shadow-md"
+          className="rounded-xl bg-[#9B1B1B] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#7a3b10] shadow-md self-start sm:self-auto"
         >
           + Add New Sacred Item
         </button>
@@ -271,48 +271,50 @@ export default function ProductWorkspace({ onRefreshStats }: ProductWorkspacePro
         <div className="text-center py-12 italic text-stone-400 animate-pulse">Syncing catalog loops...</div>
       ) : (
         <div className="rounded-2xl border bg-white overflow-hidden shadow-sm">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="border-b bg-stone-50/70 text-stone-400 text-xs font-semibold uppercase">
-                <th className="px-5 py-3.5">Item</th>
-                <th className="px-4 py-3.5">Price</th>
-                <th className="px-4 py-3.5">Stock Trigger</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-50">
-              {products.map((p) => (
-                <tr key={p._id} className="hover:bg-stone-50/40 transition">
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <img src={p.imageUrls?.[0] || "https://placehold.co/48x48?text=?"} className="h-11 w-11 rounded-xl object-cover border" alt="" />
-                      <div>
-                        <div className="font-semibold text-stone-800">
-                          {p.name} {p.isBestseller && <span className="text-amber-500 text-xs">★ Bestseller</span>}
-                        </div>
-                        <p className="text-xs text-stone-400 max-w-xs truncate">{p.description}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4"><p className="font-bold text-stone-800">₹{p.price}</p></td>
-                  <td className="px-4 py-4">
-                    <button
-                      onClick={() => handleToggleStock(p._id, p.stock ?? true)}
-                      className={`px-3 py-1 rounded-full font-bold text-xs uppercase ${p.stock !== false ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}
-                    >
-                      {p.stock !== false ? "● In Stock" : "○ Out of Stock"}
-                    </button>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditModal(p)} className="px-3 py-1.5 text-xs font-semibold border rounded-lg hover:text-[#9B1B1B]">Edit</button>
-                      <button onClick={() => handleDeleteProduct(p._id)} className="px-3 py-1.5 text-xs font-semibold border text-stone-400 hover:text-red-500">Delete</button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left min-w-[650px]">
+              <thead>
+                <tr className="border-b bg-stone-50/70 text-stone-400 text-xs font-semibold uppercase">
+                  <th className="px-5 py-3.5">Item</th>
+                  <th className="px-4 py-3.5">Price</th>
+                  <th className="px-4 py-3.5">Stock Trigger</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-stone-50">
+                {products.map((p) => (
+                  <tr key={p._id} className="hover:bg-stone-50/40 transition">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <img src={p.imageUrls?.[0] || "https://placehold.co/48x48?text=?"} className="h-11 w-11 rounded-xl object-cover border" alt="" />
+                        <div>
+                          <div className="font-semibold text-stone-800">
+                            {p.name} {p.isBestseller && <span className="text-amber-500 text-xs">★ Bestseller</span>}
+                          </div>
+                          <p className="text-xs text-stone-400 max-w-xs truncate">{p.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4"><p className="font-bold text-stone-800">₹{p.price}</p></td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => handleToggleStock(p._id, p.stock ?? true)}
+                        className={`px-3 py-1 rounded-full font-bold text-xs uppercase ${p.stock !== false ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}
+                      >
+                        {p.stock !== false ? "● In Stock" : "○ Out of Stock"}
+                      </button>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openEditModal(p)} className="px-3 py-1.5 text-xs font-semibold border rounded-lg hover:text-[#9B1B1B]">Edit</button>
+                        <button onClick={() => handleDeleteProduct(p._id)} className="px-3 py-1.5 text-xs font-semibold border text-stone-400 hover:text-red-500">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

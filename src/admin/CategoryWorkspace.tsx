@@ -83,16 +83,18 @@ export default function CategoryWorkspace() {
           placeholder="Category Name..." 
           className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-[#9B1B1B]/20" 
         />
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <input 
             type="file" 
             onChange={(e) => e.target.files && setSelectedFile(e.target.files[0])} 
-            className="text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#9B1B1B]/10 file:text-[#9B1B1B] hover:file:bg-[#9B1B1B]/20"
+            className="text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#9B1B1B]/10 file:text-[#9B1B1B] hover:file:bg-[#9B1B1B]/20 w-full sm:w-auto"
           />
-          <button onClick={handleSubmit} className="bg-[#9B1B1B] text-white px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest">
-            {editingId ? "Update Circle" : "Append Circle"}
-          </button>
-          {editingId && <button onClick={resetForm} className="text-stone-400 text-xs">Cancel</button>}
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <button onClick={handleSubmit} className="bg-[#9B1B1B] text-white px-6 py-2.5 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-[#7a3b10] transition shrink-0">
+              {editingId ? "Update Circle" : "Append Circle"}
+            </button>
+            {editingId && <button onClick={resetForm} className="text-stone-400 text-xs">Cancel</button>}
+          </div>
         </div>
       </div>
 

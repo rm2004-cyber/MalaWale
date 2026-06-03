@@ -130,47 +130,49 @@ export default function CouponWorkspace() {
         <div className="text-center italic text-stone-400 animate-pulse py-6">Syncing live promotional index maps...</div>
       ) : (
         <div className="rounded-2xl border bg-white overflow-hidden shadow-2xs">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="border-b bg-stone-50/70 text-stone-400 text-xs font-bold uppercase tracking-wide">
-                <th className="px-5 py-3.5">Voucher Context</th>
-                <th className="px-4 py-3.5">Rebate Type</th>
-                <th className="px-4 py-3.5">Rule Criteria</th>
-                <th className="px-4 py-3.5">Lifespan Deadline</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-50 font-medium text-stone-700">
-              {coupons.map((c) => (
-                <tr key={c._id} className="hover:bg-stone-50/40 transition">
-                  <td className="px-5 py-4 font-mono font-black text-stone-900 tracking-wide bg-stone-50/20 text-sm">
-                    {c.code}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${c.discountType === "percentage" ? "bg-amber-50 text-amber-800" : "bg-blue-50 text-blue-700"}`}>
-                      {c.discountType === "percentage" ? `${c.discountValue}% Off` : `₹${c.discountValue} Off`}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-xs text-stone-500">
-                    {c.minCartValue ? `Min order worth ₹${c.minCartValue}` : "No minimal threshold boundary"}
-                  </td>
-                  <td className="px-4 py-4 text-xs font-mono text-stone-400">
-                    {c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : "∞ Infinite Lifespan"}
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteCoupon(c._id)} className="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border font-bold transition">
-                      Erase Code
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left min-w-[650px]">
+              <thead>
+                <tr className="border-b bg-stone-50/70 text-stone-400 text-xs font-bold uppercase tracking-wide">
+                  <th className="px-5 py-3.5">Voucher Context</th>
+                  <th className="px-4 py-3.5">Rebate Type</th>
+                  <th className="px-4 py-3.5">Rule Criteria</th>
+                  <th className="px-4 py-3.5">Lifespan Deadline</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
-              ))}
-              {coupons.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-center py-12 text-xs italic text-stone-400">No active promotional vouchers currently recorded on live infrastructure loops.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-stone-50 font-medium text-stone-700">
+                {coupons.map((c) => (
+                  <tr key={c._id} className="hover:bg-stone-50/40 transition">
+                    <td className="px-5 py-4 font-mono font-black text-stone-900 tracking-wide bg-stone-50/20 text-sm">
+                      {c.code}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${c.discountType === "percentage" ? "bg-amber-50 text-amber-800" : "bg-blue-50 text-blue-700"}`}>
+                        {c.discountType === "percentage" ? `${c.discountValue}% Off` : `₹${c.discountValue} Off`}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-xs text-stone-500">
+                      {c.minCartValue ? `Min order worth ₹${c.minCartValue}` : "No minimal threshold boundary"}
+                    </td>
+                    <td className="px-4 py-4 text-xs font-mono text-stone-400">
+                      {c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : "∞ Infinite Lifespan"}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <button onClick={() => handleDeleteCoupon(c._id)} className="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border font-bold transition">
+                        Erase Code
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {coupons.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="text-center py-12 text-xs italic text-stone-400">No active promotional vouchers currently recorded on live infrastructure loops.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
