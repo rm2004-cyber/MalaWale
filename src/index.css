@@ -7,7 +7,7 @@ body {
   font-family: 'Jost', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #3d1f0a;
+  color: #2D1414;
   /* Force all numbers to use modern uniform lining figures (perfectly aligned baselines) */
   font-variant-numeric: lining-nums;
   font-feature-settings: "lnum" 1;

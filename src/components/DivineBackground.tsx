@@ -143,7 +143,7 @@ const OmElement: React.FC<OmElementProps> = ({ config, mouseX, mouseY, scrollY }
           textAnchor="middle"
           fontSize="80"
           fontFamily="serif"
-          fill="#c8843a"
+          fill="#E65100"
           opacity="1"
         >
           ॐ
@@ -206,7 +206,7 @@ const SparkleElement: React.FC<SparkleElementProps> = ({ config, mouseX, mouseY 
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <path d={SPARKLE_PATH} fill="#d4a373" />
+        <path d={SPARKLE_PATH} fill="#D4AF37" />
       </svg>
     </motion.div>
   );
@@ -254,7 +254,7 @@ const DivineBackground: React.FC = () => {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(212,163,115,0.025) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(212, 175, 55,0.025) 0%, transparent 70%)",
         }}
       />
 

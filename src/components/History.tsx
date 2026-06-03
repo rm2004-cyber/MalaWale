@@ -51,35 +51,35 @@ interface Benefit {
 
 const PurityIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="14" cy="14" r="12" stroke="#d4a373" strokeWidth="1.5" />
+    <circle cx="14" cy="14" r="12" stroke="#D4AF37" strokeWidth="1.5" />
     <path d="M14 5 L16.5 11 L23 11.5 L18 16 L19.5 23 L14 19.5 L8.5 23 L10 16 L5 11.5 L11.5 11 Z"
-      fill="#d4a373" fillOpacity="0.25" stroke="#d4a373" strokeWidth="1.2" strokeLinejoin="round" />
-    <circle cx="14" cy="14" r="2.5" fill="#d4a373" />
+      fill="#D4AF37" fillOpacity="0.25" stroke="#D4AF37" strokeWidth="1.2" strokeLinejoin="round" />
+    <circle cx="14" cy="14" r="2.5" fill="#D4AF37" />
   </svg>
 );
 
 const ArtisanIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="14" cy="14" r="12" stroke="#d4a373" strokeWidth="1.5" />
-    <path d="M9 19 C9 15.5 11 13.5 14 13.5 C17 13.5 19 15.5 19 19" stroke="#d4a373" strokeWidth="1.5" strokeLinecap="round" />
-    <circle cx="14" cy="10.5" r="3" stroke="#d4a373" strokeWidth="1.5" />
-    <path d="M11 20.5 Q14 18 17 20.5" stroke="#d4a373" strokeWidth="1" strokeLinecap="round" />
+    <circle cx="14" cy="14" r="12" stroke="#D4AF37" strokeWidth="1.5" />
+    <path d="M9 19 C9 15.5 11 13.5 14 13.5 C17 13.5 19 15.5 19 19" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="14" cy="10.5" r="3" stroke="#D4AF37" strokeWidth="1.5" />
+    <path d="M11 20.5 Q14 18 17 20.5" stroke="#D4AF37" strokeWidth="1" strokeLinecap="round" />
   </svg>
 );
 
 const MiddlemenFreeIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="14" cy="14" r="12" stroke="#d4a373" strokeWidth="1.5" />
+    <circle cx="14" cy="14" r="12" stroke="#D4AF37" strokeWidth="1.5" />
     {/* Forest/source dot on left */}
-    <circle cx="7.5" cy="14" r="2.2" fill="#d4a373" fillOpacity="0.3" stroke="#d4a373" strokeWidth="1.2" />
+    <circle cx="7.5" cy="14" r="2.2" fill="#D4AF37" fillOpacity="0.3" stroke="#D4AF37" strokeWidth="1.2" />
     {/* Arrow path going direct to right */}
-    <path d="M10 14 L18 14" stroke="#d4a373" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M15.5 11.5 L18.5 14 L15.5 16.5" stroke="#d4a373" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 14 L18 14" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M15.5 11.5 L18.5 14 L15.5 16.5" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     {/* Hand/you dot on right */}
-    <circle cx="20.5" cy="14" r="2.2" fill="#d4a373" stroke="#d4a373" strokeWidth="1.2" />
+    <circle cx="20.5" cy="14" r="2.2" fill="#D4AF37" stroke="#D4AF37" strokeWidth="1.2" />
     {/* Crossed-out middleman */}
-    <circle cx="14" cy="9" r="1.8" stroke="#c8843a" strokeWidth="1" strokeOpacity="0.6" />
-    <line x1="12.5" y1="7.5" x2="15.5" y2="10.5" stroke="#c8843a" strokeWidth="1.2" strokeLinecap="round" />
+    <circle cx="14" cy="9" r="1.8" stroke="#E65100" strokeWidth="1" strokeOpacity="0.6" />
+    <line x1="12.5" y1="7.5" x2="15.5" y2="10.5" stroke="#E65100" strokeWidth="1.2" strokeLinecap="round" />
   </svg>
 );
 
@@ -175,16 +175,16 @@ const OrnamentDivider = () => (
     <motion.div
       variants={dividerVariants}
       className="h-px flex-1"
-      style={{ background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)" }}
+      style={{ background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)" }}
     />
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M9 1 L10.5 7.5 L17 9 L10.5 10.5 L9 17 L7.5 10.5 L1 9 L7.5 7.5 Z"
-        fill="#d4a373" fillOpacity="0.7" />
+        fill="#D4AF37" fillOpacity="0.7" />
     </svg>
     <motion.div
       variants={dividerVariants}
       className="h-px flex-1"
-      style={{ background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)" }}
+      style={{ background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)" }}
     />
   </div>
 );
@@ -208,7 +208,7 @@ const ImageCard: React.FC<ImageCardProps> = ({ image, index, inView }) => (
   >
     <div className={`relative overflow-hidden ${image.cornerStyle} aspect-square`}
       style={{
-        boxShadow: "0 8px 32px rgba(139,69,19,0.18), 0 2px 8px rgba(212,163,115,0.14)",
+        boxShadow: "0 8px 32px rgba(155, 27, 27,0.18), 0 2px 8px rgba(212, 175, 55,0.14)",
       }}
     >
       <img
@@ -224,7 +224,7 @@ const ImageCard: React.FC<ImageCardProps> = ({ image, index, inView }) => (
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
           background:
-            "linear-gradient(135deg, rgba(212,163,115,0.22) 0%, rgba(139,69,19,0.18) 100%)",
+            "linear-gradient(135deg, rgba(212, 175, 55,0.22) 0%, rgba(155, 27, 27,0.18) 100%)",
         }}
       />
 
@@ -233,18 +233,18 @@ const ImageCard: React.FC<ImageCardProps> = ({ image, index, inView }) => (
         className="absolute top-0 left-0 w-10 h-10 opacity-40"
         style={{
           background:
-            "radial-gradient(circle at top left, #d4a373 0%, transparent 70%)",
+            "radial-gradient(circle at top left, #D4AF37 0%, transparent 70%)",
         }}
       />
 
       {/* Alt text badge */}
       <div
         className="absolute bottom-0 left-0 right-0 px-3 py-2 translate-y-full group-hover:translate-y-0 transition-transform duration-500"
-        style={{ background: "linear-gradient(to top, rgba(139,69,19,0.82), transparent)" }}
+        style={{ background: "linear-gradient(to top, rgba(155, 27, 27,0.82), transparent)" }}
       >
         <p
           className="text-xs text-center"
-          style={{ color: "#fff9f2", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
+          style={{ color: "#FCF8F2", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
         >
           {image.alt}
         </p>
@@ -266,9 +266,9 @@ const BenefitItem: React.FC<BenefitItemProps> = ({ benefit }) => (
     <div
       className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl"
       style={{
-        background: "linear-gradient(135deg, rgba(212,163,115,0.13) 0%, rgba(139,69,19,0.09) 100%)",
-        border: "1px solid rgba(212,163,115,0.35)",
-        boxShadow: "0 2px 12px rgba(212,163,115,0.12)",
+        background: "linear-gradient(135deg, rgba(212, 175, 55,0.13) 0%, rgba(155, 27, 27,0.09) 100%)",
+        border: "1px solid rgba(212, 175, 55,0.35)",
+        boxShadow: "0 2px 12px rgba(212, 175, 55,0.12)",
       }}
     >
       {benefit.icon}
@@ -280,7 +280,7 @@ const BenefitItem: React.FC<BenefitItemProps> = ({ benefit }) => (
         style={{
           fontFamily: "'Cormorant Garamond', serif",
           fontSize: "1.1rem",
-          color: "#8b4513",
+          color: "#9B1B1B",
           letterSpacing: "0.01em",
         }}
       >
@@ -324,8 +324,8 @@ const History: React.FC = () => {
         aria-hidden="true"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 70% 50% at 10% 20%, rgba(212,163,115,0.09) 0%, transparent 70%), " +
-            "radial-gradient(ellipse 60% 60% at 90% 80%, rgba(139,69,19,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 50% at 10% 20%, rgba(212, 175, 55,0.09) 0%, transparent 70%), " +
+            "radial-gradient(ellipse 60% 60% at 90% 80%, rgba(155, 27, 27,0.07) 0%, transparent 70%)",
         }}
       />
 
@@ -336,7 +336,7 @@ const History: React.FC = () => {
         style={{
           fontFamily: "'Cormorant Garamond', serif",
           fontSize: "clamp(5rem, 15vw, 13rem)",
-          color: "rgba(212,163,115,0.055)",
+          color: "rgba(212, 175, 55,0.055)",
           whiteSpace: "nowrap",
           userSelect: "none",
           letterSpacing: "0.15em",
@@ -359,7 +359,7 @@ const History: React.FC = () => {
             className="inline-block text-xs font-semibold uppercase mb-3 tracking-widest"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
-              color: "#d4a373",
+              color: "#D4AF37",
               letterSpacing: "0.3em",
             }}
           >
@@ -386,9 +386,9 @@ const History: React.FC = () => {
               className="self-start px-3 py-1 rounded-full text-xs font-medium uppercase mb-5"
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                color: "#d4a373",
-                background: "rgba(212,163,115,0.10)",
-                border: "1px solid rgba(212,163,115,0.3)",
+                color: "#D4AF37",
+                background: "rgba(212, 175, 55,0.10)",
+                border: "1px solid rgba(212, 175, 55,0.3)",
                 letterSpacing: "0.22em",
               }}
             >
@@ -403,14 +403,14 @@ const History: React.FC = () => {
                 fontFamily: "'Playfair Display', serif",
                 fontSize: "clamp(1.85rem, 4vw, 2.9rem)",
                 fontWeight: 700,
-                color: "#8b4513",
+                color: "#9B1B1B",
                 letterSpacing: "-0.01em",
                 lineHeight: 1.2,
               }}
             >
               Shuddhata Aur
               <br />
-              <span style={{ color: "#c8843a" }}>Parampara</span>
+              <span style={{ color: "#E65100" }}>Parampara</span>
             </motion.h2>
 
             {/* Sanskrit sub-line */}
@@ -420,7 +420,7 @@ const History: React.FC = () => {
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: "1.05rem",
-                color: "#a0522d",
+                color: "#D84315",
                 letterSpacing: "0.04em",
               }}
             >
@@ -438,7 +438,7 @@ const History: React.FC = () => {
                 lineHeight: 1.8,
               }}
             >
-              At <strong style={{ color: "#8b4513" }}>MalaWale by Sanwariya Handicraft</strong>, we
+              At <strong style={{ color: "#9B1B1B" }}>MalaWale by Sanwariya Handicraft</strong>, we
               have always believed that a sacred mala must carry the full energy of its origin —
               untouched by commercial shortcuts. That is why we completely eliminate middlemen.
             </motion.p>
@@ -458,7 +458,7 @@ const History: React.FC = () => {
               sandalwood is procured from native forest cooperatives in Karnataka — every single
               time, checked for grade, aura, and authenticity before our karigars even touch them.
               The result? A mala that carries the{" "}
-              <em style={{ color: "#8b4513" }}>prana</em> of the earth, not the weight of a supply
+              <em style={{ color: "#9B1B1B" }}>prana</em> of the earth, not the weight of a supply
               chain.
             </motion.p>
 
@@ -478,9 +478,9 @@ const History: React.FC = () => {
               className="mt-8 italic text-sm"
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                color: "#a0522d",
+                color: "#D84315",
                 letterSpacing: "0.03em",
-                borderLeft: "3px solid #d4a373",
+                borderLeft: "3px solid #D4AF37",
                 paddingLeft: "1rem",
               }}
             >
@@ -509,7 +509,7 @@ const History: React.FC = () => {
               aria-hidden="true"
               style={{
                 background:
-                  "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(212,163,115,0.13) 0%, transparent 75%)",
+                  "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(212, 175, 55,0.13) 0%, transparent 75%)",
                 filter: "blur(24px)",
               }}
             />
@@ -537,13 +537,13 @@ const History: React.FC = () => {
               transition={{ delay: 0.9, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="absolute -bottom-5 -left-5 z-20 px-4 py-2.5 flex flex-col items-center text-center"
               style={{
-                background: "linear-gradient(135deg, #8b4513 0%, #a0522d 100%)",
+                background: "linear-gradient(135deg, #9B1B1B 0%, #D84315 100%)",
                 borderRadius: "50%",
                 width: "88px",
                 height: "88px",
                 justifyContent: "center",
                 boxShadow:
-                  "0 4px 20px rgba(139,69,19,0.35), 0 0 0 3px rgba(212,163,115,0.4), 0 0 0 6px rgba(212,163,115,0.12)",
+                  "0 4px 20px rgba(155, 27, 27,0.35), 0 0 0 3px rgba(212, 175, 55,0.4), 0 0 0 6px rgba(212, 175, 55,0.12)",
               }}
             >
               <span
@@ -551,7 +551,7 @@ const History: React.FC = () => {
                   fontFamily: "'Playfair Display', serif",
                   fontSize: "1.2rem",
                   fontWeight: 700,
-                  color: "#d4a373",
+                  color: "#D4AF37",
                   lineHeight: 1,
                 }}
               >
@@ -561,7 +561,7 @@ const History: React.FC = () => {
                 style={{
                   fontFamily: "'Jost', sans-serif",
                   fontSize: "0.58rem",
-                  color: "#fff9f2",
+                  color: "#FCF8F2",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   lineHeight: 1.3,
@@ -584,8 +584,8 @@ const History: React.FC = () => {
               className="absolute -top-3 -right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
               style={{
                 background: "rgba(255,249,242,0.96)",
-                border: "1.5px solid rgba(212,163,115,0.55)",
-                boxShadow: "0 4px 16px rgba(139,69,19,0.12)",
+                border: "1.5px solid rgba(212, 175, 55,0.55)",
+                boxShadow: "0 4px 16px rgba(155, 27, 27,0.12)",
               }}
             >
               <span style={{ fontSize: "0.9rem" }}>✦</span>
@@ -593,7 +593,7 @@ const History: React.FC = () => {
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: "0.78rem",
-                  color: "#8b4513",
+                  color: "#9B1B1B",
                   letterSpacing: "0.06em",
                   fontWeight: 600,
                 }}

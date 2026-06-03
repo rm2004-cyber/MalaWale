@@ -310,7 +310,7 @@ function OrderCard({
             </button>
             <button
               onClick={() => onManage(order)}
-              className="text-[11px] font-bold border border-[#8b4513] text-[#8b4513] hover:bg-[#8b4513] hover:text-white px-3 py-1.5 rounded-lg transition"
+              className="text-[11px] font-bold border border-[#9B1B1B] text-[#9B1B1B] hover:bg-[#9B1B1B] hover:text-white px-3 py-1.5 rounded-lg transition"
             >
               Edit Tracking
             </button>
@@ -325,7 +325,7 @@ function OrderCard({
         return (
           <button
             onClick={() => onManage(order)}
-            className="text-[11px] font-bold border border-[#8b4513] text-[#8b4513] hover:bg-[#8b4513] hover:text-white px-3 py-1.5 rounded-lg transition"
+            className="text-[11px] font-bold border border-[#9B1B1B] text-[#9B1B1B] hover:bg-[#9B1B1B] hover:text-white px-3 py-1.5 rounded-lg transition"
           >
             Manage
           </button>
@@ -428,7 +428,7 @@ function OrderCard({
 
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="mt-3 text-[11px] font-semibold text-[#8b4513] hover:underline flex items-center gap-1"
+            className="mt-3 text-[11px] font-semibold text-[#9B1B1B] hover:underline flex items-center gap-1"
           >
             {expanded ? "▲ Hide details" : "▼ View details"}
           </button>
@@ -628,7 +628,7 @@ function LogisticsModal({
                 <select
                   value={statusVal}
                   onChange={(e) => setStatusVal(e.target.value as OrderStatus)}
-                  className="w-full border border-stone-200 p-2.5 rounded-xl bg-white text-sm outline-none focus:ring-2 focus:ring-[#8b4513]/20 focus:border-[#8b4513]/50 transition"
+                  className="w-full border border-stone-200 p-2.5 rounded-xl bg-white text-sm outline-none focus:ring-2 focus:ring-[#9B1B1B]/20 focus:border-[#9B1B1B]/50 transition"
                 >
                   {(
                     [
@@ -686,7 +686,7 @@ function LogisticsModal({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2 bg-[#8b4513] hover:bg-[#7a3b10] disabled:opacity-60 text-white font-bold text-xs rounded-xl transition shadow-sm min-w-[100px]"
+              className="px-5 py-2 bg-[#9B1B1B] hover:bg-[#7a3b10] disabled:opacity-60 text-white font-bold text-xs rounded-xl transition shadow-sm min-w-[100px]"
             >
               {saving
                 ? "Saving…"
@@ -704,7 +704,7 @@ function LogisticsModal({
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full border border-stone-200 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#8b4513]/20 focus:border-[#8b4513]/50 transition";
+  "w-full border border-stone-200 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#9B1B1B]/20 focus:border-[#9B1B1B]/50 transition";
 
 function Field({
   label,
@@ -767,7 +767,7 @@ function Pagination({ meta, onPageChange }: PaginationProps) {
             onClick={() => onPageChange(p as number)}
             className={`w-8 h-8 rounded-lg text-xs font-bold border transition ${
               p === currentPage
-                ? "bg-[#8b4513] text-white border-[#8b4513]"
+                ? "bg-[#9B1B1B] text-white border-[#9B1B1B]"
                 : "border-stone-200 text-stone-600 hover:bg-stone-100"
             }`}
           >
@@ -1024,7 +1024,7 @@ const loadStats = useCallback(async () => {
                 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all
                 ${
                   isActive
-                    ? "bg-[#8b4513] text-white border-[#8b4513] shadow-sm"
+                    ? "bg-[#9B1B1B] text-white border-[#9B1B1B] shadow-sm"
                     : "bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200 hover:border-stone-300"
                 }
               `}
@@ -1295,7 +1295,7 @@ function PrintLabelModal({ order, onClose }: PrintLabelModalProps) {
               </button>
               <button
                 onClick={handlePrint}
-                className="px-5 py-2 bg-[#8b4513] hover:bg-[#7a3b10] text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
+                className="px-5 py-2 bg-[#9B1B1B] hover:bg-[#7a3b10] text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
               >
                 Print Label &amp; Invoice
               </button>

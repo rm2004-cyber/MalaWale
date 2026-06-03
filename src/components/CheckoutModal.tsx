@@ -45,7 +45,7 @@ const OmSpinner = ({ size = 44 }: { size?: number }) => {
           return <circle key={i} cx={cx} cy={cy} r={radius} fill="#c87941" opacity={opacity} />;
         })}
       </svg>
-      <span style={{ fontSize: size * 0.42, fontFamily: "serif", color: "#8b4513", zIndex: 1, lineHeight: 1 }}>ॐ</span>
+      <span style={{ fontSize: size * 0.42, fontFamily: "serif", color: "#9B1B1B", zIndex: 1, lineHeight: 1 }}>ॐ</span>
     </div>
   );
 };
@@ -88,7 +88,7 @@ const Field = ({
 /* ─── Section Header ─────────────────────────────────────────────── */
 const SectionLabel = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-    <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg,#fde8cc,#f5c99a)", display: "flex", alignItems: "center", justifyContent: "center", color: "#8b4513", flexShrink: 0 }}>
+    <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg,#fde8cc,#f5c99a)", display: "flex", alignItems: "center", justifyContent: "center", color: "#9B1B1B", flexShrink: 0 }}>
       {icon}
     </div>
     <p style={{ fontSize: "13px", fontWeight: 700, color: "#4a2008", margin: 0, fontFamily: "'Georgia',serif" }}>{title}</p>
@@ -138,7 +138,7 @@ const LotusIcon = () => (
       fill="url(#petalSide)" opacity="0.7" />
     <circle cx="60" cy="56" r="9" fill="url(#centerGold)" />
     <circle cx="60" cy="56" r="5" fill="#fff8ee" opacity="0.9" />
-    <path d="M55 56 L58.5 59.5 L65 53" stroke="#8b4513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M55 56 L58.5 59.5 L65 53" stroke="#9B1B1B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M36 92 Q60 86 84 92" stroke="#c8a06a" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
     <path d="M28 98 Q60 90 92 98" stroke="#c8a06a" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
     <defs>
@@ -199,7 +199,7 @@ const OrderSuccessView = ({ onClose }: { onClose: () => void }) => {
     { delay: 0.15, x: -50, size: 5, color: "#c87941" },
     { delay: 0.25, x: 40, size: 3, color: "#f5c472" },
     { delay: 0.05, x: 10, size: 7, color: "#fde8cc" },
-    { delay: 0.3, x: -15, size: 4, color: "#8b4513" },
+    { delay: 0.3, x: -15, size: 4, color: "#9B1B1B" },
     { delay: 0.18, x: 55, size: 5, color: "#e8956a" },
     { delay: 0.08, x: -60, size: 3, color: "#f7d99a" },
   ];
@@ -241,7 +241,7 @@ const OrderSuccessView = ({ onClose }: { onClose: () => void }) => {
       <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }} style={{ margin: "0 0 6px", fontSize: "13.5px", color: "#7a4a20", fontFamily: "'Georgia', serif", fontStyle: "italic", lineHeight: 1.6, maxWidth: "260px" }}>Your sacred treasures are being prepared with devotion and care.</motion.p>
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.75 }} style={{ margin: "0 0 28px", fontSize: "12px", color: "#b09070", fontFamily: "'Georgia', serif", letterSpacing: "0.04em" }}>🙏 May your blessings multiply a thousandfold.</motion.p>
       <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.5, delay: 0.7 }} style={{ width: "140px", height: "1px", background: "linear-gradient(to right, transparent, #d4a87a, transparent)", marginBottom: "28px" }} />
-      <motion.button initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.85 }} whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(91,32,5,0.44)" }} whileTap={{ scale: 0.97 }} onClick={onClose} style={{ padding: "14px 36px", background: "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)", color: "#fff8ee", border: "none", borderRadius: "14px", cursor: "pointer", fontWeight: 700, fontFamily: "'Georgia', serif", fontSize: "14px", letterSpacing: "0.03em", boxShadow: "0 6px 24px rgba(91,32,5,0.35)", position: "relative", overflow: "hidden" }}>
+      <motion.button initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.85 }} whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(91,32,5,0.44)" }} whileTap={{ scale: 0.97 }} onClick={onClose} style={{ padding: "14px 36px", background: "linear-gradient(135deg, #5c2005 0%, #9B1B1B 45%, #c8643a 100%)", color: "#fff8ee", border: "none", borderRadius: "14px", cursor: "pointer", fontWeight: 700, fontFamily: "'Georgia', serif", fontSize: "14px", letterSpacing: "0.03em", boxShadow: "0 6px 24px rgba(91,32,5,0.35)", position: "relative", overflow: "hidden" }}>
         <span style={{ position: "absolute", top: 0, left: "-100%", width: "60%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)", animation: "shimmer 2.2s infinite" }} />
         Close &amp; Return
       </motion.button>
@@ -444,7 +444,7 @@ const handleOnlineOrder = async () => {
       contact: address.phone,
       email: user?.email || "",
     },
-    theme: { color: "#8b4513" },
+    theme: { color: "#9B1B1B" },
     handler: async (response: any) => {
       setLoading(true);
       try {
@@ -579,7 +579,7 @@ const handleOnlineOrder = async () => {
         </AnimatePresence>
 
         {/* ── ADDRESS SECTION ── */}
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(155, 27, 27,0.06)" }}>
           <SectionLabel icon={<IconLocation />} title="Delivery Address" />
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ display: "flex", gap: "10px" }}>
@@ -608,7 +608,7 @@ const handleOnlineOrder = async () => {
         </div>
 
         {/* ── PAYMENT METHOD SECTION ── */}
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(155, 27, 27,0.06)" }}>
           <SectionLabel icon={<IconPayment />} title="Payment Method" />
           <div style={{ display: "flex", gap: "10px" }}>
 
@@ -619,7 +619,7 @@ const handleOnlineOrder = async () => {
                 flex: 1,
                 padding: "12px 10px",
                 borderRadius: "12px",
-                border: paymentMethod === "COD" ? "2px solid #8b4513" : "1.5px solid #e8d5b7",
+                border: paymentMethod === "COD" ? "2px solid #9B1B1B" : "1.5px solid #e8d5b7",
                 background: paymentMethod === "COD" ? "linear-gradient(135deg, #fdf0e0, #fde8cc)" : "#fffdf9",
                 cursor: "pointer",
                 transition: "all 0.2s",
@@ -628,8 +628,8 @@ const handleOnlineOrder = async () => {
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                 {/* Radio dot */}
-                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "COD" ? "#8b4513" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {paymentMethod === "COD" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#8b4513" }} />}
+                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "COD" ? "#9B1B1B" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {paymentMethod === "COD" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#9B1B1B" }} />}
                 </div>
                 <span style={{ fontSize: "13px", fontWeight: 700, color: paymentMethod === "COD" ? "#4a2008" : "#7a6050", fontFamily: "'Georgia',serif" }}>Cash on Delivery</span>
               </div>
@@ -643,7 +643,7 @@ const handleOnlineOrder = async () => {
                 flex: 1,
                 padding: "12px 10px",
                 borderRadius: "12px",
-                border: paymentMethod === "Online" ? "2px solid #8b4513" : "1.5px solid #e8d5b7",
+                border: paymentMethod === "Online" ? "2px solid #9B1B1B" : "1.5px solid #e8d5b7",
                 background: paymentMethod === "Online" ? "linear-gradient(135deg, #fdf0e0, #fde8cc)" : "#fffdf9",
                 cursor: "pointer",
                 transition: "all 0.2s",
@@ -651,8 +651,8 @@ const handleOnlineOrder = async () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "Online" ? "#8b4513" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {paymentMethod === "Online" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#8b4513" }} />}
+                <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${paymentMethod === "Online" ? "#9B1B1B" : "#d4a87a"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {paymentMethod === "Online" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#9B1B1B" }} />}
                 </div>
                 <span style={{ fontSize: "13px", fontWeight: 700, color: paymentMethod === "Online" ? "#4a2008" : "#7a6050", fontFamily: "'Georgia',serif" }}>Pay Online</span>
               </div>
@@ -683,7 +683,7 @@ const handleOnlineOrder = async () => {
         </div>
 
         {/* ── COUPONS SECTION ── */}
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "12px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(155, 27, 27,0.06)" }}>
           <SectionLabel icon={<IconTag />} title="Offers & Coupons" />
 
           <AnimatePresence>
@@ -719,8 +719,8 @@ const handleOnlineOrder = async () => {
               {coupons.map(c => {
                 const isSelected = couponCode === c.code;
                 return (
-                  <button key={c._id} onClick={() => setCouponCode(c.code)} style={{ background: isSelected ? "linear-gradient(135deg,#6e2e08,#9a4a1a)" : "#fffdf9", border: `1.5px ${isSelected ? "solid #8b4513" : "dashed #d4a87a"}`, borderRadius: "10px", padding: "8px 12px", cursor: "pointer", whiteSpace: "nowrap", textAlign: "left", transition: "all 0.18s", flexShrink: 0 }}>
-                    <p style={{ fontSize: "12px", fontWeight: 700, color: isSelected ? "#fff8ee" : "#8b4513", margin: "0 0 2px", letterSpacing: "0.04em" }}>{c.code}</p>
+                  <button key={c._id} onClick={() => setCouponCode(c.code)} style={{ background: isSelected ? "linear-gradient(135deg,#6e2e08,#9a4a1a)" : "#fffdf9", border: `1.5px ${isSelected ? "solid #9B1B1B" : "dashed #d4a87a"}`, borderRadius: "10px", padding: "8px 12px", cursor: "pointer", whiteSpace: "nowrap", textAlign: "left", transition: "all 0.18s", flexShrink: 0 }}>
+                    <p style={{ fontSize: "12px", fontWeight: 700, color: isSelected ? "#fff8ee" : "#9B1B1B", margin: "0 0 2px", letterSpacing: "0.04em" }}>{c.code}</p>
                     <p style={{ fontSize: "10px", color: isSelected ? "rgba(255,232,180,0.85)" : "#9a7860", margin: 0 }}>
                       {c.discountType === "percentage" ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
                     </p>
@@ -745,7 +745,7 @@ const handleOnlineOrder = async () => {
               <button
                 onClick={handleApplyCoupon}
                 disabled={couponLoading}
-                style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: couponLoading ? "#e8d5b7" : "linear-gradient(135deg,#8b4513,#c8643a)", color: couponLoading ? "#b09070" : "#fff8ee", fontSize: "12px", fontWeight: 700, cursor: couponLoading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, transition: "opacity 0.2s" }}
+                style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: couponLoading ? "#e8d5b7" : "linear-gradient(135deg,#9B1B1B,#c8643a)", color: couponLoading ? "#b09070" : "#fff8ee", fontSize: "12px", fontWeight: 700, cursor: couponLoading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, transition: "opacity 0.2s" }}
               >
                 {couponLoading ? <OmSpinner size={18} /> : "Apply"}
               </button>
@@ -754,7 +754,7 @@ const handleOnlineOrder = async () => {
         </div>
 
         {/* ── ORDER SUMMARY ── */}
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "16px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "16px", border: "1px solid #eedcbe", boxShadow: "0 2px 12px rgba(155, 27, 27,0.06)" }}>
           <SectionLabel icon={<IconReceipt />} title="Order Summary" />
 
           {cart?.items?.length > 0 && (
@@ -818,7 +818,7 @@ const handleOnlineOrder = async () => {
             <div style={{ height: "1px", background: "linear-gradient(to right,transparent,#d4a87a,transparent)", margin: "4px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontSize: "14px", fontWeight: 700, color: "#4a2008", fontFamily: "'Georgia',serif" }}>Total Payable</span>
-              <span style={{ fontSize: "18px", fontWeight: 800, color: "#8b4513", fontFamily: "'Georgia',serif" }}>
+              <span style={{ fontSize: "18px", fontWeight: 800, color: "#9B1B1B", fontFamily: "'Georgia',serif" }}>
                 ₹{finalTotal.toLocaleString("en-IN")}
               </span>
             </div>
@@ -826,7 +826,7 @@ const handleOnlineOrder = async () => {
 
           {/* Payment method badge */}
           <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px", background: "#fdf0e0", borderRadius: "8px", padding: "8px 12px", border: "1px dashed #d4a87a" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth="1.8" width="16" height="16">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9B1B1B" strokeWidth="1.8" width="16" height="16">
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <path strokeLinecap="round" d="M2 10h20" />
             </svg>
@@ -854,7 +854,7 @@ const handleOnlineOrder = async () => {
               ? "linear-gradient(135deg,#c4a882,#b09070)"
               : paymentMethod === "Online"
                 ? "linear-gradient(135deg, #1a3a5c 0%, #1e5799 45%, #2980b9 100%)"
-                : "linear-gradient(135deg, #5c2005 0%, #8b4513 45%, #c8643a 100%)",
+                : "linear-gradient(135deg, #5c2005 0%, #9B1B1B 45%, #c8643a 100%)",
             color: "#fff8ee",
             fontSize: "14px",
             fontWeight: 700,

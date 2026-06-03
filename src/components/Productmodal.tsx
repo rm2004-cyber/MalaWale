@@ -24,7 +24,7 @@ const CloseIcon = () => (
 );
 
 const ShieldIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="#8b4513" strokeWidth={1.5}
+  <svg viewBox="0 0 24 24" fill="none" stroke="#9B1B1B" strokeWidth={1.5}
     strokeLinecap="round" className="w-5 h-5 flex-shrink-0">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     <polyline points="9 12 11 14 15 10" />
@@ -116,8 +116,8 @@ const StarRow = ({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
         <svg key={s} viewBox="0 0 24 24"
-          fill={s <= Math.round(rating) ? "#d4a373" : "none"}
-          stroke="#d4a373" strokeWidth={1.5} className={cls}>
+          fill={s <= Math.round(rating) ? "#D4AF37" : "none"}
+          stroke="#D4AF37" strokeWidth={1.5} className={cls}>
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       ))}
@@ -346,9 +346,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
             <motion.div
               className="relative w-full max-w-5xl max-h-[94vh] overflow-hidden rounded-3xl pointer-events-auto flex flex-col"
               style={{
-                background: "linear-gradient(160deg, #fff9f2 0%, #fff4e8 100%)",
+                background: "linear-gradient(160deg, #FCF8F2 0%, #fff4e8 100%)",
                 border: "1.5px solid #e0c9a8",
-                boxShadow: "0 40px 100px rgba(139,69,19,0.28), 0 8px 32px rgba(139,69,19,0.14)",
+                boxShadow: "0 40px 100px rgba(155, 27, 27,0.28), 0 8px 32px rgba(155, 27, 27,0.14)",
               }}
               initial={{ opacity: 0, scale: 0.88, y: 32 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -358,13 +358,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
             >
               {/* Gold top bar */}
               <div className="h-1 w-full flex-shrink-0" style={{
-                background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)",
+                background: "linear-gradient(90deg, transparent, #D4AF37, #E65100, #D4AF37, transparent)",
               }} />
 
               {/* Close */}
               <button onClick={onClose}
                 className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(139,69,19,0.08)", border: "1px solid rgba(212,163,115,0.4)", color: "#8b4513" }}>
+                style={{ background: "rgba(155, 27, 27,0.08)", border: "1px solid rgba(212, 175, 55,0.4)", color: "#9B1B1B" }}>
                 <CloseIcon />
               </button>
 
@@ -399,12 +399,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <>
                           <button onClick={prevImg}
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212,163,115,0.5)", color: "#8b4513" }}>
+                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212, 175, 55,0.5)", color: "#9B1B1B" }}>
                             <ChevronIcon dir="left" />
                           </button>
                           <button onClick={nextImg}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212,163,115,0.5)", color: "#8b4513" }}>
+                            style={{ background: "rgba(255,249,242,0.88)", backdropFilter: "blur(4px)", border: "1px solid rgba(212, 175, 55,0.5)", color: "#9B1B1B" }}>
                             <ChevronIcon dir="right" />
                           </button>
                         </>
@@ -412,7 +412,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
                       {disc && (
                         <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
-                          style={{ background: "linear-gradient(135deg, #c8843a, #8b4513)", fontFamily: "'Jost', sans-serif" }}>
+                          style={{ background: "linear-gradient(135deg, #E65100, #9B1B1B)", fontFamily: "'Jost', sans-serif" }}>
                           -{disc}% OFF
                         </div>
                       )}
@@ -422,7 +422,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-white text-xs font-bold"
                           style={{
                             background: product.badge === "Bestseller"
-                              ? "linear-gradient(135deg, #c8843a, #8b4513)"
+                              ? "linear-gradient(135deg, #E65100, #9B1B1B)"
                               : "linear-gradient(135deg, #6b7280, #374151)",
                             fontFamily: "'Jost', sans-serif",
                           }}>
@@ -437,7 +437,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         {safeImages.map((img, idx) => (
                           <motion.button key={idx} onClick={() => setActiveImg(idx)}
                             className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
-                            style={{ border: `2px solid ${activeImg === idx ? "#8b4513" : "#e0c9a8"}`, opacity: activeImg === idx ? 1 : 0.65, transition: "all 0.2s ease" }}
+                            style={{ border: `2px solid ${activeImg === idx ? "#9B1B1B" : "#e0c9a8"}`, opacity: activeImg === idx ? 1 : 0.65, transition: "all 0.2s ease" }}
                             whileHover={{ opacity: 1 }} whileTap={{ scale: 0.95 }}>
                             <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover"
                               onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/64x64/f5ede0/8b4513?text=🪬"; }} />
@@ -449,15 +449,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     {/* Live viewers */}
                     <motion.div
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
-                      style={{ background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.12)" }}
+                      style={{ background: "rgba(155, 27, 27,0.06)", border: "1px solid rgba(155, 27, 27,0.12)" }}
                       animate={{ opacity: [1, 0.75, 1] }}
                       transition={{ repeat: Infinity, duration: 2.5 }}>
                       <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#c8843a" }} />
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#8b4513" }} />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#E65100" }} />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#9B1B1B" }} />
                       </span>
                       <EyeIcon />
-                      <span className="text-sm font-medium" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
+                      <span className="text-sm font-medium" style={{ color: "#9B1B1B", fontFamily: "'Jost', sans-serif" }}>
                         <strong>{viewers}</strong> people viewing this right now
                       </span>
                     </motion.div>
@@ -469,7 +469,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     {/* Category */}
                     {safeCategory && safeCategory !== "Uncategorized" && (
                       <span className="text-xs font-semibold tracking-widest uppercase"
-                        style={{ color: "#a0522d", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.14em" }}>
+                        style={{ color: "#D84315", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.14em" }}>
                         {safeCategory}
                       </span>
                     )}
@@ -484,13 +484,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2">
                         <StarRow rating={rating} />
-                        <span className="text-sm font-medium" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
+                        <span className="text-sm font-medium" style={{ color: "#9B1B1B", fontFamily: "'Jost', sans-serif" }}>
                           {rating.toFixed(1)}
                         </span>
                       </div>
                       {safeReviews.length > 0 && (
                         <>
-                          <div className="h-4 w-px" style={{ background: "#d4a373" }} />
+                          <div className="h-4 w-px" style={{ background: "#D4AF37" }} />
                           <span className="text-sm" style={{ color: "#a07a5a", fontFamily: "'Cormorant Garamond', serif", fontSize: "0.9rem" }}>
                             {safeReviews.length} verified reviews
                           </span>
@@ -498,8 +498,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       )}
                       {orders > 0 && (
                         <>
-                          <div className="h-4 w-px" style={{ background: "#d4a373" }} />
-                          <span className="text-sm font-semibold" style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif" }}>
+                          <div className="h-4 w-px" style={{ background: "#D4AF37" }} />
+                          <span className="text-sm font-semibold" style={{ color: "#9B1B1B", fontFamily: "'Jost', sans-serif" }}>
                             🔥 {orders.toLocaleString()}+ sold
                           </span>
                         </>
@@ -509,7 +509,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     {/* Price — from selected variant or first variant */}
                     <div className="flex items-end gap-3">
                       <span className="text-3xl font-bold"
-                        style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}>
+                        style={{ fontFamily: "'Playfair Display', serif", color: "#9B1B1B" }}>
                         ₹{price.toLocaleString()}
                       </span>
                       {mrp && mrp > price && (
@@ -519,7 +519,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             ₹{mrp.toLocaleString()}
                           </span>
                           <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white"
-                            style={{ background: "linear-gradient(135deg, #c8843a, #a0522d)", fontFamily: "'Jost', sans-serif" }}>
+                            style={{ background: "linear-gradient(135deg, #E65100, #D84315)", fontFamily: "'Jost', sans-serif" }}>
                             Save ₹{(mrp - price).toLocaleString()}
                           </span>
                         </>
@@ -555,10 +555,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                 style={{
                                   fontFamily: "'Jost', sans-serif",
                                   background: isSelected
-                                    ? "linear-gradient(135deg, #8b4513, #c8843a)"
-                                    : isUnavailable ? "rgba(0,0,0,0.04)" : "rgba(139,69,19,0.06)",
-                                  color: isSelected ? "#fff" : isUnavailable ? "#c4a882" : "#8b4513",
-                                  border: `1.5px solid ${isSelected ? "#c8843a" : isUnavailable ? "#e8d5c0" : "rgba(139,69,19,0.2)"}`,
+                                    ? "linear-gradient(135deg, #9B1B1B, #E65100)"
+                                    : isUnavailable ? "rgba(0,0,0,0.04)" : "rgba(155, 27, 27,0.06)",
+                                  color: isSelected ? "#fff" : isUnavailable ? "#c4a882" : "#9B1B1B",
+                                  border: `1.5px solid ${isSelected ? "#E65100" : isUnavailable ? "#e8d5c0" : "rgba(155, 27, 27,0.2)"}`,
                                   boxShadow: isSelected ? "0 4px 14px rgba(200,132,58,0.35)" : "none",
                                   cursor: isUnavailable ? "not-allowed" : "pointer",
                                   textDecoration: isUnavailable ? "line-through" : "none",
@@ -567,7 +567,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                 }}>
                                 {variant.size}
                                 {variant.price !== price && !isSelected && (
-                                  <span className="ml-1 text-[10px]" style={{ color: "#a0522d" }}>
+                                  <span className="ml-1 text-[10px]" style={{ color: "#D84315" }}>
                                     ₹{variant.price}
                                   </span>
                                 )}
@@ -592,9 +592,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                               className="px-4 py-2 rounded-xl text-sm font-semibold"
                               style={{
                                 fontFamily: "'Jost', sans-serif",
-                                background: selectedVariant?.size === sz ? "linear-gradient(135deg, #8b4513, #c8843a)" : "rgba(139,69,19,0.06)",
-                                color: selectedVariant?.size === sz ? "#fff" : "#8b4513",
-                                border: `1.5px solid ${selectedVariant?.size === sz ? "#c8843a" : "rgba(139,69,19,0.2)"}`,
+                                background: selectedVariant?.size === sz ? "linear-gradient(135deg, #9B1B1B, #E65100)" : "rgba(155, 27, 27,0.06)",
+                                color: selectedVariant?.size === sz ? "#fff" : "#9B1B1B",
+                                border: `1.5px solid ${selectedVariant?.size === sz ? "#E65100" : "rgba(155, 27, 27,0.2)"}`,
                               }}>
                               {sz}
                             </motion.button>
@@ -609,7 +609,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         {product.details.map((d, i) => (
                           <li key={i} className="flex items-center gap-2 text-sm"
                             style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b4226", fontSize: "0.92rem" }}>
-                            <span style={{ color: "#c8843a", fontSize: "1rem" }}>•</span> {d}
+                            <span style={{ color: "#E65100", fontSize: "1rem" }}>•</span> {d}
                           </li>
                         ))}
                       </ul>
@@ -617,9 +617,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
                     {/* Trust badge */}
                     <div className="flex gap-3 p-4 rounded-2xl relative overflow-hidden"
-                      style={{ background: "linear-gradient(135deg, rgba(212,163,115,0.10) 0%, rgba(139,69,19,0.06) 100%)", border: "1px solid rgba(212,163,115,0.5)" }}>
+                      style={{ background: "linear-gradient(135deg, rgba(212, 175, 55,0.10) 0%, rgba(155, 27, 27,0.06) 100%)", border: "1px solid rgba(212, 175, 55,0.5)" }}>
                       <div className="absolute top-0 right-0 w-16 h-16 opacity-10"
-                        style={{ background: "radial-gradient(circle at top right, #d4a373, transparent 70%)" }} />
+                        style={{ background: "radial-gradient(circle at top right, #D4AF37, transparent 70%)" }} />
                       <ShieldIcon />
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "#5c2e0a" }}>
@@ -645,13 +645,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
                     {/* Tabs */}
                     <div>
-                      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(139,69,19,0.06)" }}>
+                      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(155, 27, 27,0.06)" }}>
                         {(["details", "reviews"] as const).map((t) => (
                           <motion.button key={t} onClick={() => setTab(t)}
                             className="flex-1 py-2 rounded-lg text-sm font-medium capitalize transition-colors duration-200"
                             style={{
                               fontFamily: "'Jost', sans-serif",
-                              background: tab === t ? "linear-gradient(135deg, #8b4513, #c8843a)" : "transparent",
+                              background: tab === t ? "linear-gradient(135deg, #9B1B1B, #E65100)" : "transparent",
                               color: tab === t ? "#fff" : "#a07a5a",
                             }}
                             whileTap={{ scale: 0.97 }}>
@@ -685,7 +685,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                                   transition={{ delay: idx * 0.06 }}
                                   className="p-4 rounded-xl flex flex-col gap-1.5"
-                                  style={{ background: "rgba(212,163,115,0.07)", border: "1px solid rgba(212,163,115,0.25)" }}>
+                                  style={{ background: "rgba(212, 175, 55,0.07)", border: "1px solid rgba(212, 175, 55,0.25)" }}>
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm font-semibold"
                                       style={{ fontFamily: "'Jost', sans-serif", color: "#5c2e0a" }}>
@@ -712,7 +712,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Bottom gold ornament */}
               <div className="h-0.5 w-full flex-shrink-0"
-                style={{ background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)", opacity: 0.5 }} />
+                style={{ background: "linear-gradient(90deg, transparent, #D4AF37, #E65100, #D4AF37, transparent)", opacity: 0.5 }} />
             </motion.div>
           </motion.div>
         </>

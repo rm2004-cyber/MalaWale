@@ -116,12 +116,12 @@ function HomeShopPortal({
       <section
         id="featured-products-section"
         className={`container mx-auto px-4 py-10 transition-all duration-500 ${
-          searchProductIdFilter ? "bg-[#fdf4e7] rounded-3xl my-6 border border-[#d4a373]/20 px-6" : ""
+          searchProductIdFilter ? "bg-[#fdf4e7] rounded-3xl my-6 border border-[#D4AF37]/20 px-6" : ""
         }`}
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-black text-[#8b4513]" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-2xl font-black text-[#9B1B1B]" style={{ fontFamily: "'Playfair Display', serif" }}>
               {searchProductIdFilter ? "🔍 Your Search Result" : "Featured Products"}
             </h2>
           </div>
@@ -131,7 +131,7 @@ function HomeShopPortal({
               <button
                 type="button"
                 onClick={() => { setSelectedCategory("all"); setSearchProductIdFilter(null); navigate("/"); }}
-                className="px-3 py-1.5 text-xs font-bold rounded-full bg-[#8b4513] text-white border border-[#8b4513] hover:bg-[#a0522d] transition shadow-md cursor-pointer"
+                className="px-3 py-1.5 text-xs font-bold rounded-full bg-[#9B1B1B] text-white border border-[#9B1B1B] hover:bg-[#D84315] transition shadow-md cursor-pointer"
               >
                 ✕ View All
               </button>
@@ -140,7 +140,7 @@ function HomeShopPortal({
               <button
                 type="button"
                 onClick={() => setSearchProductIdFilter(null)}
-                className="px-3 py-1.5 text-xs font-bold rounded-full bg-[#8b4513] text-white border border-[#8b4513] hover:bg-[#a0522d] transition shadow-md cursor-pointer"
+                className="px-3 py-1.5 text-xs font-bold rounded-full bg-[#9B1B1B] text-white border border-[#9B1B1B] hover:bg-[#D84315] transition shadow-md cursor-pointer"
               >
                 ✕ View All Products
               </button>
@@ -163,7 +163,7 @@ function HomeShopPortal({
             </div>
           ))}
           {filteredProducts.length === 0 && (
-            <div className="col-span-full rounded-3xl border border-orange-100 bg-white p-8 text-center text-sm text-[#8b4513]">
+            <div className="col-span-full rounded-3xl border border-orange-100 bg-white p-8 text-center text-sm text-[#9B1B1B]">
               No products found in this category.
             </div>
           )}
@@ -268,13 +268,13 @@ function App() {
   };
 
   return (
-    <div className="relative bg-[#fff9f2] min-h-screen font-sans text-gray-800 antialiased">
+    <div className="relative bg-[#FCF8F2] min-h-screen font-sans text-gray-800 antialiased">
       <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
           duration: 2500,
-          style: { background: "#8b4513", color: "#fff", border: "1px solid #d4a373", zIndex: 999999 },
+          style: { background: "#9B1B1B", color: "#fff", border: "1px solid #D4AF37", zIndex: 999999 },
         }}
       />
       <DivineBackground />
@@ -294,13 +294,13 @@ function App() {
                   onProductSelect={handleProductSelectFromHeader}
                   onCategoryChange={(cat) => navigate(`/category/${cat}`)}
                 />
-                <div className="pt-28 pb-12 bg-gradient-to-b from-[#fff9f2] to-[#fff3e8] min-h-[85vh]">
+                <div className="pt-28 pb-12 bg-gradient-to-b from-[#FCF8F2] to-[#fff3e8] min-h-[85vh]">
                   <TrackOrder />
                 </div>
                 <Footer />
               </>
             ) : (
-              <div className="min-h-screen bg-[#fff9f2]" />
+              <div className="min-h-screen bg-[#FCF8F2]" />
             )
           }
         />

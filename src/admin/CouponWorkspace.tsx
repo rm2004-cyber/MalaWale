@@ -87,7 +87,7 @@ export default function CouponWorkspace() {
 
       {/* Creation Segment Block */}
       <div className="bg-amber-50/20 border border-dashed border-orange-200 p-5 rounded-2xl space-y-4">
-        <p className="text-sm font-bold text-[#8b4513]">Mint Brand New Promotional Voucher</p>
+        <p className="text-sm font-bold text-[#9B1B1B]">Mint Brand New Promotional Voucher</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -119,7 +119,7 @@ export default function CouponWorkspace() {
         </div>
 
         <div className="flex justify-end pt-1">
-          <button onClick={handleCreateCoupon} className="w-full md:w-auto bg-[#8b4513] text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#7a3b10] transition shadow-sm shadow-[#8b4513]/10">
+          <button onClick={handleCreateCoupon} className="w-full md:w-auto bg-[#9B1B1B] text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#7a3b10] transition shadow-sm shadow-[#9B1B1B]/10">
             Activate & Publish Voucher
           </button>
         </div>

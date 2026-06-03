@@ -214,18 +214,18 @@ export const CartAction: React.FC<CartActionProps> = ({
             style={{
               background: "rgba(255, 249, 242, 0.98)",
               backdropFilter: "blur(12px)",
-              border: "1.5px solid rgba(212, 163, 115, 0.65)",
-              boxShadow: "0 6px 20px rgba(139, 69, 19, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+              border: "1.5px solid rgba(212, 175, 55, 0.65)",
+              boxShadow: "0 6px 20px rgba(155, 27, 27, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
             }}
             className="flex items-center justify-between w-32 h-9 rounded-full px-1"
             onClick={(e) => e.stopPropagation()}
           >
             <motion.button
-              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(139,69,19,0.3)" }}
+              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(155, 27, 27,0.3)" }}
               whileTap={{ scale: 0.9 }}
               onClick={handleDecrement}
               style={{
-                background: "linear-gradient(135deg, #8b4513, #c8843a)",
+                background: "linear-gradient(135deg, #9B1B1B, #E65100)",
               }}
               className="w-7 h-7 rounded-full flex items-center justify-center text-white select-none cursor-pointer border-0"
             >
@@ -241,7 +241,7 @@ export const CartAction: React.FC<CartActionProps> = ({
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 style={{
                   fontFamily: "'Playfair Display', serif",
-                  color: "#8b4513",
+                  color: "#9B1B1B",
                 }}
                 className="text-xs font-black px-2 select-none"
               >
@@ -250,11 +250,11 @@ export const CartAction: React.FC<CartActionProps> = ({
             </AnimatePresence>
 
             <motion.button
-              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(139,69,19,0.3)" }}
+              whileHover={{ scale: 1.1, boxShadow: "0 3px 8px rgba(155, 27, 27,0.3)" }}
               whileTap={{ scale: 0.9 }}
               onClick={handleIncrement}
               style={{
-                background: "linear-gradient(135deg, #8b4513, #c8843a)",
+                background: "linear-gradient(135deg, #9B1B1B, #E65100)",
               }}
               className="w-7 h-7 rounded-full flex items-center justify-center text-white select-none cursor-pointer border-0"
             >
@@ -271,9 +271,9 @@ export const CartAction: React.FC<CartActionProps> = ({
             <button
               onClick={handleAddToCart}
               style={{
-                background: "linear-gradient(90deg, #8b4513 0%, #c8843a 100%)",
+                background: "linear-gradient(90deg, #9B1B1B 0%, #E65100 100%)",
                 fontFamily: "'Jost', sans-serif",
-                boxShadow: "0 4px 18px rgba(139,69,19,0.40)",
+                boxShadow: "0 4px 18px rgba(155, 27, 27,0.40)",
               }}
               className="text-white text-xs font-semibold tracking-wide uppercase px-5 py-2 rounded-full transition-transform active:scale-95 cursor-pointer"
             >
@@ -298,19 +298,19 @@ export const CartAction: React.FC<CartActionProps> = ({
           style={{
             background: "rgba(255, 249, 242, 0.98)",
             backdropFilter: "blur(12px)",
-            border: "1.5px solid rgba(212, 163, 115, 0.6)",
-            boxShadow: "0 6px 20px rgba(139, 69, 19, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+            border: "1.5px solid rgba(212, 175, 55, 0.6)",
+            boxShadow: "0 6px 20px rgba(155, 27, 27, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Decrement Button */}
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(139,69,19,0.35)" }}
+            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(155, 27, 27,0.35)" }}
             whileTap={{ scale: 0.92 }}
             onClick={handleDecrement}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-all shadow-sm cursor-pointer border-0"
             style={{
-              background: "linear-gradient(135deg, #8b4513, #c8843a)",
+              background: "linear-gradient(135deg, #9B1B1B, #E65100)",
             }}
           >
             <MinusIcon />
@@ -326,7 +326,7 @@ export const CartAction: React.FC<CartActionProps> = ({
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="text-base font-black px-4 select-none"
               style={{
-                color: "#8b4513",
+                color: "#9B1B1B",
                 fontFamily: "'Playfair Display', serif"
               }}
             >
@@ -336,12 +336,12 @@ export const CartAction: React.FC<CartActionProps> = ({
 
           {/* Increment Button */}
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(139,69,19,0.35)" }}
+            whileHover={{ scale: 1.05, boxShadow: "0 3px 8px rgba(155, 27, 27,0.35)" }}
             whileTap={{ scale: 0.92 }}
             onClick={handleIncrement}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-white transition-all shadow-sm cursor-pointer border-0"
             style={{
-              background: "linear-gradient(135deg, #8b4513, #c8843a)",
+              background: "linear-gradient(135deg, #9B1B1B, #E65100)",
             }}
           >
             <PlusIcon />
@@ -357,7 +357,7 @@ export const CartAction: React.FC<CartActionProps> = ({
             letterSpacing: "0.04em",
             cursor: isOutOfStock ? "not-allowed" : "pointer",
             opacity: isOutOfStock ? 0.65 : 1,
-            boxShadow: isOutOfStock ? "none" : "0 4px 16px rgba(139, 69, 19, 0.15)",
+            boxShadow: isOutOfStock ? "none" : "0 4px 16px rgba(155, 27, 27, 0.15)",
           }}
           whileTap={isOutOfStock ? {} : { scale: 0.97 }}
         >
@@ -370,7 +370,7 @@ export const CartAction: React.FC<CartActionProps> = ({
                   ? "linear-gradient(135deg, #9ca3af, #6b7280)"
                   : cartState === "added"
                     ? "linear-gradient(135deg, #4a7c59, #2d5a3d)"
-                    : "linear-gradient(135deg, #8b4513, #c8843a)",
+                    : "linear-gradient(135deg, #9B1B1B, #E65100)",
             }}
             transition={{ duration: 0.4 }}
           />

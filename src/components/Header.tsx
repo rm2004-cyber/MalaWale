@@ -97,7 +97,7 @@ const CartIcon = () => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#8b4513"
+    stroke="#9B1B1B"
     strokeWidth="1.8"
     width="20"
     height="20"
@@ -137,10 +137,10 @@ function ActionButton({ children, label, count, countColor, onClick }: ActionBut
   return (
     <motion.button
       className="relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl"
-      animate={{ color: "#8b4513", opacity: 1 }}
-      whileHover={{ scale: 1.07, backgroundColor: "rgba(212,163,115,0.12)" }}
+      animate={{ color: "#9B1B1B", opacity: 1 }}
+      whileHover={{ scale: 1.07, backgroundColor: "rgba(212, 175, 55,0.12)" }}
       whileTap={{ scale: 0.95 }}
-      style={{ color: "#8b4513" }}
+      style={{ color: "#9B1B1B" }}
       aria-label={`${label}${count > 0 ? `, ${count} items` : ""}`}
       type="button"
       onClick={onClick}
@@ -171,7 +171,7 @@ function ActionButton({ children, label, count, countColor, onClick }: ActionBut
       </div>
       <span
         className="text-[10px] font-medium hidden sm:block mt-0.5"
-        style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif", letterSpacing: "0.04em" }}
+        style={{ color: "#9B1B1B", fontFamily: "'Jost', sans-serif", letterSpacing: "0.04em" }}
       >
         {label}
       </span>
@@ -192,8 +192,8 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
       className="absolute left-0 right-0 top-full mt-2 rounded-2xl overflow-hidden z-[99999]"
       style={{
         background: "rgba(253, 246, 236, 0.98)",
-        border: "1px solid rgba(212,163,115,0.35)",
-        boxShadow: "0 20px 60px rgba(139,69,19,0.18), 0 4px 16px rgba(0,0,0,0.08)",
+        border: "1px solid rgba(212, 175, 55,0.35)",
+        boxShadow: "0 20px 60px rgba(155, 27, 27,0.18), 0 4px 16px rgba(0,0,0,0.08)",
         backdropFilter: "blur(12px)",
       }}
       initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -201,7 +201,7 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
       exit={{ opacity: 0, y: -4, scale: 0.98 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #d4a373, #c8843a, #d4a373, transparent)" }} />
+      <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #D4AF37, #E65100, #D4AF37, transparent)" }} />
 
       {loading ? (
         <div className="p-5 flex flex-col items-center gap-2">
@@ -210,13 +210,13 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
               <motion.div
                 key={i}
                 className="w-2 h-2 rounded-full"
-                style={{ background: "#c8843a" }}
+                style={{ background: "#E65100" }}
                 animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
               />
             ))}
           </motion.div>
-          <p className="text-xs italic" style={{ color: "#c8843a", fontFamily: "'Cormorant Garamond', serif" }}>
+          <p className="text-xs italic" style={{ color: "#E65100", fontFamily: "'Cormorant Garamond', serif" }}>
             Searching sacred scrolls…
           </p>
         </div>
@@ -236,7 +236,7 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
               onClick={() => onSelect(item.name, item._id)}
               className="w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 group transition-colors"
               style={{ fontFamily: "'Jost', sans-serif" }}
-              whileHover={{ backgroundColor: "rgba(212,163,115,0.15)", x: 2 }}
+              whileHover={{ backgroundColor: "rgba(212, 175, 55,0.15)", x: 2 }}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
@@ -246,7 +246,7 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
                 {item.name}
               </span>
               {item.price !== undefined && (
-                <span className="text-xs flex-shrink-0" style={{ color: "#c8843a", fontFamily: "'Cormorant Garamond', serif" }}>
+                <span className="text-xs flex-shrink-0" style={{ color: "#E65100", fontFamily: "'Cormorant Garamond', serif" }}>
                   ₹{item.price}
                 </span>
               )}
@@ -284,7 +284,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
   const { text: placeholderText, visible: placeholderVisible } = useCyclingPlaceholder(searchFocused);
 
   const isAuthenticated = Boolean(user);
-  const profileStatusColor = isAuthenticated ? "#22c55e" : "#c8843a";
+  const profileStatusColor = isAuthenticated ? "#22c55e" : "#E65100";
 
   useEffect(() => {
     if (isLoginModalOpen) {
@@ -364,10 +364,10 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
         .brand-title { font-family: 'Cinzel', serif; letter-spacing: 0.12em; font-weight: 600; }
         .brand-subtitle { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 500; }
         .divine-gradient { background: linear-gradient(135deg, #fdf6ec 0%, #fff8f0 50%, #fdf0e0 100%); }
-        .header-border { background: linear-gradient(90deg, transparent, #d4a37366, #c8843a99, #d4a37366, transparent); }
-        .om-divider { font-family: serif; color: #c8843a; font-size: 10px; opacity: 0.5; }
+        .header-border { background: linear-gradient(90deg, transparent, #D4AF3766, #E6510099, #D4AF3766, transparent); }
+        .om-divider { font-family: serif; color: #E65100; font-size: 10px; opacity: 0.5; }
         .profile-shimmer {
-          background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
+          background: linear-gradient(135deg, #9B1B1B 0%, #D84315 50%, #9B1B1B 100%);
           background-size: 200% 200%;
           animation: shimmer 3s ease-in-out infinite;
         }
@@ -378,10 +378,10 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
         .mandala-bg {
           background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a373' fill-opacity='0.06'%3E%3Ccircle cx='30' cy='30' r='28'/%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3Ccircle cx='30' cy='30' r='12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
-        .top-bar { background: linear-gradient(90deg, #6b2d0e, #8b4513, #6b2d0e); }
+        .top-bar { background: linear-gradient(90deg, #6b2d0e, #9B1B1B, #6b2d0e); }
         .search-scroll::-webkit-scrollbar { width: 4px; }
         .search-scroll::-webkit-scrollbar-track { background: transparent; }
-        .search-scroll::-webkit-scrollbar-thumb { background: rgba(212,163,115,0.4); border-radius: 2px; }
+        .search-scroll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55,0.4); border-radius: 2px; }
       `}</style>
 
       <MobileDrawer 
@@ -402,7 +402,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
         </motion.p>
       </div>
 
-      <header className="header-root divine-gradient relative" style={{ borderBottom: "1px solid rgba(212,163,115,0.25)" }}>
+      <header className="header-root divine-gradient relative" style={{ borderBottom: "1px solid rgba(212, 175, 55,0.25)" }}>
         <div className="absolute inset-0 mandala-bg opacity-60 pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -420,7 +420,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <span style={{ color: "#c8843a", fontSize: "13px", fontFamily: "serif" }}>ॐ</span>
+                <span style={{ color: "#E65100", fontSize: "13px", fontFamily: "serif" }}>ॐ</span>
                 <span className="om-divider">✦ ✦ ✦</span>
               </motion.div>
 
@@ -435,14 +435,14 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
 
               <h1
                 className="brand-title text-2xl sm:text-3xl font-black uppercase leading-none"
-                style={{ color: "#8b4513", textShadow: "0 1px 2px rgba(139,69,19,0.15)" }}
+                style={{ color: "#9B1B1B", textShadow: "0 1px 2px rgba(155, 27, 27,0.15)" }}
               >
                 MalaWale
               </h1>
 
               <motion.p
                 className="brand-subtitle italic text-xs sm:text-sm font-medium leading-tight mt-0.5"
-                style={{ color: "#d4a373", letterSpacing: "0.04em" }}
+                style={{ color: "#D4AF37", letterSpacing: "0.04em" }}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
@@ -463,8 +463,8 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                   className="absolute -inset-px rounded-full pointer-events-none"
                   animate={{
                     boxShadow: searchFocused
-                      ? "0 0 0 2px rgba(212,163,115,0.55), 0 0 28px rgba(200,132,58,0.18)"
-                      : "0 0 0 1px rgba(212,163,115,0.2)",
+                      ? "0 0 0 2px rgba(212, 175, 55,0.55), 0 0 28px rgba(200,132,58,0.18)"
+                      : "0 0 0 1px rgba(212, 175, 55,0.2)",
                   }}
                   transition={{ duration: 0.35 }}
                 />
@@ -474,13 +474,13 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                   style={{
                     background: searchFocused ? "rgba(255,252,245,0.97)" : "rgba(255,252,245,0.8)",
                     border: "1px solid",
-                    borderColor: searchFocused ? "rgba(212,163,115,0.6)" : "rgba(212,163,115,0.3)",
+                    borderColor: searchFocused ? "rgba(212, 175, 55,0.6)" : "rgba(212, 175, 55,0.3)",
                     transition: "background 0.3s ease, border-color 0.3s ease",
                   }}
                 >
                    <motion.div
                     className="pl-4 pr-2 flex-shrink-0"
-                    animate={{ color: searchFocused ? "#c8843a" : "#c8a07a" }}
+                    animate={{ color: searchFocused ? "#E65100" : "#c8a07a" }}
                     transition={{ duration: 0.3 }}
                     style={{ cursor: "pointer" }}
                     onClick={() => inputRef.current?.focus()}
@@ -533,12 +533,12 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                     type="submit"
                     className="m-1.5 px-4 py-1.5 rounded-full text-xs font-medium flex-shrink-0 flex items-center gap-1.5"
                     style={{
-                      background: "linear-gradient(135deg, #8b4513, #c8843a)",
+                      background: "linear-gradient(135deg, #9B1B1B, #E65100)",
                       color: "#fde8c8",
                       fontFamily: "'Jost', sans-serif",
                       letterSpacing: "0.06em",
                     }}
-                    whileHover={{ scale: 1.04, boxShadow: "0 4px 14px rgba(139,69,19,0.35)" }}
+                    whileHover={{ scale: 1.04, boxShadow: "0 4px 14px rgba(155, 27, 27,0.35)" }}
                     whileTap={{ scale: 0.97 }}
                   >
                     <SparkleIcon />
@@ -572,15 +572,15 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
               <ActionButton
                 label="Cart"
                 count={typeof finalCartCount === 'number' && finalCartCount > 0 ? finalCartCount : 0}
-                countColor="#c8843a"
+                countColor="#E65100"
                 onClick={() => setActiveModalWindow("cart")}
               >
-                <div style={{ opacity: 1, color: "#8b4513" }} className="flex items-center justify-center">
+                <div style={{ opacity: 1, color: "#9B1B1B" }} className="flex items-center justify-center">
                   <CartIcon />
                 </div>
               </ActionButton>
 
-              <div className="w-px h-8 mx-1 hidden sm:block" style={{ background: "rgba(212,163,115,0.3)" }} />
+              <div className="w-px h-8 mx-1 hidden sm:block" style={{ background: "rgba(212, 175, 55,0.3)" }} />
 
               <div className="relative z-[100]" ref={profileRef}>
                 <motion.button
@@ -610,7 +610,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                   </div>
                   <span
                     className="text-[10px] font-medium hidden sm:block mt-0.5"
-                    style={{ color: "#8b4513", fontFamily: "'Jost', sans-serif", letterSpacing: "0.04em" }}
+                    style={{ color: "#9B1B1B", fontFamily: "'Jost', sans-serif", letterSpacing: "0.04em" }}
                   >
                     {isAuthenticated ? "Account" : "Login"}
                   </span>
@@ -633,9 +633,9 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
             <form onSubmit={handleSearchSubmit}>
               <div
                 className="flex items-center rounded-full px-3 py-2"
-                style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(212,163,115,0.35)" }}
+                style={{ background: "rgba(255,252,245,0.9)", border: "1px solid rgba(212, 175, 55,0.35)" }}
               >
-                <div style={{ color: "#c8843a" }}>
+                <div style={{ color: "#E65100" }}>
                   <SearchIcon />
                 </div>
                 <input

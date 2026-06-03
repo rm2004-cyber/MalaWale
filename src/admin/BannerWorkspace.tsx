@@ -143,7 +143,7 @@ const handleSaveBanner = async () => {
         </div>
         {previewUrl && <img src={previewUrl} className="mt-4 w-full h-48 object-cover rounded-xl" />}
         <div className="flex gap-2 mt-4">
-          <button onClick={handleSaveBanner} disabled={publishing} className="bg-[#8b4513] text-white px-6 py-2 rounded-lg">{publishing ? "Saving..." : "Save Banner"}</button>
+          <button onClick={handleSaveBanner} disabled={publishing} className="bg-[#9B1B1B] text-white px-6 py-2 rounded-lg">{publishing ? "Saving..." : "Save Banner"}</button>
           {editingId && <button onClick={clearForm} className="bg-stone-200 px-6 py-2 rounded-lg">Cancel</button>}
         </div>
       </div>
@@ -155,7 +155,7 @@ const handleSaveBanner = async () => {
             <div className="flex-1">
               <h3 className="font-bold text-lg">{b.title}</h3>
               <p className="text-sm text-stone-500 line-clamp-2">{b.description}</p>
-              <p className="text-xs font-bold text-[#8b4513]">{b.categoryLink?.name || "No Category"}</p>
+              <p className="text-xs font-bold text-[#9B1B1B]">{b.categoryLink?.name || "No Category"}</p>
             </div>
             <div className="flex flex-col gap-2">
               <button onClick={() => startEdit(b)} className="text-blue-500 font-bold">Edit</button>

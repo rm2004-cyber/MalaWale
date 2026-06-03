@@ -102,8 +102,8 @@ export const products: Product[] = [
 const HeartIcon = ({ filled }: { filled: boolean }) => (
   <svg
     viewBox="0 0 24 24"
-    fill={filled ? "#8b4513" : "none"}
-    stroke={filled ? "#8b4513" : "#a0522d"}
+    fill={filled ? "#9B1B1B" : "none"}
+    stroke={filled ? "#9B1B1B" : "#D84315"}
     strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -146,8 +146,8 @@ const CheckIcon = () => (
 const StarIcon = ({ filled }: { filled: boolean }) => (
   <svg
     viewBox="0 0 24 24"
-    fill={filled ? "#d4a373" : "none"}
-    stroke="#d4a373"
+    fill={filled ? "#D4AF37" : "none"}
+    stroke="#D4AF37"
     strokeWidth={1.5}
     className="w-3.5 h-3.5"
   >
@@ -389,13 +389,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Card Shell */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-[#fff9f2] flex flex-col"
+        className="relative rounded-2xl overflow-hidden bg-[#FCF8F2] flex flex-col"
         style={{
           boxShadow: isHovered
-            ? "0 20px 60px rgba(139,69,19,0.18), 0 4px 16px rgba(139,69,19,0.10)"
-            : "0 4px 24px rgba(139,69,19,0.09), 0 1px 4px rgba(139,69,19,0.06)",
+            ? "0 20px 60px rgba(155, 27, 27,0.18), 0 4px 16px rgba(155, 27, 27,0.10)"
+            : "0 4px 24px rgba(155, 27, 27,0.09), 0 1px 4px rgba(155, 27, 27,0.06)",
           border: "1.5px solid",
-          borderColor: isHovered ? "#d4a373" : "#e8d5c0",
+          borderColor: isHovered ? "#D4AF37" : "#e8d5c0",
           transition: "box-shadow 0.35s ease, border-color 0.35s ease",
         }}
       >
@@ -429,7 +429,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-white text-xs font-bold tracking-wide"
               style={{
-                background: "linear-gradient(135deg, #c8843a, #8b4513)",
+                background: "linear-gradient(135deg, #E65100, #9B1B1B)",
                 fontFamily: "'Jost', sans-serif",
                 boxShadow: "0 2px 8px rgba(200,132,58,0.45)",
               }}
@@ -447,7 +447,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               style={{
                 background:
                   product.badge === "Bestseller"
-                    ? "linear-gradient(135deg, #c8843a, #8b4513)"
+                    ? "linear-gradient(135deg, #E65100, #9B1B1B)"
                     : "linear-gradient(135deg, #6b7280, #374151)",
                 fontFamily: "'Jost', sans-serif",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
@@ -465,9 +465,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             style={{
               background: "rgba(255, 249, 242, 0.88)",
               backdropFilter: "blur(6px)",
-              color: "#8b4513",
-              border: "1px solid rgba(212, 163, 115, 0.45)",
-              boxShadow: "0 2px 6px rgba(139, 69, 19, 0.08)",
+              color: "#9B1B1B",
+              border: "1px solid rgba(212, 175, 55, 0.45)",
+              boxShadow: "0 2px 6px rgba(155, 27, 27, 0.08)",
             }}
           >
             <span className="relative flex h-1.5 w-1.5">
@@ -494,8 +494,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             style={{
               background: "rgba(255,249,242,0.92)",
               backdropFilter: "blur(6px)",
-              border: "1px solid rgba(212,163,115,0.4)",
-              boxShadow: "0 2px 10px rgba(139,69,19,0.12)",
+              border: "1px solid rgba(212, 175, 55,0.4)",
+              boxShadow: "0 2px 10px rgba(155, 27, 27,0.12)",
             }}
             whileTap={{ scale: 0.82 }}
             animate={isFav ? { scale: [1, 1.32, 1] } : {}}
@@ -508,7 +508,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div
             className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
             style={{
-              background: "rgba(139,69,19,0.88)",
+              background: "rgba(155, 27, 27,0.88)",
               backdropFilter: "blur(4px)",
               color: "#fde8c8",
               fontFamily: "'Jost', sans-serif",
@@ -527,7 +527,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span
               className="text-xs font-medium tracking-widest uppercase"
               style={{
-                color: "#a0522d",
+                color: "#D84315",
                 fontFamily: "'Cormorant Garamond', serif",
                 letterSpacing: "0.12em",
               }}
@@ -570,7 +570,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               className="text-xl font-bold"
               style={{
                 fontFamily: "'Playfair Display', serif",
-                color: "#8b4513",
+                color: "#9B1B1B",
               }}
             >
               ₹{price.toLocaleString()}
@@ -599,7 +599,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="px-4 pb-2" onClick={(e) => e.stopPropagation()}>
             <p
               className="text-[10px] uppercase tracking-widest mb-1.5"
-              style={{ color: "#a0522d", fontFamily: "'Jost', sans-serif" }}
+              style={{ color: "#D84315", fontFamily: "'Jost', sans-serif" }}
             >
               Size
             </p>
@@ -617,23 +617,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     style={{
                       fontFamily: "'Jost', sans-serif",
                       background: isSelected
-                        ? "linear-gradient(135deg, #8b4513, #c8843a)"
+                        ? "linear-gradient(135deg, #9B1B1B, #E65100)"
                         : isUnavailable
                         ? "rgba(0,0,0,0.04)"
-                        : "rgba(212,163,115,0.15)",
+                        : "rgba(212, 175, 55,0.15)",
                       color: isSelected
                         ? "#fff"
                         : isUnavailable
                         ? "#c4a882"
-                        : "#8b4513",
+                        : "#9B1B1B",
                       border: isSelected
                         ? "1.5px solid transparent"
-                        : `1.5px solid ${isUnavailable ? "#e8d5c0" : "#d4a373"}`,
+                        : `1.5px solid ${isUnavailable ? "#e8d5c0" : "#D4AF37"}`,
                       cursor: isUnavailable ? "not-allowed" : "pointer",
                       textDecoration: isUnavailable ? "line-through" : "none",
                       opacity: isUnavailable ? 0.6 : 1,
                       boxShadow: isSelected
-                        ? "0 2px 8px rgba(139,69,19,0.3)"
+                        ? "0 2px 8px rgba(155, 27, 27,0.3)"
                         : "none",
                     }}
                   >
@@ -658,7 +658,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Premium gold border accent on hover */}
         <motion.div
           className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{ border: "1.5px solid #d4a373" }}
+          style={{ border: "1.5px solid #D4AF37" }}
           animate={{ opacity: isHovered ? 1 : 0 }}
           transition={{ duration: 0.3 }}
         />

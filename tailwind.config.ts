@@ -9,9 +9,10 @@ export default {
     extend: {
       colors: {
         spiritual: {
-          light: "#fff9f2",
-          gold: "#d4a373",
-          dark: "#8b4513",
+          light: "#FCF8F2",
+          gold: "#D4AF37",
+          dark: "#9B1B1B",
+          saffron: "#E65100",
         },
       },
     },

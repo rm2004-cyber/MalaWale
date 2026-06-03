@@ -81,15 +81,15 @@ export default function CategoryWorkspace() {
           value={name} 
           onChange={(e) => setName(e.target.value)} 
           placeholder="Category Name..." 
-          className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-[#8b4513]/20" 
+          className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-[#9B1B1B]/20" 
         />
         <div className="flex items-center gap-4">
           <input 
             type="file" 
             onChange={(e) => e.target.files && setSelectedFile(e.target.files[0])} 
-            className="text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#8b4513]/10 file:text-[#8b4513] hover:file:bg-[#8b4513]/20"
+            className="text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-[#9B1B1B]/10 file:text-[#9B1B1B] hover:file:bg-[#9B1B1B]/20"
           />
-          <button onClick={handleSubmit} className="bg-[#8b4513] text-white px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest">
+          <button onClick={handleSubmit} className="bg-[#9B1B1B] text-white px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest">
             {editingId ? "Update Circle" : "Append Circle"}
           </button>
           {editingId && <button onClick={resetForm} className="text-stone-400 text-xs">Cancel</button>}

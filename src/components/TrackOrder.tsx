@@ -70,12 +70,12 @@ function CancelModal({
           className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden"
           style={{ fontFamily: "'Jost', sans-serif" }}
         >
-          <div className="bg-gradient-to-br from-[#fff7f0] to-[#fdecd8] px-8 pt-8 pb-6 text-center border-b border-orange-100/60">
+          <div className="bg-gradient-to-br from-[#FCF6EE] to-[#F8E6CD] px-8 pt-8 pb-6 text-center border-b border-orange-100/60">
             <div className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🚫</span>
             </div>
             <h3
-              className="text-xl font-black text-[#8b4513] mb-2"
+              className="text-xl font-black text-[#9B1B1B] mb-2"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               Cancel Order?
@@ -98,7 +98,7 @@ function CancelModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onClose}
-              className="w-full bg-[#fdf4ec] border border-orange-200/70 text-[#8b4513] text-xs font-black uppercase tracking-widest py-3.5 rounded-xl cursor-pointer"
+              className="w-full bg-[#FAF2E7] border border-orange-200/70 text-[#9B1B1B] text-xs font-black uppercase tracking-widest py-3.5 rounded-xl cursor-pointer"
             >
               Keep Order
             </motion.button>
@@ -155,7 +155,7 @@ export default function TrackOrder() {
     return (
       <div className="text-center py-24 px-4" style={{ fontFamily: "'Jost', sans-serif" }}>
         <p className="text-3xl mb-3">🪬</p>
-        <h3 className="text-xl font-bold text-[#8b4513]" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <h3 className="text-xl font-bold text-[#9B1B1B]" style={{ fontFamily: "'Playfair Display', serif" }}>
           Login Required
         </h3>
         <p className="text-sm text-amber-800/70 mt-1 max-w-sm mx-auto">
@@ -179,17 +179,17 @@ export default function TrackOrder() {
       <div className="text-center mb-12">
         <span
           style={{ fontFamily: "'Cormorant Garamond', serif" }}
-          className="text-xs uppercase tracking-widest text-[#c8843a] font-medium italic block mb-1"
+          className="text-xs uppercase tracking-widest text-[#E65100] font-medium italic block mb-1"
         >
           Your Devotion Sanctuary
         </span>
         <h2
           style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-3xl sm:text-4xl font-black text-[#8b4513]"
+          className="text-3xl sm:text-4xl font-black text-[#9B1B1B]"
         >
           Your Orders
         </h2>
-        <div className="w-24 h-0.5 mx-auto mt-3 bg-gradient-to-r from-transparent via-[#c8843a] to-transparent opacity-60" />
+        <div className="w-24 h-0.5 mx-auto mt-3 bg-gradient-to-r from-transparent via-[#E65100] to-transparent opacity-60" />
       </div>
 
       {loading ? (
@@ -206,7 +206,7 @@ export default function TrackOrder() {
           <p className="text-5xl mb-4">📿</p>
           <h3
             style={{ fontFamily: "'Playfair Display', serif" }}
-            className="text-xl font-bold text-[#8b4513] mb-2"
+            className="text-xl font-bold text-[#9B1B1B] mb-2"
           >
             No Orders Found
           </h3>
@@ -217,7 +217,7 @@ export default function TrackOrder() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-[#8b4513] via-[#a0522d] to-[#c8843a] text-white text-xs font-bold uppercase tracking-widest px-8 py-4 rounded-xl cursor-pointer shadow-md"
+            className="bg-gradient-to-r from-[#9B1B1B] via-[#D84315] to-[#E65100] text-white text-xs font-bold uppercase tracking-widest px-8 py-4 rounded-xl cursor-pointer shadow-md"
           >
             Shop Now ✦
           </motion.button>
@@ -241,7 +241,7 @@ export default function TrackOrder() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: orderIdx * 0.05 }}
-                className="bg-white/95 p-6 sm:p-8 rounded-3xl border border-[#d4a373]/20 shadow-md relative overflow-hidden"
+                className="bg-white/95 p-6 sm:p-8 rounded-3xl border border-[#D4AF37]/20 shadow-md relative overflow-hidden"
               >
 
                 <div className="absolute top-4 right-4 text-8xl opacity-[0.018] select-none pointer-events-none font-serif">ॐ</div>
@@ -249,13 +249,13 @@ export default function TrackOrder() {
                 <div className="pb-5 mb-6 border-b border-orange-100/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <span className="text-[10px] text-[#a07a5a] font-semibold uppercase tracking-widest block mb-1">Order ID</span>
-                    <strong className="text-sm text-[#8b4513] font-black font-mono tracking-wide">
+                    <strong className="text-sm text-[#9B1B1B] font-black font-mono tracking-wide">
                       #{order._id.slice(-8).toUpperCase()}
                     </strong>
                     <span className="text-[11px] text-gray-400 block mt-1">
                       {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       &nbsp;·&nbsp;
-                      <strong className="text-[#8b4513]">₹{order.totalAmount.toFixed(2)}</strong>
+                      <strong className="text-[#9B1B1B]">₹{order.totalAmount.toFixed(2)}</strong>
                       &nbsp;·&nbsp;{order.items[0]?.product?.name}{order.items.length > 1 ? ` +${order.items.length - 1} more` : ""}
                     </span>
                   </div>
@@ -265,7 +265,7 @@ export default function TrackOrder() {
                       ? "bg-red-50 text-red-600 border-red-200"
                       : status === "Delivered"
                         ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-amber-50 text-[#8b4513] border-amber-200"
+                        : "bg-amber-50 text-[#9B1B1B] border-amber-200"
                     }`}>
                     {status}
                   </span>
@@ -279,7 +279,7 @@ export default function TrackOrder() {
                       style={{ top: "1.1rem", left: "calc(12.5%)", right: "calc(12.5%)" }}
                     >
                       <motion.div
-                        className="h-full bg-gradient-to-r from-[#8b4513] to-[#c8843a]"
+                        className="h-full bg-gradient-to-r from-[#9B1B1B] to-[#E65100]"
                         initial={{ width: "0%" }}
                         animate={{ width: `${progressPct}%` }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -291,7 +291,7 @@ export default function TrackOrder() {
                       style={{ left: "1.1rem", top: "1rem", bottom: "1rem" }}
                     >
                       <motion.div
-                        className="w-full bg-gradient-to-b from-[#8b4513] to-[#c8843a]"
+                        className="w-full bg-gradient-to-b from-[#9B1B1B] to-[#E65100]"
                         initial={{ height: "0%" }}
                         animate={{ height: `${progressPct}%` }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -310,8 +310,8 @@ export default function TrackOrder() {
                           >
                             <div className={`relative w-9 h-9 rounded-full flex items-center justify-center
                               text-sm font-bold border-2 flex-shrink-0 transition-all duration-300
-                              ${done   ? "bg-[#8b4513] border-[#8b4513] text-white shadow-md"
-                              : active ? "bg-[#c8843a] border-[#c8843a] text-white shadow-lg shadow-amber-200"
+                              ${done   ? "bg-[#9B1B1B] border-[#9B1B1B] text-white shadow-md"
+                              : active ? "bg-[#E65100] border-[#E65100] text-white shadow-lg shadow-amber-200"
                               :          "bg-white border-gray-200 text-gray-300"}`}>
 
                               {active && (
@@ -336,7 +336,7 @@ export default function TrackOrder() {
                                 {STEP_LABELS[step]}
                               </p>
                               {active && (
-                                <span className="text-[9px] text-[#c8843a] font-semibold mt-0.5 animate-pulse">
+                                <span className="text-[9px] text-[#E65100] font-semibold mt-0.5 animate-pulse">
                                   ← Current
                                 </span>
                               )}
@@ -359,10 +359,10 @@ export default function TrackOrder() {
                     className="mt-6 pt-5 border-t border-orange-100/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-orange-50/30 p-4 rounded-2xl"
                   >
                     <div className="text-xs text-[#5c3317]">
-                      <p className="font-bold text-[11px] text-[#a0522d] uppercase tracking-wider mb-1.5">Shipping Info</p>
+                      <p className="font-bold text-[11px] text-[#D84315] uppercase tracking-wider mb-1.5">Shipping Info</p>
                       {order.courierPartnerName && (
                         <p className="font-medium mb-0.5">
-                          Courier: <strong className="text-[#8b4513]">{order.courierPartnerName}</strong>
+                          Courier: <strong className="text-[#9B1B1B]">{order.courierPartnerName}</strong>
                         </p>
                       )}
                       <p className="font-medium">
@@ -378,7 +378,7 @@ export default function TrackOrder() {
                         rel="noopener noreferrer"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full sm:w-auto text-center bg-gradient-to-r from-[#8b4513] to-[#c8843a] text-white text-[10px] font-bold uppercase tracking-widest px-5 py-3 rounded-xl shadow-sm"
+                        className="w-full sm:w-auto text-center bg-gradient-to-r from-[#9B1B1B] to-[#E65100] text-white text-[10px] font-bold uppercase tracking-widest px-5 py-3 rounded-xl shadow-sm"
                       >
                         Live Track ➔
                       </motion.a>

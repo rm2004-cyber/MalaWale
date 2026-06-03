@@ -40,10 +40,10 @@ function NavButton({ direction, onClick, disabled }: { direction: "left" | "righ
       whileTap={disabled ? {} : { scale: 0.94 }}
       aria-label={direction === "right" ? "Next" : "Previous"}
       style={{
-        background: disabled ? "rgba(212,163,115,0.15)" : "linear-gradient(135deg, #8b4513 0%, #c8843a 100%)",
-        border: `2px solid ${disabled ? "#e8d5be" : "#d4a373"}`,
+        background: disabled ? "rgba(212, 175, 55,0.15)" : "linear-gradient(135deg, #9B1B1B 0%, #E65100 100%)",
+        border: `2px solid ${disabled ? "#e8d5be" : "#D4AF37"}`,
         color: disabled ? "#c9a882" : "#fff",
-        boxShadow: disabled ? "none" : "0 4px 18px rgba(139,69,19,0.28)",
+        boxShadow: disabled ? "none" : "0 4px 18px rgba(155, 27, 27,0.28)",
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "all 0.25s ease",
       }}
@@ -134,14 +134,14 @@ function CircleItem({
           transition={{ duration: 0.3, ease: "easeOut" }}
           style={{
             position: "absolute", inset: "-4px", borderRadius: "9999px",
-            background: "linear-gradient(135deg, #d4a373 0%, #c8843a 50%, #d4a373 100%)",
+            background: "linear-gradient(135deg, #D4AF37 0%, #E65100 50%, #D4AF37 100%)",
             zIndex: 0,
           }}
         />
         {/* Static subtle ring */}
         <div style={{
           position: "absolute", inset: "-2px", borderRadius: "9999px",
-          background: "linear-gradient(135deg, #edd9b8 0%, #d4a373 100%)",
+          background: "linear-gradient(135deg, #edd9b8 0%, #D4AF37 100%)",
           opacity: 0.6, zIndex: 0,
         }} />
 
@@ -151,8 +151,8 @@ function CircleItem({
           style={{
             background: "#f5ebe0",
             boxShadow: hovered
-              ? "0 12px 36px rgba(139,69,19,0.30), 0 4px 12px rgba(200,132,58,0.20)"
-              : "0 4px 16px rgba(139,69,19,0.14), 0 1px 4px rgba(0,0,0,0.06)",
+              ? "0 12px 36px rgba(155, 27, 27,0.30), 0 4px 12px rgba(200,132,58,0.20)"
+              : "0 4px 16px rgba(155, 27, 27,0.14), 0 1px 4px rgba(0,0,0,0.06)",
             transition: "box-shadow 0.3s ease",
           }}
         >
@@ -194,7 +194,7 @@ function CircleItem({
 
       {/* Label */}
       <motion.span
-        animate={{ color: hovered ? "#8b4513" : "#3d1f0a", y: hovered ? -2 : 0 }}
+        animate={{ color: hovered ? "#9B1B1B" : "#3d1f0a", y: hovered ? -2 : 0 }}
         transition={{ duration: 0.22 }}
         style={{
           fontFamily: "'Jost', sans-serif",
@@ -217,10 +217,10 @@ function OmDivider() {
   return (
     <div className="flex items-center gap-3 mt-1 mb-8">
       <div className="h-px flex-1 rounded"
-        style={{ background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)", opacity: 0.5 }} />
-      <span style={{ color: "#d4a373", fontSize: "18px", lineHeight: 1 }}>ॐ</span>
+        style={{ background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)", opacity: 0.5 }} />
+      <span style={{ color: "#D4AF37", fontSize: "18px", lineHeight: 1 }}>ॐ</span>
       <div className="h-px flex-1 rounded"
-        style={{ background: "linear-gradient(90deg, transparent, #d4a373 60%, transparent)", opacity: 0.5 }} />
+        style={{ background: "linear-gradient(90deg, transparent, #D4AF37 60%, transparent)", opacity: 0.5 }} />
     </div>
   );
 }
@@ -351,15 +351,15 @@ export default function CollectionCircles({ collections, onItemClick, onViewAll 
           transition={{ duration: 0.55, ease: "easeOut" }}
           className="flex items-end justify-between mb-2">
           <div className="flex flex-col">
-            <span style={{ fontFamily: "'Jost', sans-serif", color: "#c8843a", letterSpacing: "0.14em", fontSize: "11px", fontWeight: 600 }}
+            <span style={{ fontFamily: "'Jost', sans-serif", color: "#E65100", letterSpacing: "0.14em", fontSize: "11px", fontWeight: 600 }}
               className="uppercase mb-1">Explore by Category</span>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#8b4513" }}
+            <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#9B1B1B" }}
               className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight">
               Shop Our Collections
             </h2>
           </div>
           <motion.button whileHover={{ x: 3 }} whileTap={{ scale: 0.96 }} onClick={onViewAll}
-            style={{ fontFamily: "'Jost', sans-serif", color: "#8b4513", borderColor: "#d4a373" }}
+            style={{ fontFamily: "'Jost', sans-serif", color: "#9B1B1B", borderColor: "#D4AF37" }}
             className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border-b-2 pb-0.5 hover:opacity-75 transition-opacity">
             View all
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -411,7 +411,7 @@ export default function CollectionCircles({ collections, onItemClick, onViewAll 
           className="flex items-center justify-between mt-6 sm:hidden">
           <NavButton direction="left" onClick={() => scrollBy("left")} disabled={!canScrollLeft} />
           <button onClick={onViewAll}
-            style={{ fontFamily: "'Jost', sans-serif", background: "linear-gradient(90deg, #8b4513 0%, #c8843a 100%)", boxShadow: "0 4px 14px rgba(139,69,19,0.26)" }}
+            style={{ fontFamily: "'Jost', sans-serif", background: "linear-gradient(90deg, #9B1B1B 0%, #E65100 100%)", boxShadow: "0 4px 14px rgba(155, 27, 27,0.26)" }}
             className="text-white text-xs font-semibold tracking-wide px-6 py-2.5 rounded-full active:scale-95 transition-transform">
             View All Collections
           </button>

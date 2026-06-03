@@ -299,7 +299,7 @@ export default function WishlistModal({ onClose }: { onClose: () => void }) {
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: 22,
-                        color: "#8b4513",
+                        color: "#9B1B1B",
                         fontFamily: "Georgia, serif",
                       }}
                     >

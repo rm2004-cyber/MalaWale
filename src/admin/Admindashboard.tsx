@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   };
 
   const statCards = [
-    { label: "Total Products", value: totalProducts, sub: "Items in catalog",      Icon: IconGrid,    accent: "text-[#8b4513]",   bg: "bg-amber-50",  iconColor: "text-[#8b4513]" },
+    { label: "Total Products", value: totalProducts, sub: "Items in catalog",      Icon: IconGrid,    accent: "text-[#9B1B1B]",   bg: "bg-amber-50",  iconColor: "text-[#9B1B1B]" },
     { label: "Live Visitors",  value: liveViewers,   sub: "Online right now",       Icon: IconEye,     accent: "text-emerald-600", bg: "bg-emerald-50",iconColor: "text-emerald-500", pulse: true },
     { label: "Total Revenue",  value: totalSales,    sub: "Settled sales",          Icon: IconTrendUp, accent: "text-amber-600",   bg: "bg-yellow-50", iconColor: "text-amber-500" },
     { label: "Pending Orders", value: pendingOrdersCount, sub: "Awaiting fulfillment", Icon: IconClock, accent: "text-violet-600", bg: "bg-violet-50", iconColor: "text-violet-500" },
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
       <aside className="w-56 bg-[#18110c] flex flex-col shrink-0">
         <div className="px-5 py-5 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-[#8b4513] flex items-center justify-center shrink-0">
+            <div className="h-8 w-8 rounded-lg bg-[#9B1B1B] flex items-center justify-center shrink-0">
               <IconShoppingBag size={16} />
             </div>
             <div>
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(id as SidebarTab)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                   active
-                    ? "bg-[#8b4513] text-white shadow-lg shadow-[#8b4513]/25"
+                    ? "bg-[#9B1B1B] text-white shadow-lg shadow-[#9B1B1B]/25"
                     : "text-stone-500 hover:text-stone-200 hover:bg-white/5"
                 }`}
               >
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
 
         <div className="px-3 py-4 border-t border-white/5">
           <div className="flex items-center gap-2 px-3 py-2">
-            <div className="w-7 h-7 rounded-full bg-[#8b4513]/30 flex items-center justify-center shrink-0 text-white font-bold text-xs">
+            <div className="w-7 h-7 rounded-full bg-[#9B1B1B]/30 flex items-center justify-center shrink-0 text-white font-bold text-xs">
               {adminUser?.name?.charAt(0).toUpperCase() || "A"}
             </div>
             <div className="min-w-0">
@@ -289,7 +289,7 @@ export default function AdminDashboard() {
                 onClick={() => setProfileOpen((p) => !p)}
                 className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition"
               >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#8b4513] to-[#c4702a] flex items-center justify-center text-white text-xs font-bold uppercase">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#9B1B1B] to-[#c4702a] flex items-center justify-center text-white text-xs font-bold uppercase">
                   {adminUser?.name?.charAt(0).toUpperCase() || "A"}
                 </div>
                 <div className="text-left hidden sm:block">
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
               {profileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl border border-stone-100 shadow-xl z-50 overflow-hidden">
                   <div className="px-4 py-3.5 border-b border-stone-50 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#8b4513] to-[#c4702a] flex items-center justify-center text-white font-bold text-sm shrink-0 uppercase">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#9B1B1B] to-[#c4702a] flex items-center justify-center text-white font-bold text-sm shrink-0 uppercase">
                       {adminUser?.name?.charAt(0).toUpperCase() || "A"}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                   <div className="px-4 py-3 border-b border-stone-50">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-stone-500">Security Ring</span>
-                      <span className="bg-[#8b4513]/10 text-[#8b4513] text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                      <span className="bg-[#9B1B1B]/10 text-[#9B1B1B] text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                         {adminUser?.role || "Admin"}
                       </span>
                     </div>
