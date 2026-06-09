@@ -12,6 +12,9 @@ import { useCart } from "../context/CartContext";
 import { productService } from "../utils/service";
 import { toast } from "react-hot-toast";
 
+// ── Import the flying bubbles layer ──────────────────────────────────────────
+import { FlyingBubblesLayer } from "./CartAction";
+
 type ActiveModalWindow = "none" | "orders" | "wishlist" | "cart";
 
 interface HeaderProps {
@@ -27,6 +30,8 @@ interface ActionButtonProps {
   count: number;
   countColor: string;
   onClick?: () => void;
+  id?: string;
+  bouncing?: boolean;
 }
 
 interface SearchProduct {
@@ -87,6 +92,8 @@ async function safeSearchProducts(query: string): Promise<SearchProduct[]> {
   }
 }
 
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
 const HeartIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -133,11 +140,25 @@ const MenuIcon = () => (
   </svg>
 );
 
-function ActionButton({ children, label, count, countColor, onClick }: ActionButtonProps) {
+// ─── ActionButton ─────────────────────────────────────────────────────────────
+// Added: id prop + bouncing prop for the cart icon bounce animation
+
+function ActionButton({ children, label, count, countColor, onClick, id, bouncing }: ActionButtonProps) {
   return (
     <motion.button
+      id={id}
       className="relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl"
-      animate={{ color: "#9B1B1B", opacity: 1 }}
+      animate={{
+        color: "#9B1B1B",
+        opacity: 1,
+        // Cart bounce when item lands
+        scale: bouncing ? [1, 1.35, 0.9, 1.15, 1] : 1,
+      }}
+      transition={
+        bouncing
+          ? { duration: 0.5, times: [0, 0.25, 0.55, 0.75, 1], ease: "easeOut" }
+          : undefined
+      }
       whileHover={{ scale: 1.07, backgroundColor: "rgba(212, 175, 55,0.12)" }}
       whileTap={{ scale: 0.95 }}
       style={{ color: "#9B1B1B" }}
@@ -178,6 +199,8 @@ function ActionButton({ children, label, count, countColor, onClick }: ActionBut
     </motion.button>
   );
 }
+
+// ─── SearchDropdown ───────────────────────────────────────────────────────────
 
 interface SearchDropdownProps {
   loading: boolean;
@@ -258,11 +281,13 @@ function SearchDropdown({ loading, results, query, onSelect }: SearchDropdownPro
   );
 }
 
+// ─── Header ───────────────────────────────────────────────────────────────────
+
 export default function Header({ favCount = 0, cartCount: propCartCount, onProductSelect, onCategoryChange }: HeaderProps) {
   const { user, isLoginModalOpen, closeLoginModal } = useAuth();
   const { cartCount: contextCartCount } = useCart();
 
-  const finalCartCount = typeof propCartCount === 'number' ? propCartCount : contextCartCount;
+  const finalCartCount = typeof propCartCount === "number" ? propCartCount : contextCartCount;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -272,13 +297,25 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeModalWindow, setActiveModalWindow] = useState<ActiveModalWindow>("none");
 
+  // ── NEW: cart bounce state ─────────────────────────────────────────────────
+  const [cartBouncing, setCartBouncing] = useState(false);
+
   const profileRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Clear search value on mount/reload
   useEffect(() => {
     setSearchValue("");
+  }, []);
+
+  // Listen for "cart-fly-landed" event dispatched by FlyingBubblesLayer
+  useEffect(() => {
+    const handleLanded = () => {
+      setCartBouncing(true);
+      setTimeout(() => setCartBouncing(false), 600);
+    };
+    window.addEventListener("cart-fly-landed", handleLanded);
+    return () => window.removeEventListener("cart-fly-landed", handleLanded);
   }, []);
 
   const { text: placeholderText, visible: placeholderVisible } = useCyclingPlaceholder(searchFocused);
@@ -322,33 +359,38 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
     return () => clearTimeout(timer);
   }, [searchValue]);
 
-  const handleSelectResult = useCallback((name: string, productId: string) => {
-    setSearchValue(name);
-    setSearchFocused(false);
-    setSearchResults([]);
-
-    if (onProductSelect) {
-      onProductSelect(name, productId);
-    } else {
-      const targetSection = document.getElementById('featured-products-section');
-      if (targetSection) {
-        const headerOffset = 100;
-        const elementPosition = targetSection.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerOffset;
-        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+  const handleSelectResult = useCallback(
+    (name: string, productId: string) => {
+      setSearchValue(name);
+      setSearchFocused(false);
+      setSearchResults([]);
+      if (onProductSelect) {
+        onProductSelect(name, productId);
+      } else {
+        const targetSection = document.getElementById("featured-products-section");
+        if (targetSection) {
+          const headerOffset = 100;
+          const elementPosition = targetSection.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        }
       }
-    }
-  }, [onProductSelect]);
+    },
+    [onProductSelect]
+  );
 
-  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchResults.length > 0) {
-      const first = searchResults[0];
-      handleSelectResult(first.name, first._id);
-    } else if (searchValue.trim().length > 0 && !searchLoading) {
-      toast.error(`No products found matching "${searchValue}"`);
-    }
-  }, [searchResults, searchValue, searchLoading, handleSelectResult]);
+  const handleSearchSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        const first = searchResults[0];
+        handleSelectResult(first.name, first._id);
+      } else if (searchValue.trim().length > 0 && !searchLoading) {
+        toast.error(`No products found matching "${searchValue}"`);
+      }
+    },
+    [searchResults, searchValue, searchLoading, handleSelectResult]
+  );
 
   const showDropdown =
     searchFocused &&
@@ -384,168 +426,174 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
         .search-scroll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55,0.4); border-radius: 2px; }
       `}</style>
 
-      <MobileDrawer 
-        isOpen={drawerOpen} 
-        onClose={() => setDrawerOpen(false)} 
+      {/* ── Flying bubbles layer — renders all in-flight cart animations ── */}
+      <FlyingBubblesLayer />
+
+      <MobileDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
         onCategorySelect={onCategoryChange}
       />
 
-      <div className="top-bar py-1.5 px-4 text-center">
-        <motion.p
-          className="text-xs tracking-widest"
-          style={{ color: "#fde8c8", fontFamily: "'Jost', sans-serif", fontWeight: 300 }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          ✦ &nbsp; Free shipping on orders above ₹999 &nbsp;·&nbsp; 100% Authentic Handcrafted Malas &nbsp; ✦
-        </motion.p>
-      </div>
+      <div className="sticky top-0 z-50 w-full shadow-md">
+        <div className="top-bar py-1.5 px-4 text-center">
+          <motion.p
+            className="text-xs tracking-widest"
+            style={{ color: "#fde8c8", fontFamily: "'Jost', sans-serif", fontWeight: 300 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            ✦ &nbsp; Free shipping on orders above ₹999 &nbsp;·&nbsp; 100% Authentic Handcrafted Malas &nbsp; ✦
+          </motion.p>
+        </div>
 
-      <header className="header-root divine-gradient relative" style={{ borderBottom: "1px solid rgba(212, 175, 55,0.25)" }}>
-        <div className="absolute inset-0 mandala-bg opacity-60 pointer-events-none" />
+        <header className="header-root divine-gradient relative" style={{ borderBottom: "1px solid rgba(212, 175, 55,0.25)" }}>
+          <div className="absolute inset-0 mandala-bg opacity-60 pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 py-4">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-4 py-4">
 
-            <motion.div
-              className="flex-shrink-0 cursor-pointer select-none"
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
+              {/* ── Brand ── */}
               <motion.div
-                className="flex items-center gap-1.5 mb-0.5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                className="flex-shrink-0 cursor-pointer select-none"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
-                <span style={{ color: "#E65100", fontSize: "13px", fontFamily: "serif" }}>ॐ</span>
-                <span className="om-divider">✦ ✦ ✦</span>
+                <motion.div
+                  className="flex items-center gap-1.5 mb-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <span style={{ color: "#E65100", fontSize: "13px", fontFamily: "serif" }}>ॐ</span>
+                  <span className="om-divider">✦ ✦ ✦</span>
+                </motion.div>
+
+                <button
+                  type="button"
+                  className="block sm:hidden mb-2 p-2 rounded-full text-amber-800 hover:bg-amber-100 transition"
+                  aria-label="Open mobile menu"
+                  onClick={() => setDrawerOpen(true)}
+                >
+                  <MenuIcon />
+                </button>
+
+                <h1
+                  className="brand-title text-2xl sm:text-3xl font-black uppercase leading-none"
+                  style={{ color: "#9B1B1B", textShadow: "0 1px 2px rgba(155, 27, 27,0.15)" }}
+                >
+                  MalaWale
+                </h1>
+
+                <motion.p
+                  className="brand-subtitle italic text-xs sm:text-sm font-medium leading-tight mt-0.5"
+                  style={{ color: "#D4AF37", letterSpacing: "0.04em" }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  By Sanwariya Handicraft
+                </motion.p>
               </motion.div>
 
-              <button
-                type="button"
-                className="block sm:hidden mb-2 p-2 rounded-full text-amber-800 hover:bg-amber-100 transition"
-                aria-label="Open mobile menu"
-                onClick={() => setDrawerOpen(true)}
-              >
-                <MenuIcon />
-              </button>
-
-              <h1
-                className="brand-title text-2xl sm:text-3xl font-black uppercase leading-none"
-                style={{ color: "#9B1B1B", textShadow: "0 1px 2px rgba(155, 27, 27,0.15)" }}
-              >
-                MalaWale
-              </h1>
-
-              <motion.p
-                className="brand-subtitle italic text-xs sm:text-sm font-medium leading-tight mt-0.5"
-                style={{ color: "#D4AF37", letterSpacing: "0.04em" }}
-                initial={{ opacity: 0, y: 4 }}
+              {/* ── Search ── */}
+              <motion.div
+                ref={searchContainerRef}
+                className="flex-1 max-w-lg hidden sm:block relative"
+                initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                By Sanwariya Handicraft
-              </motion.p>
-            </motion.div>
-
-            <motion.div
-              ref={searchContainerRef}
-              className="flex-1 max-w-lg hidden sm:block relative"
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <motion.div
-                  className="absolute -inset-px rounded-full pointer-events-none"
-                  animate={{
-                    boxShadow: searchFocused
-                      ? "0 0 0 2px rgba(212, 175, 55,0.55), 0 0 28px rgba(200,132,58,0.18)"
-                      : "0 0 0 1px rgba(212, 175, 55,0.2)",
-                  }}
-                  transition={{ duration: 0.35 }}
-                />
-
-                <div
-                  className="flex items-center rounded-full overflow-hidden"
-                  style={{
-                    background: searchFocused ? "rgba(255,252,245,0.97)" : "rgba(255,252,245,0.8)",
-                    border: "1px solid",
-                    borderColor: searchFocused ? "rgba(212, 175, 55,0.6)" : "rgba(212, 175, 55,0.3)",
-                    transition: "background 0.3s ease, border-color 0.3s ease",
-                  }}
-                >
-                   <motion.div
-                    className="pl-4 pr-2 flex-shrink-0"
-                    animate={{ color: searchFocused ? "#E65100" : "#c8a07a" }}
-                    transition={{ duration: 0.3 }}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => inputRef.current?.focus()}
-                  >
-                    <SearchIcon />
-                  </motion.div>
-
-                  <div className="relative flex-1 py-2.5 pr-3 overflow-hidden">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={searchValue}
-                      onChange={(e) => setSearchValue(e.target.value)}
-                      onFocus={() => setSearchFocused(true)}
-                      className="w-full bg-transparent outline-none text-sm relative z-10"
-                      style={{ color: "#5c3317", fontFamily: "'Jost', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
-                      aria-label="Search products"
-                      autoComplete="off"
-                    />
-                    <AnimatePresence mode="wait">
-                      {!searchValue && !searchFocused && (
-                        <motion.span
-                          key={placeholderText}
-                          className="absolute inset-0 flex items-center pointer-events-none text-sm"
-                          style={{ color: "#c8a07a", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: placeholderVisible ? 1 : 0, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.35 }}
-                        >
-                          {placeholderText}
-                        </motion.span>
-                      )}
-                      {!searchValue && searchFocused && (
-                        <motion.span
-                          key="focused-placeholder"
-                          className="absolute inset-0 flex items-center pointer-events-none text-sm"
-                          style={{ color: "#d4b896", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          Type to search malas, beads, bracelets…
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <motion.button
-                    type="submit"
-                    className="m-1.5 px-4 py-1.5 rounded-full text-xs font-medium flex-shrink-0 flex items-center gap-1.5"
-                    style={{
-                      background: "linear-gradient(135deg, #9B1B1B, #E65100)",
-                      color: "#fde8c8",
-                      fontFamily: "'Jost', sans-serif",
-                      letterSpacing: "0.06em",
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <motion.div
+                    className="absolute -inset-px rounded-full pointer-events-none"
+                    animate={{
+                      boxShadow: searchFocused
+                        ? "0 0 0 2px rgba(212, 175, 55, 0.55), 0 0 28px rgba(200, 132, 58, 0.18)"
+                        : "0 0 0 1px rgba(212, 175, 55, 0.2)",
                     }}
-                    whileHover={{ scale: 1.04, boxShadow: "0 4px 14px rgba(155, 27, 27,0.35)" }}
-                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.35 }}
+                  />
+
+                  <div
+                    className="flex items-center rounded-full overflow-hidden"
+                    style={{
+                      background: searchFocused ? "rgba(255, 252, 245, 0.97)" : "rgba(255, 252, 245, 0.8)",
+                      border: "1px solid",
+                      borderColor: searchFocused ? "rgba(212, 175, 55, 0.6)" : "rgba(212, 175, 55, 0.3)",
+                      transition: "background 0.3s ease, border-color 0.3s ease",
+                    }}
                   >
-                    <SparkleIcon />
-                    Search
-                  </motion.button>
-                </div>
-              </form>
+                    <motion.div
+                      className="pl-4 pr-2 flex-shrink-0"
+                      animate={{ color: searchFocused ? "#E65100" : "#c8a07a" }}
+                      transition={{ duration: 0.3 }}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => inputRef.current?.focus()}
+                    >
+                      <SearchIcon />
+                    </motion.div>
+
+                    <div className="relative flex-1 py-2.5 pr-3 overflow-hidden">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onFocus={() => setSearchFocused(true)}
+                        className="w-full bg-transparent outline-none text-sm relative z-10"
+                        style={{ color: "#5c3317", fontFamily: "'Jost', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
+                        aria-label="Search products"
+                        autoComplete="off"
+                      />
+                      <AnimatePresence mode="wait">
+                        {!searchValue && !searchFocused && (
+                          <motion.span
+                            key={placeholderText}
+                            className="absolute inset-0 flex items-center pointer-events-none text-sm"
+                            style={{ color: "#c8a07a", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: placeholderVisible ? 1 : 0, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.35 }}
+                          >
+                            {placeholderText}
+                          </motion.span>
+                        )}
+                        {!searchValue && searchFocused && (
+                          <motion.span
+                            key="focused-placeholder"
+                            className="absolute inset-0 flex items-center pointer-events-none text-sm"
+                            style={{ color: "#d4b896", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            Type to search malas, beads, bracelets…
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    <motion.button
+                      type="submit"
+                      className="m-1.5 px-4 py-1.5 rounded-full text-xs font-medium flex-shrink-0 flex items-center gap-1.5"
+                      style={{
+                        background: "linear-gradient(135deg, #9B1B1B, #E65100)",
+                        color: "#fde8c8",
+                        fontFamily: "'Jost', sans-serif",
+                        letterSpacing: "0.06em",
+                      }}
+                      whileHover={{ scale: 1.04, boxShadow: "0 4px 14px rgba(155, 27, 27,0.35)" }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <SparkleIcon />
+                      Search
+                    </motion.button>
+                  </div>
+                </form>
 
               <AnimatePresence>
                 {showDropdown && (
@@ -559,6 +607,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
               </AnimatePresence>
             </motion.div>
 
+            {/* ── Action Buttons ── */}
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 relative z-[100]">
               <ActionButton
                 label="Favourites"
@@ -569,10 +618,17 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
                 <HeartIcon />
               </ActionButton>
 
+              {/*
+                ── CART BUTTON ──
+                id="header-cart-icon" → FlyingBubblesLayer reads this to find the landing target
+                bouncing → triggers the spring-bounce animation when a bubble lands
+              */}
               <ActionButton
+                id="header-cart-icon"
                 label="Cart"
-                count={typeof finalCartCount === 'number' && finalCartCount > 0 ? finalCartCount : 0}
+                count={typeof finalCartCount === "number" && finalCartCount > 0 ? finalCartCount : 0}
                 countColor="#E65100"
+                bouncing={cartBouncing}
                 onClick={() => setActiveModalWindow("cart")}
               >
                 <div style={{ opacity: 1, color: "#9B1B1B" }} className="flex items-center justify-center">
@@ -582,6 +638,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
 
               <div className="w-px h-8 mx-1 hidden sm:block" style={{ background: "rgba(212, 175, 55,0.3)" }} />
 
+              {/* ── Profile ── */}
               <div className="relative z-[100]" ref={profileRef}>
                 <motion.button
                   onClick={() => setProfileOpen((o) => !o)}
@@ -629,6 +686,7 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
             </div>
           </div>
 
+          {/* Mobile search */}
           <div className="pb-3 sm:hidden">
             <form onSubmit={handleSearchSubmit}>
               <div
@@ -654,7 +712,9 @@ export default function Header({ favCount = 0, cartCount: propCartCount, onProdu
 
         <div className="header-border h-px w-full" />
       </header>
+    </div>
 
+      {/* ── Modals ── */}
       <AnimatePresence>
         {activeModalWindow === "wishlist" && (
           <WishlistModal onClose={() => setActiveModalWindow("none")} />

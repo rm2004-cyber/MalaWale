@@ -240,9 +240,14 @@ const QuickLinksColumn = ({ onCategorySelect }: QuickLinksColumnProps) => {
 
       <ColHeading>Policies</ColHeading>
       <ul className="flex flex-col gap-1.5">
-        {["Privacy Policy", "Return & Refund", "Shipping Policy", "Terms of Use"].map((p) => (
-          <li key={p}>
-            <motion.a href="#" initial="rest" whileHover="hover" animate="rest" variants={linkHoverVariants}
+        {[
+          { name: "Privacy Policy", href: "#/privacy-policy" },
+          { name: "Return & Refund", href: "#" },
+          { name: "Shipping Policy", href: "#/shipping-policy" },
+          { name: "Terms of Use", href: "#/terms-of-use" }
+        ].map((p) => (
+          <li key={p.name}>
+            <motion.a href={p.href} initial="rest" whileHover="hover" animate="rest" variants={linkHoverVariants}
               className="flex items-center gap-2.5 py-1"
               style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.82rem", color: "rgba(255,249,242,0.85)", textDecoration: "none" }}>
               <motion.span
@@ -250,7 +255,7 @@ const QuickLinksColumn = ({ onCategorySelect }: QuickLinksColumnProps) => {
                 className="inline-block h-px rounded-full flex-shrink-0"
                 style={{ background: "#D4AF37" }}
               />
-              {p}
+              {p.name}
             </motion.a>
           </li>
         ))}
