@@ -17,6 +17,9 @@ import CollectionCircles from './components/CollectionCircles';
 import TrendingShuffle from './components/TrendingShuffle';
 import AdminDashboard from '../src/admin/Admindashboard';
 import TrackOrder from './components/TrackOrder';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfUse from './components/TermsOfUse';
+import ShippingPolicy from './components/ShippingPolicy';
 import { productService, cartService } from './utils/service';
 import { useAuth } from "./context/AuthContext";
 import { useCart } from "./context/CartContext";
@@ -199,14 +202,23 @@ function App() {
   const [liveProducts, setLiveProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-  const currentHash = window.location.hash;
+    const currentHash = window.location.hash;
 
-  // Agar URL mein "#/" hai aur wo admin path nahi hai, toh reset karo
-  // iska matlab "#/category/", "#/products/", ya koi bhi aur path hoga to wo clean ho jayega
-  if (currentHash !== "#/" && currentHash !== "" && !currentHash.includes("malawale2026-admin")) {
-    window.location.hash = "/";
-  }
-}, []);
+    // Allow valid routes to bypass the reset
+    const isValidRoute = 
+      currentHash === "#/" || 
+      currentHash === "" || 
+      currentHash.includes("malawale2026-admin") || 
+      currentHash.includes("privacy-policy") ||
+      currentHash.includes("terms-of-use") ||
+      currentHash.includes("shipping-policy") ||
+      currentHash.includes("track-order") ||
+      currentHash.includes("category/");
+
+    if (!isValidRoute) {
+      window.location.hash = "/";
+    }
+  }, []);
   useEffect(() => {
     async function fetchLiveProducts() {
       try {
@@ -302,6 +314,60 @@ function App() {
             ) : (
               <div className="min-h-screen bg-[#FCF8F2]" />
             )
+          }
+        />
+
+        <Route
+          path="/privacy-policy"
+          element={
+            <>
+              <Header
+                cartCount={cartCount}
+                favCount={0}
+                onProductSelect={handleProductSelectFromHeader}
+                onCategoryChange={(cat) => navigate(`/category/${cat}`)}
+              />
+              <div className="pt-28 pb-12 bg-gradient-to-b from-[#FCF8F2] to-[#fff3e8] min-h-[85vh]">
+                <PrivacyPolicy />
+              </div>
+              <Footer />
+            </>
+          }
+        />
+
+        <Route
+          path="/terms-of-use"
+          element={
+            <>
+              <Header
+                cartCount={cartCount}
+                favCount={0}
+                onProductSelect={handleProductSelectFromHeader}
+                onCategoryChange={(cat) => navigate(`/category/${cat}`)}
+              />
+              <div className="pt-28 pb-12 bg-gradient-to-b from-[#FCF8F2] to-[#fff3e8] min-h-[85vh]">
+                <TermsOfUse />
+              </div>
+              <Footer />
+            </>
+          }
+        />
+
+        <Route
+          path="/shipping-policy"
+          element={
+            <>
+              <Header
+                cartCount={cartCount}
+                favCount={0}
+                onProductSelect={handleProductSelectFromHeader}
+                onCategoryChange={(cat) => navigate(`/category/${cat}`)}
+              />
+              <div className="pt-28 pb-12 bg-gradient-to-b from-[#FCF8F2] to-[#fff3e8] min-h-[85vh]">
+                <ShippingPolicy />
+              </div>
+              <Footer />
+            </>
           }
         />
 
